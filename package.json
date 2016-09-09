@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/semdy/eassyrender.git"
+    "url": "git+ssh://git@github.com/semdy/easyrender.git"
   },
   "keywords": [
     "canvas",
@@ -18,9 +18,9 @@
   "author": "semdy",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/semdy/eassyrender/issues"
+    "url": "https://github.com/semdy/easyrender/issues"
   },
-  "homepage": "https://github.com/semdy/eassyrender#readme",
+  "homepage": "https://github.com/semdy/easyrender#readme",
   "devDependencies": {
     "gulp": "^3.9.1",
     "gulp-clean": "^0.3.2",
