@@ -1,0 +1,49 @@
+<!Doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>弹幕</title>
+    <link rel="stylesheet" href="styles/chat-bullet.css">
+</head>
+
+<body style="background-color: #000;">
+
+<div class="chat-container">
+
+    <div class="message-container">
+        <canvas id="canvas-bullets" class="bullets"></canvas>
+    </div>
+
+    <div class="actions-layer">
+        <div id="act_layer_top" class="flex act-layer-top">
+        </div>
+        <div class="act-layer-bottom">
+            <div class="acts-list">
+                <span class="act-icon act-sendMsg" data-action="sendMsg"></span>
+            </div>
+            <div class="panel-input">
+                <form id="bullet-form" class="panel-body flex">
+                    <div class="video-bullet-switcher">
+                        <span class="switcher on" data-action="bullet-switcher">
+                            <span class="switch-handle">弹</span>
+                        </span>
+                    </div>
+                    <input type="text" id="input_content" class="flex-item input-content" placeholder="和大家说点什么" />
+                    <button type="submit" id="send-button" class="send-button">发送</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<script src="scripts/jquery.min.js"></script>
+
+<script src="scripts/libs/easyrender.js"></script>
+
+<script src="scripts/bulletManager.js"></script>
+<script src="scripts/chat-bullet.js"></script>
+</body>
+</html>
