@@ -1,5 +1,5 @@
 # easyrender
-a lite framework for canvas
+a lite frameworks for canvas
 ## live demo ##
 - [弹幕](https://semdy.github.io/easyrender/dist/index.html "弹幕")
 - [奔跑的兔子](https://semdy.github.io/easyrender/dist/MovieClip.html "奔跑的兔子")
