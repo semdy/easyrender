@@ -1,0 +1,54 @@
+<!Doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>EC MovieClip</title>
+    <style>
+        body{
+            margin:0;
+        }
+        .movieclip{
+            position: absolute;
+            left:0;
+            top:0;
+            right:0;
+            bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+<canvas id="canvas-movieclip" class="movieclip"></canvas>
+
+<script src="scripts/libs/easyrender.js"></script>
+
+<script>
+var canvas = document.getElementById('canvas-movieclip');
+var stage = new EC.Stage(canvas, {
+    width: 750,
+    height: 1334
+});
+
+var line = new EC.Shape();
+line.stroke("#ff0000", 1);
+line.fill("#000", 0.5);
+line.lineWidth = 5;
+line.moveTo(100, 100);
+line.lineTo(400, 400);
+line.lineTo(400, 100);
+line.close();
+stage.addChild(line);
+
+var line2 = new EC.Shape();
+line2.stroke("#f90", 1);
+line2.lineWidth = 20;
+line2.moveTo(250, 450);
+line2.lineTo(550, 750);
+line2.lineTo(550, 450);
+line2.close();
+stage.addChild(line2);
+</script>
+</body>
+</html>

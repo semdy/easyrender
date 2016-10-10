@@ -55,7 +55,6 @@
         ctx.beginPath();
         drawShapeContext(ctx, obj);
         obj.draw(ctx);
-        ctx.closePath();
     };
 
     var drawContext = function(ctx, obj){
@@ -88,12 +87,12 @@
     var baseMethods = [
         "rect",
         "arc",
+        "arcTo",
         "moveTo",
         "lineTo",
         "clip",
         "quadraticCurveTo",
-        "bezierCurveTo",
-        "arcTo"
+        "bezierCurveTo"
     ];
 
     /**
@@ -316,6 +315,7 @@
 
             this._drawFuns = [];
             this._drawTypes = [];
+            this._closePathTypes = [];
 
             this.$type = "Shape";
         },
@@ -338,7 +338,7 @@
             args.unshift("fillStyle");
             this._setStyle.apply(this, args);
         },
-        stroke: function(color, alpha){
+        stroke: function(){
             var args = slice.call(arguments);
             args.unshift("strokeStyle");
             this._setStyle.apply(this, args);
@@ -347,9 +347,17 @@
             this._drawFuns.forEach(function(fun){
                 EC.isFunction(fun)&&fun(ctx);
             });
+
+            this._closePathTypes.forEach(function(closeType){
+                ctx[closeType]();
+            });
+            
             this._drawTypes.forEach(function(drawType){
                 ctx[drawType]();
             });
+        },
+        close: function () {
+            this._closePathTypes.push("closePath");
         }
     });
 
@@ -396,10 +404,14 @@
             Sprite.superclass.addChild.apply(this, arguments);
 
             if( this.getChilds().length == 1 ) {
-                this.width = childObj.x + childObj.width;
+                this.width = childObj.x + childObj.width - this.x;
+                this.height = childObj.y + childObj.height - this.y;
             } else {
                 if( childObj.x + childObj.width > this.width ){
                     this.width = childObj.x + childObj.width;
+                }
+                if( childObj.y + childObj.height > this.height ){
+                    this.height = childObj.y + childObj.height;
                 }
             }
         }
@@ -414,6 +426,8 @@
 
             this.canvas = canvas;
             this.renderContext = this.canvas.getContext('2d');
+            this.compositeOperation = "source-over";
+            this.renderContext.globalCompositeOperation = this.compositeOperation; /*source-over source-atop source-in source-out destination-over destination-atop destination-in destination-out lighter copy source-over*/
             this.$type = "Stage";
             this.options = EC.extend({}, {adapter: true, showFps: false, width: window.innerWidth, height: window.innerHeight}, options||{});
             this.width = parseFloat(this.canvas.getAttribute("width")) || this.options.width;
@@ -533,10 +547,19 @@
         },
         setAdapter: function(){
             var parent = this.canvas.parentNode;
-            var parentW = parent.offsetWidth - parseFloat(EC.getStyle(parent, 'padding-left')) - parseFloat(EC.getStyle(parent, 'padding-right'));
-            this.canvas.style.width = parentW + "px";
-            this.canvas.style.height = this.height/this.width*parentW + "px";
-            this.scaleRatio = this.width/parentW;
+            var parentW = parent.nodeName == 'BODY' ? window.innerWidth : parent.offsetWidth - parseFloat(EC.getStyle(parent, 'padding-left')) - parseFloat(EC.getStyle(parent, 'padding-right'));
+            var parentH = parent.nodeName == 'BODY' ? window.innerHeight : parent.offsetHeight - parseFloat(EC.getStyle(parent, 'padding-top')) - parseFloat(EC.getStyle(parent, 'padding-bottom'));
+            var width = parentW;
+            var height = this.height/this.width*width;
+
+            if( height > parentH ){
+                height = parentH;
+                width = this.width/this.height*height;
+            }
+
+            this.canvas.style.width = width + "px";
+            this.canvas.style.height = height + "px";
+            this.scaleRatio = this.width/width;
 
             return this;
         },
@@ -579,11 +602,11 @@
         "createLinearGradient",
         "createPattern",
         "createRadialGradient",
+        "addColorStop",
         "createImageData",
         "putImageData",
         "getImageData",
-        "isPointInPath",
-        "globalCompositeOperation" /*source-over source-atop source-in source-out destination-over destination-atop destination-in destination-out lighter copy source-over*/
+        "isPointInPath"
     ]).forEach(function(method){
         Renderer.prototype[method] = function(){
             return this.renderContext[method].apply(this.renderContext, arguments);

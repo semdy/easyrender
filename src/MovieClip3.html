@@ -56,14 +56,37 @@
             stage.addChild(mc);
             mc.touchEnabled = true;
 
+            var shapeContainer = new EC.Sprite();
+            stage.addChild(shapeContainer);
+            shapeContainer.touchEnabled = true;
+            shapeContainer.on("touch", function (e) {
+                console.log(e.target);
+            });
+
             var shape = new EC.Shape();
-            shape.fill("#000", 0.5);
-            shape.rect(50, 250, 200, 200);
-            stage.addChild(shape);
+            shape.fill("#f90", 0.5);
+            shape.rect(60, 210, 280, 280);
+            shapeContainer.addChild(shape);
             shape.touchEnabled = true;
 
             shape.on("touch", function(e){
                 //shape.visible = false;
+                console.log(e.target);
+            });
+
+            var shape2 = new EC.Shape();
+            shape2.fill("#000", 0.5);
+            shape2.rect(100, 250, 200, 200);
+            shapeContainer.addChild(shape2);
+            shape2.touchEnabled = true;
+
+            shape2.on("touch", function(e){
+                e.stopPropagation();
+                console.log(e.target);
+            });
+
+            stage.touchEnabled = true;
+            stage.on("touch", function (e) {
                 console.log(e.target);
             });
 
