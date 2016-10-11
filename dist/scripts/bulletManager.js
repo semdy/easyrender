@@ -48,7 +48,7 @@
         }, options || {});
 
         this.canvas = document.getElementById('canvas-bullets');
-        this.stage = new EC.Stage(this.canvas);
+        this.stage = new EC.Stage(this.canvas, {scaleMode: 'fixedWidth'});
 
         this.stageW = this.stage.width;
         this.stageH = this.stage.height;

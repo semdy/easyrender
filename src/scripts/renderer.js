@@ -404,8 +404,8 @@
             Sprite.superclass.addChild.apply(this, arguments);
 
             if( this.getChilds().length == 1 ) {
-                this.width = childObj.x + childObj.width - this.x;
-                this.height = childObj.y + childObj.height - this.y;
+                this.width = childObj.x + childObj.width;
+                this.height = childObj.y + childObj.height;
             } else {
                 if( childObj.x + childObj.width > this.width ){
                     this.width = childObj.x + childObj.width;
@@ -429,7 +429,7 @@
             this.compositeOperation = "source-over";
             this.renderContext.globalCompositeOperation = this.compositeOperation; /*source-over source-atop source-in source-out destination-over destination-atop destination-in destination-out lighter copy source-over*/
             this.$type = "Stage";
-            this.options = EC.extend({}, {adapter: true, showFps: false, width: window.innerWidth, height: window.innerHeight}, options||{});
+            this.options = EC.extend({}, {adapter: true, showFps: false, scaleMode: 'showAll', width: window.innerWidth, height: window.innerHeight}, options||{});
             this.width = parseFloat(this.canvas.getAttribute("width")) || this.options.width;
             this.height = parseFloat(this.canvas.getAttribute("height")) || this.options.height;
             this.scaleRatio = 1;
@@ -552,9 +552,17 @@
             var width = parentW;
             var height = this.height/this.width*width;
 
-            if( height > parentH ){
-                height = parentH;
-                width = this.width/this.height*height;
+            switch (this.options.scaleMode) {
+                case 'showAll':
+                    if (height > parentH) {
+                        height = parentH;
+                        width = this.width / this.height * height;
+                    }
+                    break;
+                case 'fixedWidth':
+                    width = width;
+                    height = height;
+                    break;
             }
 
             this.canvas.style.width = width + "px";
