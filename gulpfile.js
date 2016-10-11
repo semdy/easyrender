@@ -1,5 +1,5 @@
 var gulp        = require('gulp'),
-    cssmin       = require('gulp-minify-css'),
+    cssmin      = require('gulp-minify-css'),
     uglify      = require('gulp-uglify'),
     useref      = require('gulp-useref'),
     gulpif      = require('gulp-if'),
