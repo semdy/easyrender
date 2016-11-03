@@ -253,7 +253,7 @@
             }
 
             resFrames = resFrames.sort(function (a, b) {
-                return parseInt(a.key.replace(/^[^\d]+/, "")) > parseInt(b.key.replace(/^[^\d]+/, ""));
+                return parseInt(a.key.replace(/^[^\d]+/, "")) - parseInt(b.key.replace(/^[^\d]+/, ""));
             });
 
             resCfg.mc[resKey] = {
