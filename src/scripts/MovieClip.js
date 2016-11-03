@@ -228,6 +228,42 @@
             resCfg.res = resObj;
 
             return resCfg;
+        } else if( typeof res === 'object' && !res.mc ) {
+            var resFrames = [];
+            var resObj = {};
+            var resCfg = {mc:{}, res:{}};
+
+            for(var i in res) {
+                var pos = res[i];
+                var uid = _genUID();
+                resFrames.push({
+                    res: uid,
+                    key: i,
+                    x: pos.offX,
+                    y: pos.offY,
+                    duration: pos.duration === undefined ? 1 : pos.duration
+                });
+
+                resObj[uid] = {
+                    x: pos.x,
+                    y: pos.y,
+                    w: pos.w,
+                    h: pos.h
+                }
+            }
+
+            resFrames = resFrames.sort(function (a, b) {
+                return parseInt(a.key.replace(/^[^\d]+/, "")) > parseInt(b.key.replace(/^[^\d]+/, ""));
+            });
+
+            resCfg.mc[resKey] = {
+                frames: resFrames,
+                frameRate: 24
+            };
+
+            resCfg.res = resObj;
+
+            return resCfg;
         }
 
         return res;
