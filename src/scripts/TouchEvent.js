@@ -10,11 +10,13 @@
         doe = doc.documentElement;
 
     var isTouch = 'ontouchstart' in document;
+    var ua = navigator.userAgent;
     var pointerEnabled = window.navigator.msPointerEnabled;
+    var isIeMobile = pointerEnabled && /IEMobile/i.test(ua);
 
-    isTouch = isTouch || pointerEnabled;
+    isTouch = isTouch || isIeMobile;
 
-    var EVENTS = pointerEnabled ? {
+    var EVENTS = isIeMobile ? {
         START: 'MSPointerDown',
         MOVE: 'MSPointerMove',
         END: 'MSPointerCancel'

@@ -444,9 +444,8 @@
             }
 
             if( this.options.showFps ){
-                this._lastTime = 0;
                 this.createFps();
-                this.on("enterframe", this.showFps, this);
+                this.showFps();
             }
 
             this._initEvents();
@@ -560,8 +559,6 @@
                     }
                     break;
                 case 'fixedWidth':
-                    width = width;
-                    height = height;
                     break;
             }
 
@@ -572,11 +569,14 @@
             return this;
         },
         _initEvents: function(){
+            var isShowFPS = this.options.showFps;
 
             this._ticker.on("ticker", function(){
-               this.clear();
-               this.render();
-               this.dispatch("enterframe");
+                isShowFPS && this.FPS.begin();
+                this.clear();
+                this.render();
+                this.dispatch("enterframe");
+                isShowFPS && this.FPS.end();
             }, this);
 
             this.on("enterframe", this._triggerEnterFrame, this);
@@ -591,18 +591,19 @@
 
         },
         createFps: function(){
-            this.fpsLoger = document.createElement('div');
-            this.fpsLoger.className = 'fps-loger';
-            this.fpsLoger.style.cssText = "position:fixed;left:0;top:0;right:0;padding:8px 15px;background-color:#f5f5f5;border-bottom:1px solid #ccc;z-index:2000;";
-            document.body.appendChild(this.fpsLoger);
+            this.FPS = new Stats();
         },
-        calculateFps: function(now) {
-            var fps = 1000/(now-this._lastTime);
-            this._lastTime = now;
-            return fps;
-        },
-        showFps: function(){
-            this.fpsLoger.innerHTML = "FPS: " + this.calculateFps(Date.now()).toFixed(2);
+        showFps: function( position ){
+            if( EC.isObject(position) ){
+                this.FPS.dom.style.left = EC.isDefined( position.left ) ? (EC.isNumber(position.left) ? position.left + "px" : position.left) : "";
+                this.FPS.dom.style.right = EC.isDefined( position.right ) ? (EC.isNumber(position.right) ? position.right + "px" : position.right) : "";
+                this.FPS.dom.style.top = EC.isDefined( position.top ) ? (EC.isNumber(position.top) ? position.top + "px" : position.top) : "";
+                this.FPS.dom.style.bottom = EC.isDefined( position.bottom ) ? (EC.isNumber(position.bottom) ? position.bottom + "px" : position.bottom) : "";
+            }
+
+            if( !this._fpsDom ){
+                document.body.appendChild(this._fpsDom = this.FPS.dom);
+            }
         }
     });
 

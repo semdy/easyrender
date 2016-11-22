@@ -83,7 +83,14 @@
 
     function startGame(){
         var canvas = document.getElementById('canvas-movieclip');
-        stage = new EC.Stage(canvas);
+        stage = new EC.Stage(canvas, {
+          showFps: true
+        });
+
+        stage.showFps({
+          right: 0,
+          left: "auto"
+        });
 
         setRabbitMC1();
         setRabbitMC2();
@@ -96,13 +103,14 @@
         mcRabbit1.width = 102;
         mcRabbit1.height = 80;
         mcRabbit1.gotoAndPlay(1, -1, 20);
-       /* mcRabbit1.el.onclick = function () {
+        mcRabbit1.touchEnabled = true;
+        mcRabbit1.on("touch", function () {
             if( mcRabbit1.isPlaying ){
-                mcRabbit1.pause();
+              mcRabbit1.pause();
             } else {
-                mcRabbit1.play();
+              mcRabbit1.play();
             }
-        };*/
+        });
 
         stage.addChild(mcRabbit1);
 
@@ -145,6 +153,11 @@
             mcRabbit2.height = 80;
             mcRabbit2.gotoAndPlay(1, 1);
             stage.addChild(mcRabbit2);
+
+            mcRabbit2.once("complete", function () {
+              stage.removeChild(mcRabbit2);
+              setRabbitMC2();
+            });
         });
 
         stage.addChild(mcRabbit2);
@@ -157,7 +170,7 @@
         mcRabbit3.y = 300;
         mcRabbit3.width = 102;
         mcRabbit3.height = 80;
-        mcRabbit3.gotoAndPlay(1, 3, 5);
+        mcRabbit3.gotoAndPlay(1, -1, 5);
         stage.addChild(mcRabbit3);
     }
 
@@ -166,7 +179,7 @@
         mcRabbit4.y = 450;
         mcRabbit4.width = 102;
         mcRabbit4.height = 80;
-        mcRabbit4.gotoAndPlay(1, 1, 5);
+        mcRabbit4.gotoAndPlay(1, -1, 5);
         stage.addChild(mcRabbit4);
     }
 
