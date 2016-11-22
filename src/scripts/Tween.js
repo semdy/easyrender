@@ -80,7 +80,7 @@
                 per;
 
             this.duration = duration || 600;
-            this.easing = easing;
+            this.easing = easing || EC.Easing.Linear.None;
             this.startAttrs = EC.extend({}, this.tweenObj);
             this.endAttrs = attrs;
 
@@ -110,7 +110,7 @@
         update: function( obj ){
             for( var i in this.endAttrs ){
                 if( this.endAttrs[i] == this.startAttrs[i] ) continue;
-                obj[i] = this.startAttrs[i] + (this.endAttrs[i] - this.startAttrs[i])*(this.easing||EC.Easing.linear)(this.percent);
+                obj[i] = this.startAttrs[i] + (this.endAttrs[i] - this.startAttrs[i])*(this.easing)(this.percent);
             }
 
             this._triggerUpdate(this.tweenObj);
