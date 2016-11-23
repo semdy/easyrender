@@ -293,7 +293,7 @@
 
         In: function (k) {
 
-          return 1 - TWEEN.Easing.Bounce.Out(1 - k);
+          return 1 - Easing.Bounce.Out(1 - k);
 
         },
 
@@ -314,10 +314,10 @@
         InOut: function (k) {
 
           if (k < 0.5) {
-            return TWEEN.Easing.Bounce.In(k * 2) * 0.5;
+            return Easing.Bounce.In(k * 2) * 0.5;
           }
 
-          return TWEEN.Easing.Bounce.Out(k * 2 - 1) * 0.5 + 0.5;
+          return Easing.Bounce.Out(k * 2 - 1) * 0.5 + 0.5;
 
         }
 
