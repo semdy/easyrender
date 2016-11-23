@@ -430,17 +430,17 @@
     });
 
     /**
-    * Rectangle
+    * Masker
     * */
 
-    var Rectangle = Shape.extend({
+    var Masker = Shape.extend({
         initialize: function(){
-            Rectangle.superclass.initialize.apply(this, arguments);
-            this.$type = "Rectangle";
+            Masker.superclass.initialize.apply(this, arguments);
+            this.$type = "Masker";
         },
         draw: function(ctx, obj){
             ctx.globalCompositeOperation = obj.maskType;
-            Rectangle.superclass.draw.call(this, ctx);
+            Masker.superclass.draw.call(this, ctx);
             ctx.globalCompositeOperation = "source-over";
         }
     });
@@ -520,7 +520,7 @@
                     drawText(ctx, obj);
                     break;
                 case 'Shape':
-                case 'Rectangle':
+                case 'Masker':
                     drawShape(ctx, obj);
                     break;
             }
@@ -655,7 +655,7 @@
         TextField: TextField,
         BitMap: BitMap,
         Shape: Shape,
-        Rectangle: Rectangle,
+        Masker: Masker,
         Sprite: Sprite,
         Stage: Renderer
     });
