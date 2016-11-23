@@ -1,0 +1,80 @@
+<!Doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>EC MovieClip</title>
+    <style>
+        body{
+            margin:0;
+            background-color: #ccc;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="ec_loading">
+    <div id="ec_load_inner">
+        <div id="ec_load"></div>
+        <span id="ec_spin"></span>
+    </div>
+</div>
+
+<canvas id="canvas-mask" width="375" height="667"></canvas>
+
+<script src="scripts/libs/easyrender.js"></script>
+
+<script>
+
+    function startGame(img){
+        var canvas = document.getElementById('canvas-mask');
+        var stage = new EC.Stage(canvas, {
+            //scaleMode: "noScale",
+            showFps: true
+        });
+
+        stage.showFps({
+            right: 0,
+            left: "auto",
+            top: 0
+        });
+
+        var sprite = new EC.Sprite();
+
+        var mask = new EC.Rectangle();
+        mask.fill("#000", 1);
+        mask.arc(100,100,100,0,2*Math.PI);
+        sprite.mask = mask;
+
+        var bgImg = new EC.BitMap(img);
+
+        sprite.addChild(bgImg);
+        stage.addChild(sprite);
+
+        var isLeft = true;
+        mask.on("enterframe", function () {
+            if( isLeft ) {
+                this.x += 2;
+            }
+
+            if( !isLeft ){
+                this.x -= 2;
+            }
+
+            if( this.x > stage.width + 100 ){
+                isLeft = false;
+            }
+
+            if( this.x <= 100 ){
+                isLeft = true;
+            }
+        });
+    }
+
+    RES.loadImage("sprites/rabbit_lose.png").success(function ( img ) {
+        startGame(img);
+    });
+</script>
+</body>
+</html>

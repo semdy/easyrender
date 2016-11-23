@@ -71,6 +71,10 @@
             return this;
         },
 
+        emit: function () {
+          return this.dispatch.apply(this, arguments);
+        },
+
         success: function(cb){
             return this.on('success', cb);
         },

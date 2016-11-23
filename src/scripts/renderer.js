@@ -8,7 +8,7 @@
     var slice = Array.prototype.slice,
         RESIZE_EVENT = 'onorientationchange' in window ? 'orientationchange' : 'resize';
 
-    var drawImg = function(ctx, obj){
+    function drawImg(ctx, obj){
 
         var anchorX = obj.anchorX + obj.parent.anchorX,
             anchorY = obj.anchorY + obj.parent.anchorY;
@@ -26,12 +26,12 @@
         } else {
             ctx.drawImage(obj.bitMapData, -1*anchorX*obj.width, -1*anchorY*obj.height, obj.width, obj.height);
         }
-    };
+    }
 
-    var drawText = function(ctx, obj){
+    function drawText(ctx, obj){
         ctx.font = obj.size + "px " + obj.textFamily;
         ctx.textAlign = obj.textAlign;
-        ctx.textBaseline = obj.textBaseline || "hanging";
+        ctx.textBaseline = obj.textBaseline || "top";
 
         var anchorX = obj.anchorX + obj.parent.anchorX,
             anchorY = obj.anchorY + obj.parent.anchorY;
@@ -43,21 +43,21 @@
             ctx.fillStyle = obj.textColor;
             ctx.fillText(obj.text, -1*anchorX*obj.width, -1*anchorY*obj.height);
         }
-    };
+    }
 
-    var mixTextSize = function(ctx, obj){
+    function mixTextSize(ctx, obj){
         ctx.font = obj.size + "px " + obj.textFamily;
         obj.width = ctx.measureText(obj.text).width;
         obj.height = obj.size + 2;
-    };
+    }
 
-    var drawShape = function(ctx, obj){
+    function drawShape(ctx, obj){
         ctx.beginPath();
         drawShapeContext(ctx, obj);
-        obj.draw(ctx);
-    };
+        obj.draw(ctx, obj);
+    }
 
-    var drawContext = function(ctx, obj){
+    function drawContext(ctx, obj){
         obj = obj || {};
         ctx.globalAlpha = obj.parent.alpha < 1 ? obj.parent.alpha : obj.alpha;
         ctx.transform(
@@ -69,9 +69,9 @@
             obj.parent.y + obj.y + (obj.anchorY + obj.parent.anchorY)*obj.height //垂直移动绘图
         );
         ctx.rotate((obj.rotation + obj.parent.rotation)*Math.PI/180);
-    };
+    }
 
-    var drawShapeContext = function(ctx, obj){
+    function drawShapeContext(ctx, obj){
         ctx.fillStyle = obj.fillStyle;
         ctx.strokeStyle = obj.strokeStyle;
         ctx.shadowColor = obj.shadowColor;
@@ -82,7 +82,7 @@
         ctx.lineJoin = obj.lineJoin;
         ctx.lineWidth = obj.lineWidth || 0;
         ctx.miterLimit = obj.miterLimit;
-    };
+    }
 
     var baseMethods = [
         "rect",
@@ -278,7 +278,7 @@
             this.$type = "BitMap";
 
             if( EC.isDefined(key) ) {
-                EC.extend(this, EC.isObject(key) ? key : RES.getRes(key));
+                EC.extend(this, EC.isObject(key) ? (key.nodeName === "IMG" ? {bitMapData: key, width: key.width, height: key.height} : key) : RES.getRes(key));
             }
 
             if( EC.isDefined(width) ){
@@ -345,7 +345,7 @@
         },
         draw: function(ctx){
             this._drawFuns.forEach(function(fun){
-                EC.isFunction(fun)&&fun(ctx);
+                fun(ctx);
             });
 
             this._closePathTypes.forEach(function(closeType){
@@ -377,6 +377,7 @@
                 }
                 args = [-1*self.anchorX*self.width, -1*self.anchorY*self.height].concat(args);
             }
+
             this._drawFuns.push(function(ctx){
                 ctx[method].apply(ctx, args);
             });
@@ -403,6 +404,8 @@
             childObj.stage = this.stage;
             Sprite.superclass.addChild.apply(this, arguments);
 
+            this._addMask();
+
             if( this.getChilds().length == 1 ) {
                 this.width = childObj.x + childObj.width;
                 this.height = childObj.y + childObj.height;
@@ -414,6 +417,31 @@
                     this.height = childObj.y + childObj.height;
                 }
             }
+        },
+        _addMask: function () {
+            if( !this.mask ) return;
+            if( this.mask instanceof EC.Shape ) {
+                this.mask.maskType = this.mask.maskType || "destination-in";
+                Sprite.superclass.addChild.call(this, this.mask);
+            } else {
+                console.error("mask must be a instance of EC.Sahpe");
+            }
+        }
+    });
+
+    /**
+    * Rectangle
+    * */
+
+    var Rectangle = Shape.extend({
+        initialize: function(){
+            Rectangle.superclass.initialize.apply(this, arguments);
+            this.$type = "Rectangle";
+        },
+        draw: function(ctx, obj){
+            ctx.globalCompositeOperation = obj.maskType;
+            Rectangle.superclass.draw.call(this, ctx);
+            ctx.globalCompositeOperation = "source-over";
         }
     });
 
@@ -426,10 +454,9 @@
 
             this.canvas = canvas;
             this.renderContext = this.canvas.getContext('2d');
-            this.compositeOperation = "source-over";
-            this.renderContext.globalCompositeOperation = this.compositeOperation; /*source-over source-atop source-in source-out destination-over destination-atop destination-in destination-out lighter copy source-over*/
+            this.compositeOperation = "source-over"; /*source-over source-atop source-in source-out destination-over destination-atop destination-in destination-out lighter copy source-over*/
             this.$type = "Stage";
-            this.options = EC.extend({}, {adapter: true, showFps: false, scaleMode: 'showAll', width: window.innerWidth, height: window.innerHeight}, options||{});
+            this.options = EC.extend({}, {showFps: false, scaleMode: 'showAll', width: window.innerWidth, height: window.innerHeight}, options||{});
             this.width = parseFloat(this.canvas.getAttribute("width")) || this.options.width;
             this.height = parseFloat(this.canvas.getAttribute("height")) || this.options.height;
             this.scaleRatio = 1;
@@ -439,7 +466,7 @@
             this.canvas.width = this.width;
             this.canvas.height = this.height;
 
-            if( this.options.adapter ) {
+            if( this.options.scaleMode !== 'noScale' ) {
                 this.setAdapter();
             }
 
@@ -472,6 +499,7 @@
                 }
             };
 
+            this.renderContext.globalCompositeOperation = this.compositeOperation;
             this._children.forEach(_render);
 
             return this;
@@ -481,21 +509,22 @@
 
             if( obj.visible === false ) return;
 
-            self.renderContext.save();
-            drawContext(self.renderContext, obj);
+            var ctx = self.renderContext;
+            ctx.save();
+            drawContext(ctx, obj);
             switch ( obj.$type ){
                 case 'BitMap':
-                    drawImg(self.renderContext, obj);
+                    drawImg(ctx, obj);
                     break;
                 case 'TextField':
-                    drawText(self.renderContext, obj);
+                    drawText(ctx, obj);
                     break;
                 case 'Shape':
-                    drawShape(self.renderContext, obj);
+                case 'Rectangle':
+                    drawShape(ctx, obj);
                     break;
             }
-
-            self.renderContext.restore();
+            ctx.restore();
         },
         clear: function(){
             this.renderContext.clearRect(0, 0, this.width, this.height);
@@ -581,7 +610,7 @@
 
             this.on("enterframe", this._triggerEnterFrame, this);
 
-            if( this.options.adapter ) {
+            if( this.options.scaleMode !== 'noScale' ) {
                 window.addEventListener(RESIZE_EVENT, function () {
                     this.setAdapter();
                 }.bind(this), false);
@@ -626,6 +655,7 @@
         TextField: TextField,
         BitMap: BitMap,
         Shape: Shape,
+        Rectangle: Rectangle,
         Sprite: Sprite,
         Stage: Renderer
     });

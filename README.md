@@ -6,3 +6,4 @@ a lite frameworks for canvas
 - [系列图动画+tween测试](https://semdy.github.io/easyrender/dist/MovieClip2.html)
 - [序列帧动画+事件测试](https://semdy.github.io/easyrender/dist/MovieClip3.html)
 - [画线条](https://semdy.github.io/easyrender/dist/line.html)
+- [遮罩](https://semdy.github.io/easyrender/dist/Mask.html)
