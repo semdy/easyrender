@@ -76,6 +76,24 @@ var EC = {
         return this.indexOf(prop) > -1;
     };
 
+
+    var isTouch = 'ontouchstart' in document;
+    var ua = navigator.userAgent;
+    var pointerEnabled = window.navigator.msPointerEnabled;
+    var isIeMobile = pointerEnabled && /IEMobile/i.test(ua);
+
+    isTouch = isTouch || isIeMobile;
+
+    var EVENTS = isIeMobile ? {
+        START: 'MSPointerDown',
+        MOVE: 'MSPointerMove',
+        END: 'MSPointerCancel'
+    } : {
+        START: isTouch ? 'touchstart' : 'mousedown',
+        MOVE: isTouch ? 'touchmove' : 'mousemove',
+        END: isTouch ? 'touchend' : 'mouseup'
+    };
+
     /**
      * Extend
      * **/
@@ -153,7 +171,10 @@ var EC = {
     };
 
     EC.provide({
-        classExtend: ClassExtend
+        classExtend: ClassExtend,
+        ua: ua,
+        isTouch: isTouch,
+        EVENTS: EVENTS
     });
 
 })(EC);

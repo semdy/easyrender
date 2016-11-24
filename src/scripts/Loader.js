@@ -59,7 +59,7 @@
             } else {
                 try {
                     return new ActiveXObject("Microsoft.XMLHttp");
-                }catch (e){
+                } catch (e) {
                     return null;
                 }
             }
@@ -71,6 +71,7 @@
 
         xhr.open('GET', url, true);
         xhr.onreadystatechange = function () {
+            xhr.onreadystatechange = new Function;
             if (xhr.readyState == 4) {
                 if (xhr.status == 200) {
                     try {

@@ -21,7 +21,7 @@
     </div>
 </div>
 
-<canvas id="canvas-mask" width="375" height="667"></canvas>
+<canvas id="canvas-mask" width="850" height="548"></canvas>
 
 <!-- build:js scripts/libs/easyrender.js -->
 <script src="scripts/base.js"></script>
@@ -44,7 +44,7 @@
     function startGame(img){
         var canvas = document.getElementById('canvas-mask');
         var stage = new EC.Stage(canvas, {
-            //scaleMode: "noScale",
+            scaleMode: EC.isTouch ? "showAll" : "noScale",
             showFps: true
         });
 
@@ -57,8 +57,7 @@
         var sprite = new EC.Sprite();
 
         var mask = new EC.Masker();
-        mask.fill("#000", 1);
-        mask.arc(100,100,100,0,2*Math.PI);
+        mask.arc(0,0,250,0,2*Math.PI);
         sprite.mask = mask;
 
         var bgImg = new EC.BitMap(img);
@@ -76,17 +75,17 @@
                 this.x -= 2;
             }
 
-            if( this.x > stage.width + 100 ){
+            if( this.x > stage.width - 500 ){
                 isLeft = false;
             }
 
-            if( this.x <= 100 ){
+            if( this.x <= 0 ){
                 isLeft = true;
             }
         });
     }
 
-    RES.loadImage("sprites/rabbit_lose.png").success(function ( img ) {
+    RES.loadImage("girl.jpg").success(function ( img ) {
         startGame(img);
     });
 </script>

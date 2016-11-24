@@ -65,8 +65,8 @@
             obj.skewX * obj.parent.skewX, //水平倾斜绘图
             obj.skewY * obj.parent.skewY, //垂直倾斜绘图
             obj.scaleY * obj.parent.scaleY, //垂直缩放绘图
-            obj.parent.x + obj.x + (obj.anchorX + obj.parent.anchorX)*obj.width, //水平移动绘图
-            obj.parent.y + obj.y + (obj.anchorY + obj.parent.anchorY)*obj.height //垂直移动绘图
+            obj.parent.x + obj.x + (obj.anchorX + obj.parent.anchorX)*obj.width - ( obj.$type === "Masker" ? 0 : (obj.parent.mask ? obj.parent.mask.x : 0 )), //水平移动绘图
+            obj.parent.y + obj.y + (obj.anchorY + obj.parent.anchorY)*obj.height - ( obj.$type === "Masker" ? 0 : (obj.parent.mask ? obj.parent.mask.y : 0 )) //垂直移动绘图
         );
         ctx.rotate((obj.rotation + obj.parent.rotation)*Math.PI/180);
     }
@@ -371,11 +371,12 @@
                 if( method == 'arc' ) {
                     self.width = args[0]*2;
                     self.height = args[0]*2;
+                    args = [-1*self.anchorX*self.width + self.width/2, -1*self.anchorY*self.height + self.height/2].concat(args);
                 } else {
                     self.width = args[0];
                     self.height = args[1];
+                    args = [-1*self.anchorX*self.width, -1*self.anchorY*self.height].concat(args);
                 }
-                args = [-1*self.anchorX*self.width, -1*self.anchorY*self.height].concat(args);
             }
 
             this._drawFuns.push(function(ctx){
@@ -402,9 +403,9 @@
         addChild: function( childObj ){
             childObj.renderContext = this.renderContext;
             childObj.stage = this.stage;
-            Sprite.superclass.addChild.apply(this, arguments);
 
             this._addMask();
+            Sprite.superclass.addChild.apply(this, arguments);
 
             if( this.getChilds().length == 1 ) {
                 this.width = childObj.x + childObj.width;
@@ -419,12 +420,12 @@
             }
         },
         _addMask: function () {
-            if( !this.mask ) return;
-            if( this.mask instanceof EC.Shape ) {
-                this.mask.maskType = this.mask.maskType || "destination-in";
-                Sprite.superclass.addChild.call(this, this.mask);
+            if( !this.mask || this._isMaskAdded ) return;
+            if( this.mask instanceof EC.Masker ) {
+                Sprite.superclass.addChild.call(this, this.mask, 0);
+                this._isMaskAdded = true;
             } else {
-                console.error("mask must be a instance of EC.Sahpe");
+                console.error("mask must be a instance of EC.Masker");
             }
         }
     });
@@ -438,10 +439,9 @@
             Masker.superclass.initialize.apply(this, arguments);
             this.$type = "Masker";
         },
-        draw: function(ctx, obj){
-            ctx.globalCompositeOperation = obj.maskType;
+        draw: function(ctx){
             Masker.superclass.draw.call(this, ctx);
-            ctx.globalCompositeOperation = "source-over";
+            ctx.clip();
         }
     });
 
@@ -454,7 +454,7 @@
 
             this.canvas = canvas;
             this.renderContext = this.canvas.getContext('2d');
-            this.compositeOperation = "source-over"; /*source-over source-atop source-in source-out destination-over destination-atop destination-in destination-out lighter copy source-over*/
+            this.compositeOperation = "source-over"; /*source-over source-atop source-in source-out destination-over destination-atop destination-in destination-out xor lighter copy source-over*/
             this.$type = "Stage";
             this.options = EC.extend({}, {showFps: false, scaleMode: 'showAll', width: window.innerWidth, height: window.innerHeight}, options||{});
             this.width = parseFloat(this.canvas.getAttribute("width")) || this.options.width;
@@ -466,7 +466,7 @@
             this.canvas.width = this.width;
             this.canvas.height = this.height;
 
-            if( this.options.scaleMode !== 'noScale' ) {
+            if( this.options.scaleMode !== "noScale" ) {
                 this.setAdapter();
             }
 
@@ -489,42 +489,56 @@
         },
         render: function(){
             var self = this;
+            var ctx = this.renderContext;
             var _render = function (obj) {
                 if (obj.$type == 'Sprite') {
+
+                    obj.mask && ctx.save();
+
                     obj.getChilds().forEach(function(item){
                         _render(item);
                     });
+
+                    obj.mask && ctx.restore();
+
                 } else {
-                    self._renderItem(obj);
+                    self._renderItem(obj, ctx);
                 }
             };
 
-            this.renderContext.globalCompositeOperation = this.compositeOperation;
+            ctx.globalCompositeOperation = this.compositeOperation;
             this._children.forEach(_render);
 
             return this;
         },
-        _renderItem: function(obj){
-            var self = this;
+        _renderItem: function(obj, ctx){
 
             if( obj.visible === false ) return;
 
-            var ctx = self.renderContext;
-            ctx.save();
-            drawContext(ctx, obj);
             switch ( obj.$type ){
                 case 'BitMap':
+                    ctx.save();
+                    drawContext(ctx, obj);
                     drawImg(ctx, obj);
+                    ctx.restore();
                     break;
                 case 'TextField':
+                    ctx.save();
+                    drawContext(ctx, obj);
                     drawText(ctx, obj);
+                    ctx.restore();
                     break;
                 case 'Shape':
+                    ctx.save();
+                    drawContext(ctx, obj);
+                    drawShape(ctx, obj);
+                    ctx.restore();
+                    break;
                 case 'Masker':
+                    drawContext(ctx, obj);
                     drawShape(ctx, obj);
                     break;
             }
-            ctx.restore();
         },
         clear: function(){
             this.renderContext.clearRect(0, 0, this.width, this.height);
