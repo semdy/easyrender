@@ -71,9 +71,9 @@
 
         xhr.open('GET', url, true);
         xhr.onreadystatechange = function () {
-            xhr.onreadystatechange = new Function;
             if (xhr.readyState == 4) {
                 if (xhr.status == 200) {
+                    xhr.onreadystatechange = new Function;
                     try {
                         sucFn && sucFn(JSON.parse(xhr.responseText));
                     }catch (e){
