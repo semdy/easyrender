@@ -60,7 +60,7 @@
 
         dispatch: function( name ){
             var args = slice.call(arguments, 1);
-            var evts = this._eventPool[name] || [];
+            var evts = (this._eventPool[name] || []).slice();
 
             if( evts.length ) {
               evts.forEach(function (evt) {
