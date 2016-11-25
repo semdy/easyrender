@@ -94,6 +94,8 @@ var EC = {
         END: isTouch ? 'touchend' : 'mouseup'
     };
 
+    EVENTS.RESIZE = 'onorientationchange' in window ? 'orientationchange' : 'resize';
+
     /**
      * Extend
      * **/

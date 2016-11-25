@@ -5,8 +5,7 @@
 +function(EC){
     "use strict";
 
-    var slice = Array.prototype.slice,
-        RESIZE_EVENT = 'onorientationchange' in window ? 'orientationchange' : 'resize';
+    var slice = Array.prototype.slice;
 
     function drawImg(ctx, obj){
 
@@ -625,7 +624,7 @@
             this.on("enterframe", this._triggerEnterFrame, this);
 
             if( this.options.scaleMode !== 'noScale' ) {
-                window.addEventListener(RESIZE_EVENT, function () {
+                window.addEventListener(EC.EVENTS.RESIZE, function () {
                     this.setAdapter();
                 }.bind(this), false);
             }
