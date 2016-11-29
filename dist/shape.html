@@ -1,0 +1,58 @@
+<!Doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>EC MovieClip</title>
+    <style>
+        body{
+            margin:0;
+        }
+        .movieclip{
+            position: absolute;
+            left:0;
+            top:0;
+            right:0;
+            bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+<canvas id="canvas-shape" class="movieclip"></canvas>
+
+<script src="scripts/libs/easyrender.js"></script>
+
+<script>
+    var canvas = document.getElementById('canvas-shape');
+    var stage = new EC.Stage(canvas, {
+        width: 750,
+        height: 1334
+    });
+
+    var rect = new EC.Shape();
+    rect.stroke("#ff0000", 1); //color, alpha
+    rect.fill('#06c', 1); //color, alpha
+    rect.lineWidth = 2;
+    rect.roundRect(10, 20, 400, 200, 20); //x, y, width, height, radius
+    stage.addChild(rect);
+
+    var line = new EC.Shape();
+    line.stroke("#000");
+    line.lineWidth = 2;
+    line.dashedLine(10, 260, 400, 260, 5); //x, y, width, height, dashedLength
+    stage.addChild(line);
+
+    var ellipse = new EC.Shape();
+    ellipse.stroke("#f90");
+    ellipse.lineWidth = 2;
+    ellipse.ellipse(10, 300, 300, 150); //x, y, width, height
+    stage.addChild(ellipse);
+
+/*    rect.on("enterframe", function () {
+       rect.x = Math.max(0, rect.width - 0.1);
+    });*/
+</script>
+</body>
+</html>
