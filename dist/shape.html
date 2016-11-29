@@ -29,7 +29,14 @@
     var stage = new EC.Stage(canvas, {
         scaleMode: EC.isTouch ? 'showAll' : 'noScale',
         width: 750,
-        height: 1334
+        height: 1334,
+        showFps: true
+    });
+
+    stage.showFps({
+        right: 0,
+        left: "auto",
+        top: 0
     });
 
     var roundRect = new EC.Shape();
