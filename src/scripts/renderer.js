@@ -404,7 +404,6 @@
         };
     });
 
-
     EC.extend(CanvasRenderingContext2D.prototype, {
         roundRect: function (x, y, w, h, r) {
             if (w < 2 * r) r = w / 2;
