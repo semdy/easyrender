@@ -91,7 +91,10 @@
         "lineTo",
         "clip",
         "quadraticCurveTo",
-        "bezierCurveTo"
+        "bezierCurveTo",
+        "roundRect",
+        "dashedLine",
+        "ellipse"
     ];
 
     /**
@@ -311,6 +314,7 @@
             this.y = y||0;
             this.width = w||0;
             this.height = h||0;
+            this.radius = 0;
 
             this._drawFuns = [];
             this._drawTypes = [];
@@ -364,17 +368,33 @@
         Shape.prototype[method] = function(){
             var self = this;
             var args = slice.call(arguments);
-            if( method == 'rect' || method == 'arc' ){
+            if( /(?:rect|roundRect|arc|ellipse|dashedLine)/.test(method) ){
                 self.x = self.x + args.shift();
                 self.y = self.y + args.shift();
+                var x = -1*self.anchorX*self.width,
+                    y = -1*self.anchorY*self.height;
                 if( method == 'arc' ) {
-                    self.width = args[0]*2;
-                    self.height = args[0]*2;
-                    args = [-1*self.anchorX*self.width + self.width/2, -1*self.anchorY*self.height + self.height/2].concat(args);
+                    self.radius = args.shift();
+                    self.width = self.radius*2;
+                    self.height = self.radius*2;
+                    args = [x + self.width/2, y + self.height/2, self.radius].concat(args);
                 } else {
                     self.width = args[0];
                     self.height = args[1];
-                    args = [-1*self.anchorX*self.width, -1*self.anchorY*self.height].concat(args);
+                    if( method == 'ellipse' ){
+                        args = [x + self.width/2, y + self.height/2].concat(args);
+                    } else if( method == 'roundRect' ){
+                        var w = args.shift();
+                        var h = args.shift();
+                        self.radius = args.shift();
+                        args = [x, y, w, h, self.radius].concat(args);
+                    } else if( method == 'dashedLine' ) {
+                        var x2 = args.shift();
+                        var y2 = args.shift();
+                        args = [x, y, x2 + x - self.x, y2 + y - self.y].concat(args);
+                    } else {
+                        args = [x, y].concat(args);
+                    }
                 }
             }
 
@@ -382,6 +402,62 @@
                 ctx[method].apply(ctx, args);
             });
         };
+    });
+
+
+    EC.extend(CanvasRenderingContext2D.prototype, {
+        roundRect: function (x, y, w, h, r) {
+            if (w < 2 * r) r = w / 2;
+            if (h < 2 * r) r = h / 2;
+
+            this.moveTo(x + r, y);
+            this.arcTo(x + w, y, x + w, y + h, r);
+            this.arcTo(x + w, y + h, x, y + h, r);
+            this.arcTo(x, y + h, x, y, r);
+            this.arcTo(x, y, x + w, y, r);
+            this.closePath();
+            return this;
+        },
+        dashedLine: function (x1, y1, x2, y2, dashLength) {
+            var dashLen = dashLength === undefined ? 5 : dashLength,
+                xpos = x2 - x1,
+                ypos = y2 - y1,
+                numDashes = Math.floor(Math.sqrt(xpos * xpos + ypos * ypos) / dashLen);
+
+            for (var i = 0; i < numDashes; i++) {
+                if (i % 2 === 0) {
+                    this.moveTo(x1 + (xpos / numDashes) * i, y1 + (ypos / numDashes) * i);
+                } else {
+                    this.lineTo(x1 + (xpos / numDashes) * i, y1 + (ypos / numDashes) * i);
+                }
+            }
+            return this;
+        },
+        ellipse: function (x, y, width, height) {
+            var k = (width/0.75)/2,
+                h = height/2;
+
+            this.moveTo(x, y-h);
+            this.bezierCurveTo(x+k, y-h, x+k, y+h, x, y+h);
+            this.bezierCurveTo(x-k, y+h, x-k, y-h, x, y-h);
+            this.closePath();
+            return this;
+        }
+    });
+
+    /**
+     * Masker
+     * */
+
+    var Masker = Shape.extend({
+        initialize: function(){
+            Masker.superclass.initialize.apply(this, arguments);
+            this.$type = "Masker";
+        },
+        draw: function(ctx){
+            Masker.superclass.draw.call(this, ctx);
+            ctx.clip();
+        }
     });
 
     /**
@@ -430,17 +506,15 @@
     });
 
     /**
-    * Masker
-    * */
+     * TextInput
+     * */
 
-    var Masker = Shape.extend({
+    var TextInput = Sprite.extend({
         initialize: function(){
-            Masker.superclass.initialize.apply(this, arguments);
-            this.$type = "Masker";
+            TextInput.superclass.initialize.apply(this, arguments);
         },
-        draw: function(ctx){
-            Masker.superclass.draw.call(this, ctx);
-            ctx.clip();
+        addChild: function(){
+            TextInput.superclass.addChild.apply(this, arguments);
         }
     });
 
