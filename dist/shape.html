@@ -27,22 +27,29 @@
 <script>
     var canvas = document.getElementById('canvas-shape');
     var stage = new EC.Stage(canvas, {
+        scaleMode: EC.isTouch ? 'showAll' : 'noScale',
         width: 750,
         height: 1334
     });
 
-    var rect = new EC.Shape();
-    rect.stroke("#ff0000", 1); //color, alpha
-    rect.fill('#06c', 1); //color, alpha
-    rect.lineWidth = 2;
-    rect.roundRect(10, 20, 400, 200, 20); //x, y, width, height, radius
-    stage.addChild(rect);
+    var roundRect = new EC.Shape();
+    roundRect.stroke("#ff0000", 1); //color, alpha
+    roundRect.fill('#06c', 1); //color, alpha
+    roundRect.lineWidth = 2;
+    roundRect.roundRect(10, 20, 400, 200, 20); //x, y, width, height, radius
+    stage.addChild(roundRect);
 
     var line = new EC.Shape();
     line.stroke("#000");
     line.lineWidth = 2;
-    line.dashedLine(10, 260, 400, 260, 5); //x, y, width, height, dashedLength
+    line.line(10, 240, 410, 240); //x, y, endX, endY
     stage.addChild(line);
+
+    var dashedLine = new EC.Shape();
+    dashedLine.stroke("#000");
+    dashedLine.lineWidth = 2;
+    dashedLine.dashedLine(10, 260, 400, 260, 5); //x, y, endX, endY, dashedLength
+    stage.addChild(dashedLine);
 
     var ellipse = new EC.Shape();
     ellipse.stroke("#f90");
@@ -50,9 +57,45 @@
     ellipse.ellipse(10, 300, 300, 150); //x, y, width, height
     stage.addChild(ellipse);
 
-/*    rect.on("enterframe", function () {
-       rect.x = Math.max(0, rect.width - 0.1);
-    });*/
+    var arc = new EC.Shape();
+    arc.stroke("#cc0000");
+    arc.arc(10, 470, 80, 0, 2*Math.PI, true); //x, y, radius, startAngle, endAngle, counterclockwise
+    stage.addChild(arc);
+
+    var arcTo = new EC.Shape();
+    arcTo.stroke("#000");
+    arcTo.x = 500;
+    arcTo.y = 250;
+    arcTo.moveTo(20,20);
+    arcTo.arcTo(150, 20, 150, 70, 50); //x, y, endX, endY, radius
+    stage.addChild(arcTo);
+
+    var lineTo = new EC.Shape();
+    lineTo.stroke("#f90");
+    lineTo.moveTo(30, 780);
+    lineTo.lineTo([50,850],[300,950],[600,600],[700,850]); //[x, y]
+    stage.addChild(lineTo);
+
+    var bezierCurveTo = new EC.Shape();
+    bezierCurveTo.stroke("#000");
+    bezierCurveTo.x = 500;
+    bezierCurveTo.y = 20;
+    bezierCurveTo.moveTo(20,20);
+    bezierCurveTo.bezierCurveTo(20,100,200,100,200,20); //cp1x,cp1y,cp2x,cp2y,x,y
+    stage.addChild(bezierCurveTo);
+
+    var quadraticCurveTo = new EC.Shape();
+    quadraticCurveTo.stroke("#000");
+    quadraticCurveTo.x = 500;
+    quadraticCurveTo.y = 150;
+    quadraticCurveTo.moveTo(20,20);
+    quadraticCurveTo.quadraticCurveTo(20,100,200,20); //cpx,cpy,x,y
+    stage.addChild(quadraticCurveTo);
+
+    var rect = new EC.Shape();
+    rect.stroke("#f90");
+    rect.rect(10, 650, 200, 100); //x, y, width, height
+    stage.addChild(rect);
 </script>
 </body>
 </html>

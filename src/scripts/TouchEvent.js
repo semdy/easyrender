@@ -83,7 +83,7 @@
             var self = this;
             var ratio = this.stage.scaleRatio;
             var enableStack = this.enableStack.filter(function(obj){
-                return EC.util.isPointInPath({x: self._touchX * ratio, y: self._touchY * ratio}, obj);
+                return EC.Util.isPointInPath({x: self._touchX * ratio, y: self._touchY * ratio}, obj);
             });
 
             if( enableStack.length ) {
@@ -133,7 +133,7 @@
             getItems(target);
 
             return elSatck.find(function (obj) {
-                return EC.util.isPointInPath({x: self._touchX * ratio, y: self._touchY * ratio}, obj);
+                return EC.Util.isPointInPath({x: self._touchX * ratio, y: self._touchY * ratio}, obj);
             });
         },
         _getTouchEnables: function(){

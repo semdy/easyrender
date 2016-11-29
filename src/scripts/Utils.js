@@ -69,17 +69,19 @@
     };
 
     var isPointInPath = function(coord, object){
-        if( coord.x > object.x && coord.x < (object.x + object.width) &&
-            coord.y > object.y && coord.y < (object.y + object.height) ){
+        var moveX = object.moveX || 0;
+        var moveY = object.moveY || 0;
+        if( coord.x > (object.x + moveX) && coord.x < (object.x + object.width + moveX) &&
+            coord.y > (object.y + moveY) && coord.y < (object.y + object.height + moveY) ){
             return true;
         }
 
         return false;
     };
 
-    EC.util = EC.util || {};
+    EC.Util = EC.Util || {};
 
-    EC.extend(EC.util, {
+    EC.extend(EC.Util, {
         color: colorTransfer,
         isPointInPath: isPointInPath
     });

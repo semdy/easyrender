@@ -9,10 +9,10 @@
 
     function drawImg(ctx, obj){
 
-        var anchorX = obj.anchorX + obj.parent.anchorX,
-            anchorY = obj.anchorY + obj.parent.anchorY;
+        var anchorW = -1*(obj.anchorX + obj.parent.anchorX)*obj.width,
+            anchorH = -1*(obj.anchorY + obj.parent.anchorY)*obj.height;
 
-        if( 'sx' in obj ){
+        if( obj.sx !== undefined ){
             var _width = ctx.canvas.width,
                 _height = ctx.canvas.height,
                 swidth = obj.swidth,
@@ -21,9 +21,9 @@
             if( swidth >= _width ) swidth = _width - 1;
             if( sheight >= _height ) sheight = _height - 1;
 
-            ctx.drawImage(obj.bitMapData, obj.sx, obj.sy, swidth, sheight, -1*anchorX*obj.width, -1*anchorY*obj.height, obj.width, obj.height);
+            ctx.drawImage(obj.bitMapData, obj.sx, obj.sy, swidth, sheight, anchorW, anchorH, obj.width, obj.height);
         } else {
-            ctx.drawImage(obj.bitMapData, -1*anchorX*obj.width, -1*anchorY*obj.height, obj.width, obj.height);
+            ctx.drawImage(obj.bitMapData, anchorW, anchorH, obj.width, obj.height);
         }
     }
 
@@ -32,15 +32,15 @@
         ctx.textAlign = obj.textAlign;
         ctx.textBaseline = obj.textBaseline || "top";
 
-        var anchorX = obj.anchorX + obj.parent.anchorX,
-            anchorY = obj.anchorY + obj.parent.anchorY;
+        var anchorW = -1*(obj.anchorX + obj.parent.anchorX)*obj.width,
+            anchorH = -1*(obj.anchorY + obj.parent.anchorY)*obj.height;
 
         if( obj.stroke ) {
             ctx.strokeStyle = obj.textColor;
-            ctx.strokeText(obj.text, -1*anchorX*obj.width, -1*anchorY*obj.height);
+            ctx.strokeText(obj.text, anchorW, anchorH);
         } else {
             ctx.fillStyle = obj.textColor;
-            ctx.fillText(obj.text, -1*anchorX*obj.width, -1*anchorY*obj.height);
+            ctx.fillText(obj.text, anchorW, anchorH);
         }
     }
 
@@ -53,7 +53,7 @@
     function drawShape(ctx, obj){
         ctx.beginPath();
         drawShapeContext(ctx, obj);
-        obj.draw(ctx, obj);
+        obj.draw(ctx);
     }
 
     function drawContext(ctx, obj){
@@ -64,8 +64,8 @@
             obj.skewX * obj.parent.skewX, //水平倾斜绘图
             obj.skewY * obj.parent.skewY, //垂直倾斜绘图
             obj.scaleY * obj.parent.scaleY, //垂直缩放绘图
-            obj.parent.x + obj.x + (obj.anchorX + obj.parent.anchorX)*obj.width - ( obj.$type === "Masker" ? 0 : (obj.parent.mask ? obj.parent.mask.x : 0 )), //水平移动绘图
-            obj.parent.y + obj.y + (obj.anchorY + obj.parent.anchorY)*obj.height - ( obj.$type === "Masker" ? 0 : (obj.parent.mask ? obj.parent.mask.y : 0 )) //垂直移动绘图
+            obj.parent.x + obj.x + (obj.moveX||0) + (obj.anchorX + obj.parent.anchorX)*obj.width - ( obj.$type === "Masker" ? 0 : (obj.parent.mask ? obj.parent.mask.x : 0 )), //水平移动绘图
+            obj.parent.y + obj.y + (obj.moveY||0) + (obj.anchorY + obj.parent.anchorY)*obj.height - ( obj.$type === "Masker" ? 0 : (obj.parent.mask ? obj.parent.mask.y : 0 )) //垂直移动绘图
         );
         ctx.rotate((obj.rotation + obj.parent.rotation)*Math.PI/180);
     }
@@ -83,19 +83,126 @@
         ctx.miterLimit = obj.miterLimit;
     }
 
-    var baseMethods = [
-        "rect",
-        "arc",
-        "arcTo",
-        "moveTo",
-        "lineTo",
-        "clip",
-        "quadraticCurveTo",
-        "bezierCurveTo",
-        "roundRect",
-        "dashedLine",
-        "ellipse"
-    ];
+    function getMin(vals){
+        return Math.min.apply(Math, vals);
+    }
+
+    function getMax(vals){
+        return Math.max.apply(Math, vals);
+    }
+
+    function getLineSize(coords){
+        var widths = [],
+            heights = [];
+            coords.forEach(function(coord){
+                widths.push(coord[0]);
+                heights.push(coord[1]);
+            });
+
+        return {
+            width: getMax(widths) - getMin(widths),
+            height: getMax(heights) - getMin(heights)
+        }
+    }
+
+    function getQuadraticLineWidth(coords){
+         var widths = [],
+             heights = [];
+        coords.forEach(function(coord, i){
+           if( i%2 === 0 ){
+              widths.push(coord);
+           } else {
+              heights.push(coord);
+           }
+        });
+
+        return {
+            width: getMax(widths) - getMin(widths),
+            height: getMax(heights) - getMin(heights)
+        }
+    }
+
+    var drawShapeMap = {
+        rect: function (ctx, obj) {
+            var anchorW = (obj.anchorX + obj.parent.anchorX)*obj.width,
+                anchorH = (obj.anchorY + obj.parent.anchorY)*obj.height;
+            ctx.rect(-anchorW, -anchorH, obj.width, obj.height);
+        },
+
+        arc: function (ctx, obj) {
+            var anchorW = (obj.anchorX + obj.parent.anchorX)*obj.width,
+                anchorH = (obj.anchorY + obj.parent.anchorY)*obj.height;
+            ctx.arc(-anchorW + obj.radius, -anchorH + obj.radius, obj.radius, obj.startAngle, obj.endAngle, obj.counterclockwise);
+        },
+
+        arcTo: function (ctx, obj) {
+            var anchorW = (obj.anchorX + obj.parent.anchorX)*obj.width,
+                anchorH = (obj.anchorY + obj.parent.anchorY)*obj.height;
+            ctx.moveTo(-anchorW, -anchorH);
+            ctx.arcTo(obj.startX - obj.moveX -anchorW, obj.startY - obj.moveY - anchorH, obj.endX - obj.moveX - anchorW, obj.endY - obj.moveY - anchorH, obj.radius);
+        },
+
+        roundRect: function (ctx, obj) {
+            var anchorW = (obj.anchorX + obj.parent.anchorX)*obj.width,
+                anchorH = (obj.anchorY + obj.parent.anchorY)*obj.height;
+            ctx.roundRect(-anchorW, -anchorH, obj.width, obj.height, obj.radius);
+        },
+
+        lineTo: function (ctx, obj) {
+            var anchorW = (obj.anchorX + obj.parent.anchorX)*obj.width,
+                anchorH = (obj.anchorY + obj.parent.anchorY)*obj.height;
+            var coords = obj.coords.map(function (coord) {
+                return [coord[0] - obj.moveX - anchorW, coord[1] - obj.moveY - anchorH];
+            });
+
+            ctx.moveTo(-anchorW, -anchorH);
+            coords.forEach(function (coord) {
+                ctx.lineTo.apply(ctx, coord);
+            });
+        },
+
+        line: function (ctx, obj) {
+            var anchorW = (obj.anchorX + obj.parent.anchorX)*obj.width,
+                anchorH = (obj.anchorY + obj.parent.anchorY)*obj.height;
+            ctx.moveTo(-anchorW, -anchorH);
+            ctx.lineTo(obj.endX - obj.moveX - anchorW, obj.endY - obj.moveY - anchorH);
+        },
+
+        dashedLine: function (ctx, obj) {
+            var anchorW = (obj.anchorX + obj.parent.anchorX)*obj.width,
+                anchorH = (obj.anchorY + obj.parent.anchorY)*obj.height;
+            ctx.dashedLine(-anchorW, -anchorH, obj.endX - obj.moveX - anchorW, obj.endY - obj.moveY - anchorH, obj.dashLength);
+        },
+
+        ellipse: function (ctx, obj) {
+            var anchorW = (obj.anchorX + obj.parent.anchorX)*obj.width,
+                anchorH = (obj.anchorY + obj.parent.anchorY)*obj.height;
+            ctx.ellipse(-anchorW + obj.width/2, -anchorH + obj.height/2, obj.width, obj.height);
+        },
+        clip: function (ctx) {
+            ctx.clip();
+        },
+        quadraticCurveTo: function (ctx, obj) {
+            var anchorW = (obj.anchorX + obj.parent.anchorX)*obj.width,
+                anchorH = (obj.anchorY + obj.parent.anchorY)*obj.height;
+            var coords = obj.coords.map(function (coord, i) {
+                return i % 2 === 0 ? coord - obj.moveX - anchorW : coord - obj.moveY - anchorH;
+            });
+            ctx.moveTo(-anchorW, -anchorH);
+            ctx.quadraticCurveTo.apply(ctx, coords);
+        },
+        bezierCurveTo: function (ctx, obj) {
+            var anchorW = (obj.anchorX + obj.parent.anchorX)*obj.width,
+                anchorH = (obj.anchorY + obj.parent.anchorY)*obj.height;
+            var coords = obj.coords.map(function (coord, i) {
+                return i % 2 === 0 ? coord - obj.moveX - anchorW : coord - obj.moveY - anchorH;
+            });
+            ctx.moveTo(-anchorW, -anchorH);
+            ctx.bezierCurveTo.apply(ctx, coords);
+        }
+    };
+
+
 
     /**
      * ObjectContainer 操作基类
@@ -194,6 +301,17 @@
         setChildIndex: function( childObj, index ){
             this.removeChild(childObj);
             this._children.splice(index, 0, childObj);
+            return this;
+        },
+
+        setParams: function ( params ) {
+            if( EC.isObject(params) ) {
+                for (var i in params) {
+                    if (params.hasOwnProperty(i))
+                        this[i] = params[i];
+                }
+            }
+
             return this;
         },
 
@@ -315,18 +433,15 @@
             this.width = w||0;
             this.height = h||0;
             this.radius = 0;
-
-            this._drawFuns = [];
-            this._drawTypes = [];
-            this._closePathTypes = [];
+            this._fill = false;
+            this._stroke = false;
+            this._closePath = false;
 
             this.$type = "Shape";
         },
         _setStyle: function(type, color, alpha, shadowColor, shadowBlur, shadowOffsetX, shadowOffsetY){
-            this._drawTypes.push(type.replace("Style", ""));
-
             if(typeof alpha == 'number' && alpha < 1){
-                this[type] = EC.util.color.toRgb(color, alpha);
+                this[type] = EC.Util.color.toRgb(color, alpha);
             } else {
                 this[type] = color;
             }
@@ -339,69 +454,128 @@
         fill: function(){
             var args = slice.call(arguments);
             args.unshift("fillStyle");
+            this._fill = true;
             this._setStyle.apply(this, args);
         },
         stroke: function(){
             var args = slice.call(arguments);
             args.unshift("strokeStyle");
+            this._stroke = true;
             this._setStyle.apply(this, args);
         },
         draw: function(ctx){
-            this._drawFuns.forEach(function(fun){
-                fun(ctx);
-            });
-
-            this._closePathTypes.forEach(function(closeType){
-                ctx[closeType]();
-            });
-            
-            this._drawTypes.forEach(function(drawType){
-                ctx[drawType]();
-            });
+            drawShapeMap[this.drawType](ctx, this);
+            this._closePath && ctx.closePath();
+            this._fill && ctx.fill();
+            this._stroke && ctx.stroke();
         },
         close: function () {
-            this._closePathTypes.push("closePath");
+            this._closePath = true;
         }
     });
 
-    baseMethods.forEach(function(method){
-        Shape.prototype[method] = function(){
-            var self = this;
-            var args = slice.call(arguments);
-            if( /(?:rect|roundRect|arc|ellipse|dashedLine)/.test(method) ){
-                self.x = self.x + args.shift();
-                self.y = self.y + args.shift();
-                var x = -1*self.anchorX*self.width,
-                    y = -1*self.anchorY*self.height;
-                if( method == 'arc' ) {
-                    self.radius = args.shift();
-                    self.width = self.radius*2;
-                    self.height = self.radius*2;
-                    args = [x + self.width/2, y + self.height/2, self.radius].concat(args);
-                } else {
-                    self.width = args[0];
-                    self.height = args[1];
-                    if( method == 'ellipse' ){
-                        args = [x + self.width/2, y + self.height/2].concat(args);
-                    } else if( method == 'roundRect' ){
-                        var w = args.shift();
-                        var h = args.shift();
-                        self.radius = args.shift();
-                        args = [x, y, w, h, self.radius].concat(args);
-                    } else if( method == 'dashedLine' ) {
-                        var x2 = args.shift();
-                        var y2 = args.shift();
-                        args = [x, y, x2 + x - self.x, y2 + y - self.y].concat(args);
-                    } else {
-                        args = [x, y].concat(args);
-                    }
-                }
-            }
-
-            this._drawFuns.push(function(ctx){
-                ctx[method].apply(ctx, args);
-            });
-        };
+    EC.extend(Shape.prototype, {
+        rect: function (x, y, width, height) {
+            this.moveX = x;
+            this.moveY = y;
+            this.width = width;
+            this.height = height;
+            this.drawType = 'rect';
+            return this;
+        },
+        arc: function (x, y, radius, startAngle, endAngle, counterclockwise) {
+            this.moveX = x;
+            this.moveY = y;
+            this.radius = radius;
+            this.startAngle = startAngle;
+            this.endAngle = endAngle;
+            this.counterclockwise = counterclockwise;
+            this.width = this.radius*2;
+            this.height = this.radius*2;
+            this.drawType = 'arc';
+            return this;
+        },
+        arcTo: function (startX, startY, endX, endY, radius) {
+            this.startX = startX;
+            this.startY = startY;
+            this.endX = endX;
+            this.endY = endY;
+            this.radius = radius;
+            this.width = startX;
+            this.height = radius;
+            this.drawType = 'arcTo';
+            return this;
+        },
+        roundRect: function (x, y, width, height, radius) {
+            this.moveX = x;
+            this.moveY = y;
+            this.width = width;
+            this.height = height;
+            this.radius = radius;
+            this.drawType = 'roundRect';
+            return this;
+        },
+        moveTo: function (x, y) {
+            this.moveX = x;
+            this.moveY = y;
+        },
+        lineTo: function () {
+            this.coords = slice.call(arguments);
+            var lineSize = getLineSize(this.coords);
+            this.width = lineSize.width;
+            this.height = lineSize.height;
+            this.drawType = 'lineTo';
+            return this;
+        },
+        line: function (x, y, endX, endY) {
+            this.moveX = x;
+            this.moveY = y;
+            this.endX = endX;
+            this.endY = endY;
+            this.width = endX - x;
+            this.height = this.lineWidth;
+            this.drawType = 'line';
+            return this;
+        },
+        dashedLine: function (x, y, endX, endY, dashLength) {
+            this.moveX = x;
+            this.moveY = y;
+            this.endX = endX;
+            this.endY = endY;
+            this.dashLength = dashLength;
+            this.width = endX - x;
+            this.height = this.lineWidth;
+            this.drawType = 'dashedLine';
+            return this;
+        },
+        ellipse: function (x, y, width, height) {
+            this.moveX = x;
+            this.moveY = y;
+            this.width = width;
+            this.height = height;
+            this.drawType = 'ellipse';
+            return this;
+        },
+        clip: function () {
+            this.drawType = 'clip';
+            return this;
+        },
+        quadraticCurveTo: function () {
+            this.coords = slice.call(arguments);
+            var lineSize = getQuadraticLineWidth([this.moveX, this.moveY].concat(this.coords));
+            this.width = lineSize.width;
+            this.height = lineSize.height;
+            this.drawType = 'quadraticCurveTo';
+            return this;
+        },
+        bezierCurveTo: function () {
+            this.coords = slice.call(arguments);
+            var lineSize = getQuadraticLineWidth([this.moveX, this.moveY].concat(this.coords));
+            this.width = lineSize.width;
+            this.height = lineSize.height;
+            this.drawType = 'bezierCurveTo';
+            return this;
+        }
     });
 
     EC.extend(CanvasRenderingContext2D.prototype, {
@@ -481,15 +655,18 @@
             this._addMask();
             Sprite.superclass.addChild.apply(this, arguments);
 
+            var moveX = childObj.moveX || 0;
+            var moveY = childObj.moveY || 0;
+
             if( this.getChilds().length == 1 ) {
-                this.width = childObj.x + childObj.width;
-                this.height = childObj.y + childObj.height;
+                this.width = childObj.x + moveX + childObj.width;
+                this.height = childObj.y + moveY + childObj.height;
             } else {
-                if( childObj.x + childObj.width > this.width ){
-                    this.width = childObj.x + childObj.width;
+                if( childObj.x + moveX + childObj.width > this.width ){
+                    this.width = childObj.x + moveX + childObj.width;
                 }
-                if( childObj.y + childObj.height > this.height ){
-                    this.height = childObj.y + childObj.height;
+                if( childObj.y + moveY + childObj.height > this.height ){
+                    this.height = childObj.y + moveY + childObj.height;
                 }
             }
         },
@@ -518,11 +695,11 @@
     });
 
     /**
-     * Renderer 渲染器
+     * Stage 渲染器
      * **/
-    var Renderer = ObjectContainer.extend({
+    var Stage = ObjectContainer.extend({
         initialize: function(canvas, options){
-            Renderer.superclass.initialize.call(this);
+            Stage.superclass.initialize.call(this);
 
             this.canvas = canvas;
             this.renderContext = this.canvas.getContext('2d');
@@ -556,7 +733,7 @@
             }
             childObj.renderContext = this.renderContext;
             childObj.stage = this;
-            Renderer.superclass.addChild.apply(this, arguments);
+            Stage.superclass.addChild.apply(this, arguments);
             this._triggerAddToStage(childObj);
         },
         render: function(){
@@ -722,7 +899,7 @@
         }
     });
 
-    baseMethods.concat([
+    [
         "createLinearGradient",
         "createPattern",
         "createRadialGradient",
@@ -731,8 +908,8 @@
         "putImageData",
         "getImageData",
         "isPointInPath"
-    ]).forEach(function(method){
-        Renderer.prototype[method] = function(){
+    ].forEach(function(method){
+        Stage.prototype[method] = function(){
             return this.renderContext[method].apply(this.renderContext, arguments);
         };
     });
@@ -743,7 +920,7 @@
         Shape: Shape,
         Masker: Masker,
         Sprite: Sprite,
-        Stage: Renderer
+        Stage: Stage
     });
 
 }(window.EC);
