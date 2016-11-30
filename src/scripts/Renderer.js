@@ -105,7 +105,7 @@
         }
     }
 
-    function getQuadraticLineWidth(coords){
+    function getQuadraticLineSize(coords){
          var widths = [],
              heights = [];
         coords.forEach(function(coord, i){
@@ -122,7 +122,7 @@
         }
     }
 
-    var drawShapeMap = {
+    var drawShapeFuns = {
         rect: function (ctx, obj) {
             var anchorW = (obj.anchorX + obj.parent.anchorX)*obj.width,
                 anchorH = (obj.anchorY + obj.parent.anchorY)*obj.height;
@@ -464,7 +464,7 @@
             this._setStyle.apply(this, args);
         },
         draw: function(ctx){
-            drawShapeMap[this.drawType](ctx, this);
+            drawShapeFuns[this.drawType](ctx, this);
             this._closePath && ctx.closePath();
             this._fill && ctx.fill();
             this._stroke && ctx.stroke();
@@ -562,7 +562,7 @@
         },
         quadraticCurveTo: function () {
             this.coords = slice.call(arguments);
-            var lineSize = getQuadraticLineWidth([this.moveX, this.moveY].concat(this.coords));
+            var lineSize = getQuadraticLineSize([this.moveX, this.moveY].concat(this.coords));
             this.width = lineSize.width;
             this.height = lineSize.height;
             this.drawType = 'quadraticCurveTo';
@@ -570,7 +570,7 @@
         },
         bezierCurveTo: function () {
             this.coords = slice.call(arguments);
-            var lineSize = getQuadraticLineWidth([this.moveX, this.moveY].concat(this.coords));
+            var lineSize = getQuadraticLineSize([this.moveX, this.moveY].concat(this.coords));
             this.width = lineSize.width;
             this.height = lineSize.height;
             this.drawType = 'bezierCurveTo';
