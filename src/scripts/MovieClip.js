@@ -189,7 +189,7 @@
     });
 
     var _getResUrl = function(resUrl){
-        if( /_(png|jpg|jpeg|gif|bmp|)$/.test(resUrl) ){
+        if( /_(png|jpg|jpeg|gif|bmp)$/.test(resUrl) ){
             return RES.getRes(resUrl);
         }
         return resUrl;
