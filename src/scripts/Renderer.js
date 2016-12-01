@@ -151,7 +151,7 @@
         lineTo: function (ctx, obj) {
             var anchorW = (obj.anchorX + obj.parent.anchorX)*obj.width,
                 anchorH = (obj.anchorY + obj.parent.anchorY)*obj.height;
-            var coords = (anchorW == 0 && anchorH == 0 ) ? obj.coords : obj.coords.map(function (coord) {
+            var coords = obj.coords.map(function (coord) {
                 return [coord[0] - obj.moveX - anchorW, coord[1] - obj.moveY - anchorH];
             });
 
@@ -185,7 +185,7 @@
         quadraticCurveTo: function (ctx, obj) {
             var anchorW = (obj.anchorX + obj.parent.anchorX)*obj.width,
                 anchorH = (obj.anchorY + obj.parent.anchorY)*obj.height;
-            var coords = (anchorW == 0 && anchorH == 0 ) ? obj.coords : obj.coords.map(function (coord, i) {
+            var coords = obj.coords.map(function (coord, i) {
                 return i % 2 === 0 ? coord - obj.moveX - anchorW : coord - obj.moveY - anchorH;
             });
             ctx.moveTo(-anchorW, -anchorH);
@@ -194,7 +194,7 @@
         bezierCurveTo: function (ctx, obj) {
             var anchorW = (obj.anchorX + obj.parent.anchorX)*obj.width,
                 anchorH = (obj.anchorY + obj.parent.anchorY)*obj.height;
-            var coords = (anchorW == 0 && anchorH == 0 ) ? obj.coords : obj.coords.map(function (coord, i) {
+            var coords = obj.coords.map(function (coord, i) {
                 return i % 2 === 0 ? coord - obj.moveX - anchorW : coord - obj.moveY - anchorH;
             });
             ctx.moveTo(-anchorW, -anchorH);
