@@ -749,7 +749,7 @@
             this.placeholderColor = "#888";
             this.placeholder = "";
             this.fontFamily = "";
-            this.lineHeight = 0;
+            this.lineHeight = 18;
             this.inputType = "text";
 
             this.on("addToStage", function () {
@@ -789,8 +789,6 @@
                 this.inputText.type = this.inputType;
                 this.mask = new Masker();
                 this.mask.rect(0, 0, this.width + this.borderWidth, this.height + this.borderWidth);
-            } else {
-                this.lineHeight = 18;
             }
 
             if( this.placeholder ){
@@ -801,7 +799,7 @@
 
             this.textField.width = this.width - this.padding[1] - this.padding[3];
             this.textField.multiple = true;
-            this.textField.lineHeight = this.lineHeight;
+            this.textField.lineHeight = this.inputType != "textarea" ? this.height : this.lineHeight;
             this.textField.size = this.fontSize;
             this.textField.textFamily = this.fontFamily || this.textField.textFamily;
             this.textField.x = this.borderWidth + this.padding[3];
@@ -816,8 +814,9 @@
         _setInputStyle: function () {
             var self = this;
             var ratio = 1/this.stage.scaleRatio;
+            var lineHeight = this.inputType != "textarea" ? this.height : this.lineHeight;
             this.inputText.style.cssText = "display:none;position:absolute;border:none;background:none;outline:none;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none;appearance:none;-webkit-text-size-adjust:none;text-size-adjust:none;-webkit-box-sizing:border-box;box-sizing:border-box;overflow:hidden;resize:none;" +
-                "left:"+ (this.x + this.input.x)*ratio +"px;top:"+ (this.y + this.input.y)*ratio +"px;width:"+ this.width*ratio +"px;height:"+ this.height*ratio +"px;line-height:"+ (this.lineHeight || this.height)*ratio +"px;font-size:"+ this.fontSize*ratio +"px;font-family:"+ (this.fontFamily || this.textField.textFamily) +";color:"+ this.color +";padding:" +
+                "left:"+ (this.x + this.input.x)*ratio +"px;top:"+ (this.y + this.input.y)*ratio +"px;width:"+ this.width*ratio +"px;height:"+ this.height*ratio +"px;line-height:"+ lineHeight*ratio +"px;font-size:"+ this.fontSize*ratio +"px;font-family:"+ (this.fontFamily || this.textField.textFamily) +";color:"+ this.color +";padding:" +
                 this.padding.map(function (pad) {return pad + self.borderWidth/2*ratio + "px"}).join(" ");
         },
         _events: function () {
