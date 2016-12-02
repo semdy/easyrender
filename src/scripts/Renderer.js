@@ -802,7 +802,7 @@
             this.inputText.addEventListener("blur", function (e) {
                 this.textField.text = this.inputText.value;
                 this.textField.visible = true;
-                this.inputText.style.display = "none";
+                this.inputText.style.display = "none";alert("blur");
                 this.dispatch("blur", {target: this, originalEvent: e, value: this.inputText.value});
             }.bind(this), false);
 
