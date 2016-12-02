@@ -6,6 +6,7 @@
     "use strict";
 
     var slice = Array.prototype.slice;
+    var tmpContext = document.createElement("canvas").getContext("2d");
 
     function drawImg(ctx, obj){
 
@@ -44,9 +45,9 @@
         }
     }
 
-    function mixTextSize(ctx, obj){
-        ctx.font = obj.size + "px " + obj.textFamily;
-        obj.width = ctx.measureText(obj.text).width;
+    function mixTextSize(obj){
+        tmpContext.font = obj.size + "px " + obj.textFamily;
+        obj.width = tmpContext.measureText(obj.text).width;
         obj.height = obj.size + 4;
     }
 
@@ -255,10 +256,6 @@
                 this._children.splice(index, 0, object);
             }
 
-            if( object.$type == 'TextField' ){
-                mixTextSize(object.renderContext, object);
-            }
-
             this.numChildren = this._children.length;
 
             return this;
@@ -272,10 +269,9 @@
 
             this._stopTweens(object);
 
-            if( object instanceof TextInput ){
-                try {
-                    object.inputText.parentNode.removeChild(object.inputText);
-                } catch (e){}
+            if( object instanceof TextInput){
+                object.inputText.parentNode.removeChild(object.inputText);
+                window.removeEventListener(EC.EVENTS.RESIZE, object.resizeListener, false);
             }
 
             for(var i = 0; i < this._children.length; i++){
@@ -378,6 +374,8 @@
             this.y = y||0;
             this.width = width||0;
             this.height = height||0;
+
+            mixTextSize(this);
 
             this.$type = "TextField";
         }
@@ -667,13 +665,10 @@
             this._addMask();
             Sprite.superclass.addChild.apply(this, arguments);
 
-            /*var moveX = childObj.moveX || 0;
+            var moveX = childObj.moveX || 0;
             var moveY = childObj.moveY || 0;
-            var childs = this.getChilds().filter(function (obj) {
-                return obj.$type !== 'Masker';
-            });
 
-            if (childs.length == 1) {
+            if (this.getChilds().length == 1) {
                 this.width = childObj.x + moveX + childObj.width;
                 this.height = childObj.y + moveY + childObj.height;
             } else {
@@ -683,7 +678,7 @@
                 if (childObj.y + moveY + childObj.height > this.height) {
                     this.height = childObj.y + moveY + childObj.height;
                 }
-            }*/
+            }
         },
         _addMask: function () {
             if( !this.mask || this._isMaskAdded ) return;
@@ -758,31 +753,25 @@
             if( this.inputType != "textarea" ) {
                 this.inputText.type = this.inputType;
                 this.mask = new Masker();
-                this.mask.rect(0, 0, this.width + this.borderWidth*2, this.height + this.borderWidth*2);
+                this.mask.rect(0, 0, this.width + this.borderWidth, this.height + this.borderWidth);
             } else {
                 this.lineHeight = 18;
             }
 
             if( this.placeholder ){
                 this.inputText.setAttribute("placeholder", this.placeholder);
-            }
-
-            this._setInputStyle();
-
-            if( this.placeholder ) {
                 this.textField.text = this.placeholder;
                 this.textField.textColor = this.placeholderColor;
             }
 
             this.textField.size = this.fontSize;
             this.textField.textFamily = this.fontFamily || this.textField.textFamily;
-
-            this.addChild(this.input);
-            this.addChild(this.textField);
-
             this.textField.x = this.borderWidth + this.padding[3];
             this.textField.y = this.inputType == "textarea" ? this.padding[0] : (this.height - this.textField.height + this.borderWidth)/2;
 
+            this._setInputStyle();
+            this.addChild(this.input);
+            this.addChild(this.textField);
             document.body.appendChild(this.inputText);
 
         },
@@ -814,14 +803,14 @@
                 this.textField.textColor = value ? this.color : this.placeholderColor;
                 this.textField.visible = true;
                 this.inputText.style.display = "none";
-                this.dispatch("blur", {target: this, originalEvent: e, value: this.inputText.value});
+                this.dispatch("blur", {target: this, originalEvent: e, value: value});
             }.bind(this), false);
 
             this.inputText.addEventListener("input", function (e) {
                 this.dispatch("input", {target: this, originalEvent: e, value: this.inputText.value});
             }.bind(this), false);
 
-            window.addEventListener(EC.EVENTS.RESIZE, function () {
+            window.addEventListener(EC.EVENTS.RESIZE, this.resizeListener = function () {
                 this._setInputStyle();
             }.bind(this), false);
         }

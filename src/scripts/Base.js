@@ -82,7 +82,7 @@ var EC = {
     var pointerEnabled = window.navigator.msPointerEnabled;
     var isIeMobile = pointerEnabled && /IEMobile/i.test(ua);
 
-    isTouch = isTouch || isIeMobile;
+    isTouch = isTouch || isIeMobile || false;
 
     var EVENTS = isIeMobile ? {
         START: 'MSPointerDown',
