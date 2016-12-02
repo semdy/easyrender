@@ -802,7 +802,7 @@
             this.inputText.addEventListener("blur", function (e) {
                 this.textField.text = this.inputText.value;
                 this.textField.visible = true;
-                this.inputText.style.display = "none";alert("blur");
+                this.inputText.style.display = "none";
                 this.dispatch("blur", {target: this, originalEvent: e, value: this.inputText.value});
             }.bind(this), false);
 
@@ -810,11 +810,11 @@
                 this.dispatch("input", {target: this, originalEvent: e, value: this.inputText.value});
             }.bind(this), false);
 
-            if( EC.isTouch ){
+            /*if( EC.isTouch ){
                 window.addEventListener(EC.EVENTS.RESIZE, function () {
                     this.inputText.blur();
                 }.bind(this), false);
-            }
+            }*/
         }
     });
 
