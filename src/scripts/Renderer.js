@@ -785,7 +785,6 @@
         },
         _events: function () {
             this.on("touch", function () {
-                this._setInputStyle();
                 this.textField.visible = false;
                 this.inputText.style.display = "block";
                 this.inputText.focus();
@@ -810,11 +809,9 @@
                 this.dispatch("input", {target: this, originalEvent: e, value: this.inputText.value});
             }.bind(this), false);
 
-            /*if( EC.isTouch ){
-                window.addEventListener(EC.EVENTS.RESIZE, function () {
-                    this.inputText.blur();
-                }.bind(this), false);
-            }*/
+            window.addEventListener(EC.EVENTS.RESIZE, function () {
+                this._setInputStyle();
+            }.bind(this), false);
         }
     });
 
