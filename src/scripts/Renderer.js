@@ -33,15 +33,48 @@
         ctx.textAlign = obj.textAlign;
         ctx.textBaseline = obj.textBaseline || "top";
 
-        var anchorW = -1*(obj.anchorX + obj.parent.anchorX)*obj.width,
-            anchorH = -1*(obj.anchorY + obj.parent.anchorY)*obj.height;
+        var textX = -1*(obj.anchorX + obj.parent.anchorX)*obj.width,
+            textY = -1*(obj.anchorY + obj.parent.anchorY)*obj.height;
+
+        textX = obj.textAlign == "center" ? textX + obj.width/2 : textX;
 
         if( obj.stroke ) {
             ctx.strokeStyle = obj.textColor;
-            ctx.strokeText(obj.text, anchorW, anchorH);
+            if( obj.multiple ){
+                textAutoLine(ctx, "strokeText", obj.text, obj.width, textX, textY, obj.lineHeight);
+            } else {
+                textSplitLine(ctx, "strokeText", obj.text, textX, textY, obj.lineHeight);
+            }
         } else {
             ctx.fillStyle = obj.textColor;
-            ctx.fillText(obj.text, anchorW, anchorH);
+            if( obj.multiple ){
+                textAutoLine(ctx, "fillText", obj.text, obj.width, textX, textY, obj.lineHeight);
+            } else {
+                textSplitLine(ctx, "fillText", obj.text, textX, textY, obj.lineHeight);
+            }
+        }
+    }
+
+    function textSplitLine(ctx, drawType, str, initX, initY, lineHeight) {
+        str.split(/\n/).forEach(function (text, i) {
+            ctx[drawType](text, initX, initY + lineHeight * i);
+        });
+    }
+
+    function textAutoLine(ctx, drawType, str, width, initX, initY, lineHeight){
+        var lineWidth = 0;
+        var lastSubStrIndex = 0;
+        for( var i = 0; i < str.length; i++ ){
+            lineWidth += ctx.measureText(str[i]).width;
+            if( lineWidth > width - initX ){
+                ctx[drawType](str.substring(lastSubStrIndex, i), initX, initY);
+                initY += lineHeight;
+                lineWidth = 0;
+                lastSubStrIndex = i;
+            }
+            if( i == str.length - 1 ){
+                ctx[drawType](str.substring(lastSubStrIndex, i + 1), initX, initY);
+            }
         }
     }
 
@@ -374,6 +407,8 @@
             this.y = y||0;
             this.width = width||0;
             this.height = height||0;
+            this.lineHeight = 20;
+            this.multiple = false;
 
             mixTextSize(this);
 
@@ -764,6 +799,9 @@
                 this.textField.textColor = this.placeholderColor;
             }
 
+            this.textField.width = this.width - this.padding[1] - this.padding[3];
+            this.textField.multiple = true;
+            this.textField.lineHeight = this.lineHeight;
             this.textField.size = this.fontSize;
             this.textField.textFamily = this.fontFamily || this.textField.textFamily;
             this.textField.x = this.borderWidth + this.padding[3];
