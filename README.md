@@ -7,3 +7,5 @@ a lite frameworks for canvas
 - [序列帧动画+事件测试](https://semdy.github.io/easyrender/dist/MovieClip3.html)
 - [形状](https://semdy.github.io/easyrender/dist/shape.html)
 - [遮罩](https://semdy.github.io/easyrender/dist/Mask.html)
+- [文本输入框](https://semdy.github.io/easyrender/dist/TextInput.html)
+- [文本排版](https://semdy.github.io/easyrender/dist/Text.html)

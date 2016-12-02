@@ -1096,6 +1096,7 @@
     EC.provide({
         TextField: TextField,
         BitMap: BitMap,
+        BitMapText: BitMapText,
         Shape: Shape,
         TextInput: TextInput,
         Masker: Masker,
