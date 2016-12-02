@@ -749,7 +749,7 @@
             this.placeholderColor = "#888";
             this.placeholder = "";
             this.fontFamily = "";
-            this.lineHeight = 18;
+            this.lineHeight = 20;
             this.inputType = "text";
 
             this.on("addToStage", function () {
@@ -787,8 +787,6 @@
 
             if( this.inputType != "textarea" ) {
                 this.inputText.type = this.inputType;
-                this.mask = new Masker();
-                this.mask.rect(0, 0, this.width + this.borderWidth, this.height + this.borderWidth);
             }
 
             if( this.placeholder ){
@@ -806,6 +804,10 @@
             this.textField.y = this.inputType == "textarea" ? this.padding[0] : (this.height - this.textField.height + this.borderWidth)/2;
 
             this._setInputStyle();
+
+            this.mask = new Masker();
+            this.mask.rect(0, 0, this.width + this.borderWidth, this.height + this.borderWidth);
+
             this.addChild(this.input);
             this.addChild(this.textField);
             document.body.appendChild(this.inputText);
