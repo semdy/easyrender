@@ -47,7 +47,7 @@
     function mixTextSize(ctx, obj){
         ctx.font = obj.size + "px " + obj.textFamily;
         obj.width = ctx.measureText(obj.text).width;
-        obj.height = obj.size + 6;
+        obj.height = obj.size + 4;
     }
 
     function drawShape(ctx, obj){
@@ -271,6 +271,12 @@
         removeChild: function(object){
 
             this._stopTweens(object);
+
+            if( object instanceof TextInput ){
+                try {
+                    object.inputText.parentNode.removeChild(object.inputText);
+                } catch (e){}
+            }
 
             for(var i = 0; i < this._children.length; i++){
                 if( this._children[i] === object ){
@@ -697,8 +703,8 @@
     var TextInput = Sprite.extend({
         initialize: function(){
             TextInput.superclass.initialize.apply(this, arguments);
-            this.width = 180;
-            this.height = 32;
+            this.width = 400;
+            this.height = 64;
             this.backgroundAlpha = 1;
             this.backgroundColor = "";
             this.backgroundImage = "";
@@ -706,10 +712,11 @@
             this.borderAlpha = 1;
             this.borderColor = "#000";
             this.borderRadius = 0;
-            this.borderWidth = 1;
+            this.borderWidth = 2;
             this.padding = 3;
-            this.fontSize = 14;
+            this.fontSize = 28;
             this.color = "#000";
+            this.placeholderColor = "#888";
             this.placeholder = "";
             this.fontFamily = "";
             this.lineHeight = 0;
@@ -762,8 +769,11 @@
 
             this._setInputStyle();
 
-            this.textField.text = this.placeholder;
-            this.textField.textColor = this.color;
+            if( this.placeholder ) {
+                this.textField.text = this.placeholder;
+                this.textField.textColor = this.placeholderColor;
+            }
+
             this.textField.size = this.fontSize;
             this.textField.textFamily = this.fontFamily || this.textField.textFamily;
 
@@ -799,7 +809,9 @@
             }.bind(this), false);
 
             this.inputText.addEventListener("blur", function (e) {
-                this.textField.text = this.inputText.value;
+                var value = this.inputText.value;
+                this.textField.text = value || this.placeholder;
+                this.textField.textColor = value ? this.color : this.placeholderColor;
                 this.textField.visible = true;
                 this.inputText.style.display = "none";
                 this.dispatch("blur", {target: this, originalEvent: e, value: this.inputText.value});
