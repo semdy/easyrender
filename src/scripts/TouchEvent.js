@@ -35,7 +35,7 @@
             this.element.addEventListener(EVENTS.END, this._onTouchEnd.bind(this), false);
         },
         _onTouchStart: function(event){
-            event.preventDefault();
+            //event.preventDefault();
             event = isTouch ? event.targetTouches[0] : event;
 
             this._startTime = Date.now();

@@ -1,0 +1,93 @@
+<!Doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>EC MovieClip</title>
+    <style>
+        body{
+            margin:0;
+        }
+        .movieclip{
+            position: absolute;
+            left:0;
+            top:0;
+            right:0;
+            bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+<canvas id="canvas-shape" class="movieclip"></canvas>
+
+<!-- build:js scripts/libs/easyrender.js -->
+<script src="scripts/Base.js"></script>
+<script src="scripts/Utils.js"></script>
+<script src="scripts/Event.js"></script>
+<script src="scripts/Loader.js"></script>
+<script src="scripts/RequestAnimationFrame.js"></script>
+<script src="scripts/Ticker.js"></script>
+<script src="scripts/Timer.js"></script>
+<script src="scripts/Easing.js"></script>
+<script src="scripts/Tween.js"></script>
+<script src="scripts/Renderer.js"></script>
+<script src="scripts/MovieClip.js"></script>
+<script src="scripts/TouchEvent.js"></script>
+<script src="scripts/Stats.js"></script>
+<!-- endbuild -->
+
+<script>
+    var canvas = document.getElementById('canvas-shape');
+    var stage = new EC.Stage(canvas, {
+        scaleMode: EC.isTouch ? 'showAll' : 'noScale',
+        width: 750,
+        height: 1334,
+        showFps: true
+    });
+
+    stage.showFps({
+        right: 0,
+        left: "auto",
+        top: 0
+    });
+
+    var input = new EC.TextInput();
+    input.x = 100;
+    input.y = 100;
+    input.borderColor = "#aaa";
+    input.borderRadius = 6;
+    input.borderWidth = 2;
+    input.color = "#f90";
+    input.inputType = "email";
+    input.placeholder = "please type a number";
+    stage.addChild(input);
+
+    input.on("focus", function (e) {
+        console.log("focus", e.target);
+    });
+
+    input.on("change", function (e) {
+        console.log("change", e.value);
+    });
+
+    input.on("blur", function (e) {
+        console.log("blur", e.value);
+    });
+
+    input.on("input", function (e) {
+        console.log("input", e.value);
+    });
+
+    /*var textArea = new EC.TextInput();
+    textArea.x = 100;
+    textArea.y = 160;
+    textArea.width = 300;
+    textArea.height = 120;
+    textArea.inputType = "textarea";
+    stage.addChild(textArea);*/
+
+</script>
+</body>
+</html>

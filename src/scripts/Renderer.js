@@ -47,7 +47,7 @@
     function mixTextSize(ctx, obj){
         ctx.font = obj.size + "px " + obj.textFamily;
         obj.width = ctx.measureText(obj.text).width;
-        obj.height = obj.size + 2;
+        obj.height = obj.size + 6;
     }
 
     function drawShape(ctx, obj){
@@ -57,17 +57,19 @@
     }
 
     function drawContext(ctx, obj){
+        var isMasker = obj.$type === "Masker";
+        var parent = obj.parent;
         obj = obj || {};
-        ctx.globalAlpha = obj.parent.alpha < 1 ? obj.parent.alpha : obj.alpha;
+        ctx.globalAlpha = parent.alpha < 1 ? parent.alpha : obj.alpha;
         ctx.transform(
-            obj.scaleX * obj.parent.scaleX, //水平缩放绘图
-            obj.skewX * obj.parent.skewX, //水平倾斜绘图
-            obj.skewY * obj.parent.skewY, //垂直倾斜绘图
-            obj.scaleY * obj.parent.scaleY, //垂直缩放绘图
-            obj.parent.x + obj.x + (obj.moveX||0) + (obj.anchorX + obj.parent.anchorX)*obj.width - ( obj.$type === "Masker" ? 0 : (obj.parent.mask ? obj.parent.mask.x : 0 )), //水平移动绘图
-            obj.parent.y + obj.y + (obj.moveY||0) + (obj.anchorY + obj.parent.anchorY)*obj.height - ( obj.$type === "Masker" ? 0 : (obj.parent.mask ? obj.parent.mask.y : 0 )) //垂直移动绘图
+            obj.scaleX * parent.scaleX, //水平缩放绘图
+            obj.skewX * parent.skewX, //水平倾斜绘图
+            obj.skewY * parent.skewY, //垂直倾斜绘图
+            obj.scaleY * parent.scaleY, //垂直缩放绘图
+            parent.x + obj.x + (obj.moveX||0) + (obj.anchorX + parent.anchorX)*obj.width - ( isMasker ? 0 : (parent.mask ? parent.mask.x : 0 )), //水平移动绘图
+            parent.y + obj.y + (obj.moveY||0) + (obj.anchorY + parent.anchorY)*obj.height - ( isMasker ? 0 : (parent.mask ? parent.mask.y : 0 )) //垂直移动绘图
         );
-        ctx.rotate((obj.rotation + obj.parent.rotation)*Math.PI/180);
+        ctx.rotate((obj.rotation + parent.rotation)*Math.PI/180);
     }
 
     function drawShapeContext(ctx, obj){
@@ -633,6 +635,7 @@
         draw: function(ctx){
             Masker.superclass.draw.call(this, ctx);
             ctx.clip();
+            ctx.translate(-this.parent.x, -this.parent.y);
         }
     });
 
@@ -658,20 +661,23 @@
             this._addMask();
             Sprite.superclass.addChild.apply(this, arguments);
 
-            var moveX = childObj.moveX || 0;
+            /*var moveX = childObj.moveX || 0;
             var moveY = childObj.moveY || 0;
+            var childs = this.getChilds().filter(function (obj) {
+                return obj.$type !== 'Masker';
+            });
 
-            if( this.getChilds().length == 1 ) {
+            if (childs.length == 1) {
                 this.width = childObj.x + moveX + childObj.width;
                 this.height = childObj.y + moveY + childObj.height;
             } else {
-                if( childObj.x + moveX + childObj.width > this.width ){
+                if (childObj.x + moveX + childObj.width > this.width) {
                     this.width = childObj.x + moveX + childObj.width;
                 }
-                if( childObj.y + moveY + childObj.height > this.height ){
+                if (childObj.y + moveY + childObj.height > this.height) {
                     this.height = childObj.y + moveY + childObj.height;
                 }
-            }
+            }*/
         },
         _addMask: function () {
             if( !this.mask || this._isMaskAdded ) return;
@@ -691,9 +697,124 @@
     var TextInput = Sprite.extend({
         initialize: function(){
             TextInput.superclass.initialize.apply(this, arguments);
+            this.width = 180;
+            this.height = 32;
+            this.backgroundAlpha = 1;
+            this.backgroundColor = "";
+            this.backgroundImage = "";
+            this.backgroundRepeat = "repeat";
+            this.borderAlpha = 1;
+            this.borderColor = "#000";
+            this.borderRadius = 0;
+            this.borderWidth = 1;
+            this.padding = 3;
+            this.fontSize = 14;
+            this.color = "#000";
+            this.placeholder = "";
+            this.fontFamily = "";
+            this.lineHeight = 0;
+            this.inputType = "text";
+
+            this.on("addToStage", function () {
+                this._create();
+                this._events();
+            }, this);
         },
-        addChild: function(){
-            TextInput.superclass.addChild.apply(this, arguments);
+        _create: function(){
+            var pad = this.padding;
+            this.touchEnabled = true;
+            this.padding = EC.isArray(pad) ? pad : [pad, pad, pad, pad];
+
+            this.input = new Shape();
+            this.textField = new TextField();
+            this.inputText = document.createElement(this.inputType == "textarea" ? "textarea" : "input");
+
+            this.input.x = this.borderWidth/2;
+            this.input.y = this.borderWidth/2;
+            this.input.lineWidth = this.borderWidth;
+            this.input.stroke(this.borderColor, this.borderAlpha);
+
+            var bgPattern = this.backgroundImage;
+            if( EC.isObject(bgPattern) ){
+                var fillStyle = this.renderContext.createPattern(bgPattern.nodeName === "IMG" ? bgPattern : bgPattern.bitMapData, this.backgroundRepeat);
+                this.input.fill(fillStyle);
+            } else if( this.backgroundColor ) {
+                this.input.fill(this.backgroundColor, this.backgroundAlpha);
+            }
+
+            if( this.borderRadius > 0 ){
+                this.input.roundRect(0, 0, this.width, this.height, this.borderRadius);
+            } else {
+                this.input.rect(0, 0, this.width, this.height);
+            }
+
+            if( this.inputType != "textarea" ) {
+                this.inputText.type = this.inputType;
+                this.mask = new Masker();
+                this.mask.rect(0, 0, this.width + this.borderWidth*2, this.height + this.borderWidth*2);
+            } else {
+                this.lineHeight = 18;
+            }
+
+            if( this.placeholder ){
+                this.inputText.setAttribute("placeholder", this.placeholder);
+            }
+
+            this._setInputStyle();
+
+            this.textField.text = this.placeholder;
+            this.textField.textColor = this.color;
+            this.textField.size = this.fontSize;
+            this.textField.textFamily = this.fontFamily || this.textField.textFamily;
+
+            this.addChild(this.input);
+            this.addChild(this.textField);
+
+            this.textField.x = this.borderWidth + this.padding[3];
+            this.textField.y = this.inputType == "textarea" ? this.padding[0] : (this.height - this.textField.height + this.borderWidth)/2;
+
+            document.body.appendChild(this.inputText);
+
+        },
+        _setInputStyle: function () {
+            var self = this;
+            var ratio = 1/this.stage.scaleRatio;
+            this.inputText.style.cssText = "display:none;position:absolute;border:none;background:none;outline:none;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none;appearance:none;-webkit-text-size-adjust:none;text-size-adjust:none;-webkit-box-sizing:border-box;box-sizing:border-box;overflow:hidden;resize:none;" +
+                "left:"+ (this.x + this.input.x)*ratio +"px;top:"+ (this.y + this.input.y)*ratio +"px;width:"+ this.width*ratio +"px;height:"+ this.height*ratio +"px;line-height:"+ (this.lineHeight || this.height)*ratio +"px;font-size:"+ this.fontSize*ratio +"px;font-family:"+ (this.fontFamily || this.textField.textFamily) +";color:"+ this.color +";padding:" +
+                this.padding.map(function (pad) {return pad + self.borderWidth/2*ratio + "px"}).join(" ");
+        },
+        _events: function () {
+            this.on("touch", function () {
+                this._setInputStyle();
+                this.textField.visible = false;
+                this.inputText.style.display = "block";
+                this.inputText.focus();
+            }, this);
+
+            this.inputText.addEventListener("focus", function (e) {
+                this.dispatch("focus", {target: this, originalEvent: e, value: this.inputText.value});
+            }.bind(this), false);
+
+            this.inputText.addEventListener("change", function (e) {
+                this.dispatch("change", {target: this, originalEvent: e, value: this.inputText.value});
+            }.bind(this), false);
+
+            this.inputText.addEventListener("blur", function (e) {
+                this.textField.text = this.inputText.value;
+                this.textField.visible = true;
+                this.inputText.style.display = "none";
+                this.dispatch("blur", {target: this, originalEvent: e, value: this.inputText.value});
+            }.bind(this), false);
+
+            this.inputText.addEventListener("input", function (e) {
+                this.dispatch("input", {target: this, originalEvent: e, value: this.inputText.value});
+            }.bind(this), false);
+
+            if( EC.isTouch ){
+                window.addEventListener(EC.EVENTS.RESIZE, function () {
+                    this.inputText.blur();
+                }.bind(this), false);
+            }
         }
     });
 
@@ -921,6 +1042,7 @@
         TextField: TextField,
         BitMap: BitMap,
         Shape: Shape,
+        TextInput: TextInput,
         Masker: Masker,
         Sprite: Sprite,
         Stage: Stage
