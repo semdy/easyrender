@@ -42,14 +42,14 @@
             if( !Array.isArray(this.RESUrl) ) {
                 if( EC.isObject(this.RESUrl) && "nodeType" in this.RESUrl ){
                     this.RESUrl = {
-                        bitMapData: this.RESUrl,
+                        texture: this.RESUrl,
                         width: this.RESUrl.width,
                         height: this.RESUrl.height
                     }
                 }
-                this.bitMapData = this.RESUrl.bitMapData;
+                this.texture = this.RESUrl.texture;
             } else {
-                this.bitMapData = this.RESUrl[this.currentFrame].bitMapData;
+                this.texture = this.RESUrl[this.currentFrame].texture;
             }
 
             if( frameRate ){
@@ -161,7 +161,7 @@
 
             this._timer.delay = (resItem.duration || 0) * this.frameRate;
 
-            this._clip.bitMapData = resData.bitMapData;
+            this._clip.texture = resData.texture;
             this._clip.x = resItem.x || 0;
             this._clip.y = resItem.y || 0;
             this._clip.width = resData.width || this.width || 0;

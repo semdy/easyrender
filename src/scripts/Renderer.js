@@ -22,9 +22,9 @@
             if( swidth >= _width ) swidth = _width - 1;
             if( sheight >= _height ) sheight = _height - 1;
 
-            ctx.drawImage(obj.bitMapData, obj.sx, obj.sy, swidth, sheight, anchorW, anchorH, obj.width, obj.height);
+            ctx.drawImage(obj.texture, obj.sx, obj.sy, swidth, sheight, anchorW, anchorH, obj.width, obj.height);
         } else {
-            ctx.drawImage(obj.bitMapData, anchorW, anchorH, obj.width, obj.height);
+            ctx.drawImage(obj.texture, anchorW, anchorH, obj.width, obj.height);
         }
     }
 
@@ -442,7 +442,7 @@
             this.$type = "BitMap";
 
             if( EC.isDefined(key) ) {
-                EC.extend(this, EC.isObject(key) ? (key.nodeName === "IMG" ? {bitMapData: key, width: key.width, height: key.height} : key) : RES.getRes(key));
+                EC.extend(this, EC.isObject(key) ? (key.nodeName === "IMG" ? {texture: key, width: key.width, height: key.height} : key) : RES.getRes(key));
             }
 
             if( EC.isDefined(width) ){
@@ -454,13 +454,13 @@
             }
 
         },
-        setBitMap: function( bitMapObject ){
-            if( !EC.isObject(bitMapObject) )
-                throw new Error(String(bitMapObject) + "is a invalid bitMapObject");
-            if( 'nodeType' in bitMapObject ){
-                this.bitMapData = bitMapObject;
+        setTexture: function( texture ){
+            if( !EC.isObject(texture) )
+                throw new Error(String(texture) + "is a invalid texture");
+            if( 'nodeType' in texture ){
+                this.texture = texture;
             } else {
-                EC.extend(this, bitMapObject);
+                EC.extend(this, texture);
             }
         }
     });
@@ -773,7 +773,7 @@
 
             var bgPattern = this.backgroundImage;
             if( EC.isObject(bgPattern) ){
-                var fillStyle = this.renderContext.createPattern(bgPattern.nodeName === "IMG" ? bgPattern : bgPattern.bitMapData, this.backgroundRepeat);
+                var fillStyle = this.renderContext.createPattern(bgPattern.nodeName === "IMG" ? bgPattern : bgPattern.texture, this.backgroundRepeat);
                 this.input.fill(fillStyle);
             } else if( this.backgroundColor ) {
                 this.input.fill(this.backgroundColor, this.backgroundAlpha);
@@ -851,6 +851,25 @@
             window.addEventListener(EC.EVENTS.RESIZE, this.resizeListener = function () {
                 this._setInputStyle();
             }.bind(this), false);
+        }
+    });
+
+    /**
+     * BitMapText
+     * */
+
+    var BitMapText = Sprite.extend({
+        initialize: function(){
+            BitMapText.superclass.initialize.apply(this, arguments);
+            this.text = "";
+
+            this.on("addToStage", function () {
+                this._create();
+            }, this);
+        },
+        _create: function(){
+            this.bitMapText = new BitMap();
+            this.addChild(this.bitMapText);
         }
     });
 

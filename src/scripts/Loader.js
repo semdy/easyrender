@@ -40,12 +40,12 @@
         }
     });
 
-    var loadBitMap = function(resItem, callback){
+    var loadTexture = function(resItem, callback){
         loadImg(resItem.url, function(img){
             assets[resItem.name] = {
                 width: img.width,
                 height: img.height,
-                bitMapData: img
+                texture: img
             };
             EC.extend(assets[resItem.name], resItem);
             EC.isFunction(callback) && callback(resItem);
@@ -110,20 +110,20 @@
         }
 
         if (cfgItem.type == 'image') {
-            loadBitMap(cfgItem, function(){
+            loadTexture(cfgItem, function(){
                 callback && callback(cfgItem);
             });
         }
-        else if (cfgItem.type == 'json' || cfgItem.type == 'sheet') {
+        else if (cfgItem.type == 'json' || cfgItem.type == 'sheet' || cfgItem.type == 'font') {
             loadJSON(cfgItem.url, function (data) {
                 var obj = EC.extend({}, cfgItem, {data: data});
                 assets[cfgItem.name] = obj;
 
-                if( cfgItem.type == 'sheet' ){
+                if( cfgItem.type == 'sheet' || cfgItem.type == 'font' ){
                     var url = cfgItem.url.replace(/\.json$/, '.png');
                     var name = cfgItem.name.replace(/_json$/, '_png');
                     var resObj = EC.extend({}, cfgItem, {url: url, name: name, type: 'image'});
-                    loadBitMap(resObj, function(){
+                    loadTexture(resObj, function(){
                         callback && callback(obj);
                     });
                 } else {
@@ -147,15 +147,15 @@
         var pathRes = pathReg.exec(resId);
 
         if( pathRes ){
-            var bitMapDataGroup = [];
+            var textureGroup = [];
             var path = RegExp.$1.split('-');
             var pathPre = resId.replace(pathReg, "").split("_");
             for(var i = Number(path[0]); i<Number(path[1]) + 1; i++){
                 var pathId = pathPre[0] + i + "_" + pathPre[1];
-                bitMapDataGroup.push(assets[pathId]);
+                textureGroup.push(assets[pathId]);
             }
 
-            return bitMapDataGroup;
+            return textureGroup;
         }
 
         var asset = assets[resId];
