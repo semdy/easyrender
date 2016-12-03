@@ -70,11 +70,14 @@
             bitMapText.text = "123";
             bitMapText.x = 100;
             bitMapText.y = 100;
+            bitMapText.letterSpacing = 5;
             stage.addChild(bitMapText);
 
-            bitMapText.on("enterframe", function () {
+            var timer = new EC.Timer(200);
+            timer.on("timer", function () {
                 bitMapText.text = Math.floor(1000 + Math.random()*1000).toString();
             });
+            timer.start();
 
         }
 

@@ -32,6 +32,7 @@
         var data = obj._fontData.frames;
         var texture = obj._fontTexture;
         var startX = 0;
+        var lastWidth = 0;
         obj._children = [];
         obj.text.split("").forEach(function ( n, i ) {
             var itemData = data[n];
@@ -42,11 +43,12 @@
                 height: itemData.h,
                 sx: itemData.x,
                 sy: itemData.y,
-                x: startX += (itemData.w + obj.letterSpacing),
+                x: startX += (lastWidth + obj.letterSpacing),
                 swidth: itemData.w,
                 sheight: itemData.h
             });
             obj.addChild(bitMapText);
+            lastWidth = itemData.w;
         });
     }
 
