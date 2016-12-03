@@ -36,12 +36,12 @@ gulp.task('copyjs', function(){
         .pipe(gulp.dest('dist/scripts'));
 });
 
-gulp.task('copyimages', function(){
-    return gulp.src('src/images/**/*.{png,jpg,jpeg,gif,json}')
+gulp.task('copyfiles', function(){
+    return gulp.src('src/images/**/*.{png,jpg,jpeg,gif,json,fnt}')
         .pipe(gulp.dest('dist/images'));
 });
 
 gulp.task('default', function(done) {
-    runSequence(/*'jshint',*/ 'clean', 'useref', ['copyjs', 'copyimages'], done);
+    runSequence(/*'jshint',*/ 'clean', 'useref', ['copyjs', 'copyfiles'], done);
 });
 
