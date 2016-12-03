@@ -19,7 +19,7 @@
 </head>
 
 <body>
-
+<div id="spin">loading</div>
 <canvas id="canvas-shape" class="movieclip"></canvas>
 
 <!-- build:js scripts/libs/easyrender.js -->
@@ -47,6 +47,7 @@
         var stage;
 
         loader.on("complete", function () {
+            RES.el("#spin").style.display = "none";
             startGame();
         });
 
@@ -75,7 +76,7 @@
 
             var timer = new EC.Timer(200);
             timer.on("timer", function () {
-                bitMapText.text = Math.floor(1000 + Math.random()*1000).toString();
+                bitMapText.text = Math.floor(800 + Math.random()*1000).toString();
             });
             timer.start();
 
