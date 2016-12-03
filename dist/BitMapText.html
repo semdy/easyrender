@@ -58,9 +58,9 @@
             bitMapText.y = 100;
             stage.addChild(bitMapText);
 
-           /* bitMapText.on("enterframe", function () {
-                bitMapText.text = Math.floor(100 + Math.random()*1000).toString();
-            })*/
+            bitMapText.on("enterframe", function () {
+                bitMapText.text = Math.floor(1000 + Math.random()*1000).toString();
+            });
 
         }
 
