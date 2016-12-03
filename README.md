@@ -9,3 +9,4 @@ a lite frameworks for canvas
 - [遮罩](https://semdy.github.io/easyrender/dist/Mask.html)
 - [文本输入框](https://semdy.github.io/easyrender/dist/TextInput.html)
 - [文本排版](https://semdy.github.io/easyrender/dist/Text.html)
+- [BitMapText](https://semdy.github.io/easyrender/dist/BitMapText.html)

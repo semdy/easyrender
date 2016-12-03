@@ -27,6 +27,37 @@
             ctx.drawImage(obj.texture, anchorW, anchorH, obj.width, obj.height);
         }
     }
+    
+    function fillBitMapText(obj) {
+        var data = obj._fontData.frames;
+        var texture = obj._fontTexture;
+        obj._children = [];
+        obj.text.split("").forEach(function ( n, i ) {
+            var itemData = data[n];
+            var bitMapText = new BitMap();
+            EC.extend(bitMapText, {
+                texture: texture,
+                width: itemData.w,
+                height: itemData.h,
+                sx: itemData.x,
+                sy: itemData.y,
+                x: i*(itemData.w + obj.letterSpacing),
+                swidth: itemData.w,
+                sheight: itemData.h
+            });
+            obj.addChild(bitMapText);
+        });
+    }
+
+    function drawBitMapText(ctx, obj){
+        fillBitMapText(obj);
+        obj.getChilds().forEach(function (childObj) {
+            ctx.save();
+            drawContext(ctx, childObj);
+            drawImg(ctx, childObj);
+            ctx.restore();
+        });
+    }
 
     function drawText(ctx, obj){
         ctx.font = obj.size + "px " + obj.textFamily;
@@ -276,7 +307,6 @@
             }
 
             object.parent = this;
-
             object.visible = EC.isDefined(object.visible) ? object.visible : this.visible;
             object.alpha = EC.isDefined(object.alpha) ? object.alpha : this.alpha;
             object.rotation = EC.isDefined(object.rotation) ? object.rotation : this.rotation;
@@ -300,13 +330,6 @@
 
         removeChild: function(object){
 
-            this._stopTweens(object);
-
-            if( object instanceof TextInput){
-                object.inputText.parentNode.removeChild(object.inputText);
-                window.removeEventListener(EC.EVENTS.RESIZE, object.resizeListener, false);
-            }
-
             for(var i = 0; i < this._children.length; i++){
                 if( this._children[i] === object ){
                     this._children.splice(i, 1);
@@ -315,8 +338,25 @@
             }
 
             this.numChildren = this._children.length;
+            this._stopTweens(object);
+            this._triggerRemove(object);
 
             return this;
+        },
+
+        _triggerRemove: function( childObj ){
+
+            var _runRemove = function( obj ){
+
+                obj.dispatch("remove", obj);
+
+                if (obj.$type == 'Sprite') {
+                    obj.getChilds().forEach(_runRemove);
+                }
+            };
+
+            childObj.dispatch("remove", childObj);
+            childObj.getChilds().forEach(_runRemove);
         },
 
         removeAllChildren: function(){
@@ -746,7 +786,7 @@
             this.padding = 3;
             this.fontSize = 28;
             this.color = "#000";
-            this.placeholderColor = "#888";
+            this.placeholderColor = "#999";
             this.placeholder = "";
             this.fontFamily = "";
             this.lineHeight = 20;
@@ -755,6 +795,11 @@
             this.on("addToStage", function () {
                 this._create();
                 this._events();
+            }, this);
+
+            this.on("remove", function () {
+                this.inputText.parentNode.removeChild(this.inputText);
+                window.removeEventListener(EC.EVENTS.RESIZE, this.resizeListener, false);
             }, this);
         },
         _create: function(){
@@ -863,14 +908,17 @@
         initialize: function(){
             BitMapText.superclass.initialize.apply(this, arguments);
             this.text = "";
+            this.font = "";
+            this.letterSpacing = 0;
+            this.$type = "BitMapText";
 
             this.on("addToStage", function () {
                 this._create();
             }, this);
         },
         _create: function(){
-            this.bitMapText = new BitMap();
-            this.addChild(this.bitMapText);
+            this._fontData = (EC.isString( this.font ) ? RES.getRes(this.font + "_fnt") : this.font).data;
+            this._fontTexture = RES.getRes(this._fontData.file.replace(/\.(png|jpg|jpeg|gif|bmp|webp)$/, "_$1")).texture;
         }
     });
 
@@ -951,6 +999,9 @@
                     drawImg(ctx, obj);
                     ctx.restore();
                     break;
+                case 'BitMapText':
+                    drawBitMapText(ctx, obj);
+                    break;
                 case 'TextField':
                     ctx.save();
                     drawContext(ctx, obj);
@@ -993,7 +1044,7 @@
 
             var _runAddToStage = function( obj ){
 
-                obj.dispatch("addToStage");
+                obj.dispatch("addToStage", obj);
 
                 if (obj.$type == 'Sprite') {
                     obj.getChilds().forEach(_runAddToStage);
@@ -1007,7 +1058,7 @@
 
             var _runEnterFrame = function( obj ){
 
-                obj.dispatch("enterframe");
+                obj.dispatch("enterframe", obj);
 
                 if (obj.$type == 'Sprite') {
                     obj.getChilds().forEach(_runEnterFrame);

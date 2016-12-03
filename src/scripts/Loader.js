@@ -120,8 +120,10 @@
                 assets[cfgItem.name] = obj;
 
                 if( cfgItem.type == 'sheet' || cfgItem.type == 'font' ){
-                    var url = cfgItem.url.replace(/\.json$/, '.png');
-                    var name = cfgItem.name.replace(/_json$/, '_png');
+                    /*var url = cfgItem.url.replace(/\.json$/, '.png');
+                    var name = cfgItem.name.replace(/_json$/, '_png');*/
+                    var url = cfgItem.url.substr(0, cfgItem.url.lastIndexOf("/") + 1) + data.file;
+                    var name = data.file.replace(/\.(png|jpg|jpeg|gif|bmp|webp)$/, "_$1");
                     var resObj = EC.extend({}, cfgItem, {url: url, name: name, type: 'image'});
                     loadTexture(resObj, function(){
                         callback && callback(obj);

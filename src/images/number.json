@@ -1,0 +1,13 @@
+{
+	"groups":[
+	{
+		"keys":"number_fnt",
+		"name":"preload"
+	}],
+	"resources":[
+	{
+		"name":"number_fnt",
+		"type":"font",
+		"url":"number.fnt"
+	}]
+}
