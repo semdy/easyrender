@@ -63,7 +63,7 @@
     }
 
     function drawText(ctx, obj){
-        ctx.font = obj.size + "px " + obj.textFamily;
+        ctx.font = obj.font || (obj.textStyle + " " + obj.textWeight + " " + obj.size + "px/" + obj.lineHeight + "px " + obj.textFamily);
         ctx.textAlign = obj.textAlign;
         ctx.textBaseline = obj.textBaseline || "top";
 
@@ -444,6 +444,9 @@
             this.textBaseline = "";
             this.textFamily = family || "Microsoft yahei,Arial,sans-serif";
             this.textColor = color || "#000";
+            this.textStyle = "normal";
+            this.textWeight = "normal";
+            this.lineHeight = this.size;
             this.stroke = false;
 
             this.x = x||0;
@@ -921,7 +924,7 @@
         },
         _create: function(){
             this._fontData = (EC.isString( this.font ) ? RES.getRes(this.font + "_fnt") : this.font).data;
-            this._fontTexture = RES.getRes(this._fontData.file.replace(/\.(png|jpg|jpeg|gif|bmp|webp)$/, "_$1")).texture;
+            this._fontTexture = RES.getRes(this._fontData.file.replace(/\.(\w+)$/, "_$1")).texture;
         }
     });
 

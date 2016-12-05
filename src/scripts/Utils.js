@@ -79,11 +79,18 @@
         return false;
     };
 
+    var getParameter = function (name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+        var r = window.location.search.substr(1).match(reg);
+        if (r != null) return r[2]; return null;
+    };
+
     EC.Util = EC.Util || {};
 
     EC.extend(EC.Util, {
         color: colorTransfer,
-        isPointInPath: isPointInPath
+        isPointInPath: isPointInPath,
+        getParameter: getParameter
     });
 
 })(window.EC);

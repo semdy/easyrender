@@ -176,6 +176,7 @@ var EC = {
         classExtend: ClassExtend,
         ua: ua,
         isTouch: isTouch,
+        noop: function () {},
         EVENTS: EVENTS
     });
 
