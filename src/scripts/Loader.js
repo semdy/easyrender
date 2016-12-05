@@ -245,16 +245,6 @@
             return xhr;
         }
 
-        if ( args.cors ) {
-            try{
-                xhr.withCredentials = true;
-            } catch (e) {}
-        }
-
-        if ( !args.cors ) {
-            args.headers["X-Requested-With"] = "XMLHttpRequest";
-        }
-
         if( xhr.onload ) {
             xhr.onload = function () {
                 xhr.onload = new Function;
@@ -278,6 +268,18 @@
         }
 
         xhr.open(type, url, args.async);
+
+        if ( args.cors ) {
+            try{
+                xhr.withCredentials = true;
+            } catch (e) {}
+        }
+
+        if ( !args.cors ) {
+            args.headers["X-Requested-With"] = "XMLHttpRequest";
+        }
+
+        args.headers['Content-Type'] = args['Content-Type'];
 
         for( var header in args.headers){
             xhr.setRequestHeader(header, args.headers[header]);
