@@ -216,11 +216,8 @@
             if( timeout ){
                 clearTimeout(timeout);
             }
-            try {
-                args.success.call(args.context, dataType == 'jsonp' ? res : (dataType == 'xml' ? xhr.responseXML :
-                    (dataType == 'json' ? JSON.parse(xhr.responseText) : xhr.responseText)), xhr);
-            } catch (e) {}
-
+            args.success.call(args.context, dataType == 'jsonp' ? res : (dataType == 'xml' ? xhr.responseXML :
+                (dataType == 'json' ? JSON.parse(xhr.responseText) : xhr.responseText)), xhr);
             args.complete.call(args.context, xhr, xhr.status, xhr.statusText);
         }
 
