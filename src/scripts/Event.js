@@ -14,6 +14,7 @@
 
         initialize: function(){
             this._eventPool = {};
+            return this;
         },
 
         on: function(name, callback, ctx){
