@@ -348,7 +348,7 @@
                 callback && callback(cfgItem);
             });
         }
-        else if (cfgItem.type == 'json' || cfgItem.type == 'sheet' || cfgItem.type == 'font') {
+        else if ( /^(?:json|sheet|font)$/.test( cfgItem.type ) ){
             loadJSON(cfgItem.url, function (data) {
                 var obj = EC.extend({}, cfgItem, {data: data});
                 assets[cfgItem.name] = obj;
