@@ -10,15 +10,15 @@
     //加载图片
     var loadImg = function(src, suc, err){
         var img = new Image();
-        img.addEventListener('load', function sucHandler(){
+        img.addEventListener('load', function sucListener(){
             suc && suc(img);
-            this.removeEventListener('load', sucHandler, false);
+            this.removeEventListener('load', sucListener, false);
         }, false);
 
-        img.addEventListener('error', function errHandler(){
+        img.addEventListener('error', function errListener(){
             err && err();
             console.error('fail load:' + src);
-            this.removeEventListener('error', errHandler, false);
+            this.removeEventListener('error', errListener, false);
         }, false);
 
         img.src = src;
