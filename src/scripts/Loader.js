@@ -35,6 +35,8 @@
             }, function(img){
                 self.dispatch('error', img);
             });
+
+            return this;
         }
     });
 
@@ -88,6 +90,8 @@
             }, function(xhr){
                 self.dispatch('error', xhr);
             });
+
+            return this;
         }
     });
 
@@ -123,6 +127,8 @@
             }, function(xhr){
                 self.dispatch('error', xhr);
             });
+
+            return this;
         }
     });
 
@@ -322,6 +328,8 @@
             };
 
             createAJAX(params);
+
+            return this;
         }
     });
 
@@ -491,6 +499,7 @@
                 });
             });
 
+            return this;
         }
     });
 
