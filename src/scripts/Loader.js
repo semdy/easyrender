@@ -404,7 +404,18 @@
         }
 
         if( asset.type == 'json' || asset.type == 'sheet' ){
-            if( sheetKey ) return asset.data.frames[sheetKey];
+            if( sheetKey ) {
+                var resConfig = {};
+                var data = asset.data.frames[sheetKey];
+                resConfig.width = data.w;
+                resConfig.height = data.h;
+                resConfig.sx = data.x;
+                resConfig.sy = data.y;
+                resConfig.swidth = data.w;
+                resConfig.sheight = data.h;
+                resConfig.texture = asset.texture;
+                return resConfig;
+            }
             return asset.data;
         }
         else {
