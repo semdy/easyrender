@@ -39,10 +39,10 @@
 <!-- endbuild -->
 
 <script>
-    var imgLoader = RES.loadImage("qie_dance.png");
+    var imgLoader = RES.loadImage("images/qie_dance.png");
 
     imgLoader.on("success", function(qieBitMapData){
-        var resLoader = RES.loadJson("mc_qie.json");
+        var resLoader = RES.loadJson("images/mc_qie.json");
         resLoader.on("success", function(resData){
             var canvas = document.getElementById('canvas-movieclip');
             var stage = new EC.Stage(canvas, {
