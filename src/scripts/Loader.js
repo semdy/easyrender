@@ -169,6 +169,10 @@
             _default: "*/*"
         }
     };
+    
+    function globalAjaxSetup( settings ) {
+        EC.extend(RES.ajaxSettings, settings||{});
+    }
 
     function getUrlModule(params, cache) {
         var data = "";
@@ -195,8 +199,16 @@
         return data;
     }
 
+    function mixFn(beforeFn, afterFn){
+        return function(){
+            beforeFn.apply(this, arguments);
+            afterFn.apply(this, arguments);
+        }
+    }
+
     function createAJAX( args ){
-        args = EC.extend({}, RES.ajaxSettings, args||{});
+        var globalSettings = RES.ajaxSettings;
+        args = EC.extend({}, globalSettings, args||{});
 
         var xhr = args.createXHR();
 
@@ -217,17 +229,17 @@
             if( timeout ){
                 clearTimeout(timeout);
             }
-            args.success.call(args.context, dataType == 'jsonp' ? res : (dataType == 'xml' ? xhr.responseXML :
+            mixFn(globalSettings.success, args.success).call(args.context, dataType == 'jsonp' ? res : (dataType == 'xml' ? xhr.responseXML :
                 (dataType == 'json' ? JSON.parse(xhr.responseText) : xhr.responseText)), xhr);
-            args.complete.call(args.context, xhr, xhr.status, xhr.statusText);
+            mixFn(globalSettings.complete, args.complete).call(args.context, xhr, xhr.status, xhr.statusText);
         }
 
         function handleError() {
             if( timeout ){
                 clearTimeout(timeout);
             }
-            args.error.call(args.context, xhr, xhr.status, xhr.statusText);
-            args.complete.call(args.context, xhr, xhr.status, xhr.statusText);
+            mixFn(globalSettings.error, args.error).call(args.context, xhr, xhr.status, xhr.statusText);
+            mixFn(globalSettings.complete, args.complete).call(args.context, xhr, xhr.status, xhr.statusText);
         }
 
         if( args.async && args.timeout > 0 ) {
@@ -516,6 +528,7 @@
         loadImage: function(src){
             return new IMGloader(src);
         },
+        ajaxSetup: globalAjaxSetup,
         ajax: function (params) {
             return createAJAX(params);
         },
