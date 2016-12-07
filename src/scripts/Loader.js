@@ -148,7 +148,7 @@
         context: null,
         dataType: "text",
         callbackName: "?",
-        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+        contentType: 'application/x-www-form-urlencoded;charset=UTF-8',
         createXHR: function () {
             if ( !!window.XMLHttpRequest ) {
                 return new XMLHttpRequest();
@@ -203,7 +203,8 @@
         if ( !xhr ) return;
 
         if( args.beforeSend.call(args.context, xhr, xhr.statusText) === false ){
-            return xhr.abort();
+            xhr.abort();
+            return xhr;
         }
 
         var dataType = args.dataType.toLowerCase(),
@@ -282,7 +283,7 @@
             args.headers["X-Requested-With"] = "XMLHttpRequest";
         }
 
-        args.headers['Content-Type'] = args['Content-Type'];
+        args.headers['Content-Type'] = args.contentType;
 
         for( var header in args.headers){
             xhr.setRequestHeader(header, args.headers[header]);
