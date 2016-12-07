@@ -132,7 +132,7 @@
         }
     });
 
-    RES.ajaxSettings = {
+    var ajaxSettings = {
         url: "",
         type: 'GET',
         async: true,
@@ -171,7 +171,7 @@
     };
     
     function globalAjaxSetup( settings ) {
-        EC.extend(RES.ajaxSettings, settings||{});
+        EC.extend(ajaxSettings, settings||{});
     }
 
     function getUrlModule(params, cache) {
@@ -207,8 +207,7 @@
     }
 
     function createAJAX( args ){
-        var globalSettings = RES.ajaxSettings;
-        args = EC.extend({}, globalSettings, args||{});
+        args = EC.extend({}, ajaxSettings, args||{});
 
         var xhr = args.createXHR();
 
@@ -229,17 +228,17 @@
             if( timeout ){
                 clearTimeout(timeout);
             }
-            mixFn(globalSettings.success, args.success).call(args.context, dataType == 'jsonp' ? res : (dataType == 'xml' ? xhr.responseXML :
+            mixFn(ajaxSettings.success, args.success).call(args.context, dataType == 'jsonp' ? res : (dataType == 'xml' ? xhr.responseXML :
                 (dataType == 'json' ? JSON.parse(xhr.responseText) : xhr.responseText)), xhr);
-            mixFn(globalSettings.complete, args.complete).call(args.context, xhr, xhr.status, xhr.statusText);
+            mixFn(ajaxSettings.complete, args.complete).call(args.context, xhr, xhr.status, xhr.statusText);
         }
 
         function handleError() {
             if( timeout ){
                 clearTimeout(timeout);
             }
-            mixFn(globalSettings.error, args.error).call(args.context, xhr, xhr.status, xhr.statusText);
-            mixFn(globalSettings.complete, args.complete).call(args.context, xhr, xhr.status, xhr.statusText);
+            mixFn(ajaxSettings.error, args.error).call(args.context, xhr, xhr.status, xhr.statusText);
+            mixFn(ajaxSettings.complete, args.complete).call(args.context, xhr, xhr.status, xhr.statusText);
         }
 
         if( args.async && args.timeout > 0 ) {
