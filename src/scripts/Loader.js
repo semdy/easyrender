@@ -175,7 +175,7 @@
     }
 
     function getUrlModule(params, cache) {
-        var data = "";
+        var data = null;
         if( !cache ){
             var rnd = Date.now() + Math.random() * 1e18;
         }
@@ -253,6 +253,7 @@
 
         if( type == 'GET' && data ){
             url += url.indexOf("?") > -1 ? ("&" + data) : ("?" + data);
+            data = null;
         }
 
         if( dataType == "jsonp" ) {
