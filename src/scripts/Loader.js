@@ -340,6 +340,23 @@
             createAJAX(params);
 
             return this;
+        },
+        then: function (onFulfilled, onRejected) {
+            if( onFulfilled ){
+                this.on("success", onFulfilled);
+            }
+            if( onRejected ){
+                this.on("error", onRejected);
+            }
+
+            return this;
+        },
+        always: function (onAlways) {
+            if( onAlways ){
+                this.on("complete", onAlways);
+            }
+
+            return this;
         }
     });
 
