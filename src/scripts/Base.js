@@ -3,7 +3,7 @@
  */
 
 var EC = {
-    version: '1.0.3'
+    version: '1.0.4'
 };
 
 (function (EC) {
