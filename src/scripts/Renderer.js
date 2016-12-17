@@ -1,30 +1,23 @@
 /**
- * Created by shuxy on 2016/4/20
+ * Created by semdy on 2016/4/20
  */
 
-+function(EC){
++function(EC, undefined){
     "use strict";
 
+    var PI = Math.PI;
+    var CONST_ANGLE = PI/180;
     var slice = Array.prototype.slice;
     var tmpContext = document.createElement("canvas").getContext("2d");
 
     function drawImg(ctx, obj){
-
-        var anchorW = -1*(obj.anchorX + obj.parent.anchorX)*obj.width,
-            anchorH = -1*(obj.anchorY + obj.parent.anchorY)*obj.height;
-
         if( obj.sx !== undefined ){
-            var _width = ctx.canvas.width,
-                _height = ctx.canvas.height,
-                swidth = obj.swidth,
-                sheight = obj.sheight;
-
+            var _width = ctx.canvas.width, _height = ctx.canvas.height, swidth = obj.swidth, sheight = obj.sheight;
             if( swidth >= _width ) swidth = _width - 1;
             if( sheight >= _height ) sheight = _height - 1;
-
-            ctx.drawImage(obj.texture, obj.sx, obj.sy, swidth, sheight, anchorW, anchorH, obj.width, obj.height);
+            ctx.drawImage(obj.texture, obj.sx, obj.sy, swidth, sheight, 0, 0, obj.width, obj.height);
         } else {
-            ctx.drawImage(obj.texture, anchorW, anchorH, obj.width, obj.height);
+            ctx.drawImage(obj.texture, 0, 0, obj.width, obj.height);
         }
     }
     
@@ -33,10 +26,14 @@
         var texture = obj._fontTexture;
         var startX = 0;
         var lastWidth = 0;
+        var objWidth = obj.width;
+        var objX = obj.x;
+        var itemData;
+        var bitMapText;
         obj._children = [];
-        obj.text.split("").forEach(function ( n, i ) {
-            var itemData = data[n];
-            var bitMapText = new BitMap();
+        obj.text.split("").forEach(function (n) {
+            itemData = data[n];
+            bitMapText = new BitMap();
             EC.extend(bitMapText, {
                 texture: texture,
                 width: itemData.w,
@@ -47,9 +44,18 @@
                 swidth: itemData.w,
                 sheight: itemData.h
             });
-            obj.addChild(bitMapText);
+
             lastWidth = itemData.w;
+            obj.addChild(bitMapText);
+
         });
+
+        if( obj.textAlign == 'center' ) {
+            obj.x = objX + objWidth / 2 - obj.width / 2;
+        }
+        else if( obj.textAlign == 'right' ) {
+            obj.x = objX + objWidth - obj.width;
+        }
     }
 
     function drawBitMapText(ctx, obj){
@@ -67,10 +73,8 @@
         ctx.textAlign = obj.textAlign;
         ctx.textBaseline = obj.textBaseline || "top";
 
-        var textX = -1*(obj.anchorX + obj.parent.anchorX)*obj.width,
-            textY = -1*(obj.anchorY + obj.parent.anchorY)*obj.height;
-
-        textX = obj.textAlign == "center" ? textX + obj.width/2 : textX;
+        var textX = obj.textAlign == "center" ? obj.width/2 : (obj.textAlign == "right" ? obj.width : 0),
+            textY = 0;
 
         if( obj.stroke ) {
             ctx.strokeStyle = obj.textColor;
@@ -125,19 +129,25 @@
     }
 
     function drawContext(ctx, obj){
-        var isMasker = obj.$type === "Masker";
         var parent = obj.parent;
+        var moveX = obj.moveX*(obj.anchorX > 0 ? 1 : 0);
+        var moveY = obj.moveY*(obj.anchorY > 0 ? 1 : 0);
+        var anchorW = obj.anchorX*obj.width;
+        var anchorH = obj.anchorY*obj.height;
         obj = obj || {};
-        ctx.globalAlpha = parent.alpha < 1 ? parent.alpha : obj.alpha;
+        if( EC.isNumber(obj.alpha) ) {
+            ctx.globalAlpha = obj.alpha;
+        }
         ctx.transform(
-            obj.scaleX * parent.scaleX, //水平缩放绘图
-            obj.skewX * parent.skewX, //水平倾斜绘图
-            obj.skewY * parent.skewY, //垂直倾斜绘图
-            obj.scaleY * parent.scaleY, //垂直缩放绘图
-            parent.x + obj.x + (obj.moveX||0) + (obj.anchorX + parent.anchorX)*obj.width - ( isMasker ? 0 : (parent.mask ? parent.mask.x : 0 )), //水平移动绘图
-            parent.y + obj.y + (obj.moveY||0) + (obj.anchorY + parent.anchorY)*obj.height - ( isMasker ? 0 : (parent.mask ? parent.mask.y : 0 )) //垂直移动绘图
+            obj.scaleX, //水平缩放绘图
+            obj.skewX, //水平倾斜绘图
+            obj.skewY, //垂直倾斜绘图
+            obj.scaleY, //垂直缩放绘图
+            obj.x + moveX + anchorW - ( obj.isMasker ? 0 : (parent.mask ? parent.mask.x : 0 )), //水平移动绘图
+            obj.y + moveY + anchorH - ( obj.isMasker ? 0 : (parent.mask ? parent.mask.y : 0 )) //垂直移动绘图
         );
-        ctx.rotate((obj.rotation + parent.rotation)*Math.PI/180);
+        ctx.rotate(obj.rotation*CONST_ANGLE);
+        ctx.translate(-moveX - anchorW, -moveY - anchorH);
     }
 
     function drawShapeContext(ctx, obj){
@@ -192,86 +202,113 @@
         }
     }
 
+    function getTotalOffset(object, includeMoveOffset) {
+        var x = object.x + ( includeMoveOffset ? object.moveX : 0 );
+        var y = object.y + ( includeMoveOffset ? object.moveY : 0 );
+        var parent = object.parent;
+        while( parent ){
+            x += (parent.x + ( includeMoveOffset ? parent.moveX : 0 ));
+            y += (parent.y + ( includeMoveOffset ? parent.moveY : 0 ));
+            parent = parent.parent;
+        }
+
+        return {
+            x: x,
+            y: y
+        }
+    }
+
+    function checkPointByCoords(coord, width, height, totalX, totalY){
+        if( coord.x >= totalX && coord.x <= (width + totalX) &&
+            coord.y >= totalY && coord.y <= (height + totalY) ){
+            return true;
+        }
+
+        return false;
+    }
+
+    function isPointInPath(coord, object){
+        var objectOffset = getTotalOffset(object);
+        if( object.$type == 'Shape' ) {
+            var ctx = object.renderContext;
+            ctx.save();
+            ctx.translate(objectOffset.x, objectOffset.y);
+            ctx.beginPath();
+            drawShapeFuns[object.drawType](ctx, object);
+            ctx.restore();
+            return ctx.isPointInPath(coord.x, coord.y);
+        } else {
+            return checkPointByCoords(coord, object.width, object.height, objectOffset.x, objectOffset.y);
+        }
+
+    }
+
+    function Bounds( object ) {
+        var offset = getTotalOffset(object, true);
+        this.x = offset.x;
+        this.y = offset.y;
+        this.width = object.width;
+        this.height = object.height;
+    }
+
+    Bounds.prototype = {
+        intersects: function ( target ) {
+            if( (target.x <= this.x + this.width) && (target.x + target.width >= this.x) &&
+                (target.y <= this.y + this.height) && (target.y + target.height >= this.y) ){
+                return true;
+            }
+
+            return false;
+        }
+    };
+
     var drawShapeFuns = {
         rect: function (ctx, obj) {
-            var anchorW = (obj.anchorX + obj.parent.anchorX)*obj.width,
-                anchorH = (obj.anchorY + obj.parent.anchorY)*obj.height;
-            ctx.rect(-anchorW, -anchorH, obj.width, obj.height);
+            ctx.rect(obj.moveX, obj.moveY, obj.width, obj.height);
         },
 
         arc: function (ctx, obj) {
-            var anchorW = (obj.anchorX + obj.parent.anchorX)*obj.width,
-                anchorH = (obj.anchorY + obj.parent.anchorY)*obj.height;
-            ctx.arc(-anchorW + obj.radius, -anchorH + obj.radius, obj.radius, obj.startAngle, obj.endAngle, obj.counterclockwise);
+            ctx.arc(obj.radius + obj.moveX, obj.radius + obj.moveY, obj.radius, obj.startAngle*PI, obj.endAngle*PI, obj.counterclockwise);
         },
 
         arcTo: function (ctx, obj) {
-            var anchorW = (obj.anchorX + obj.parent.anchorX)*obj.width,
-                anchorH = (obj.anchorY + obj.parent.anchorY)*obj.height;
-            ctx.moveTo(-anchorW, -anchorH);
-            ctx.arcTo(obj.startX - obj.moveX -anchorW, obj.startY - obj.moveY - anchorH, obj.endX - obj.moveX - anchorW, obj.endY - obj.moveY - anchorH, obj.radius);
+            ctx.moveTo(obj.moveX, obj.moveY);
+            ctx.arcTo(obj.startX, obj.startY, obj.endX, obj.endY, obj.radius);
         },
 
         roundRect: function (ctx, obj) {
-            var anchorW = (obj.anchorX + obj.parent.anchorX)*obj.width,
-                anchorH = (obj.anchorY + obj.parent.anchorY)*obj.height;
-            ctx.roundRect(-anchorW, -anchorH, obj.width, obj.height, obj.radius);
+            ctx.roundRect(obj.moveX, obj.moveY, obj.width, obj.height, obj.radius);
         },
 
         lineTo: function (ctx, obj) {
-            var anchorW = (obj.anchorX + obj.parent.anchorX)*obj.width,
-                anchorH = (obj.anchorY + obj.parent.anchorY)*obj.height;
-            var coords = (anchorW + anchorH + obj.moveX + obj.moveY == 0) ? obj.coords :
-                obj.coords.map(function (coord) {
-                return [coord[0] - obj.moveX - anchorW, coord[1] - obj.moveY - anchorH];
-            });
-
-            ctx.moveTo(-anchorW, -anchorH);
-            coords.forEach(function (coord) {
+            ctx.moveTo(obj.moveX, obj.moveY);
+            obj.coords.forEach(function (coord) {
                 ctx.lineTo.apply(ctx, coord);
             });
         },
 
         line: function (ctx, obj) {
-            var anchorW = (obj.anchorX + obj.parent.anchorX)*obj.width,
-                anchorH = (obj.anchorY + obj.parent.anchorY)*obj.height;
-            ctx.moveTo(-anchorW, -anchorH);
-            ctx.lineTo(obj.endX - obj.moveX - anchorW, obj.endY - obj.moveY - anchorH);
+            ctx.moveTo(obj.moveX, obj.moveY);
+            ctx.lineTo(obj.endX, obj.endY);
         },
 
         dashedLine: function (ctx, obj) {
-            var anchorW = (obj.anchorX + obj.parent.anchorX)*obj.width,
-                anchorH = (obj.anchorY + obj.parent.anchorY)*obj.height;
-            ctx.dashedLine(-anchorW, -anchorH, obj.endX - obj.moveX - anchorW, obj.endY - obj.moveY - anchorH, obj.dashLength);
+            ctx.dashedLine(obj.moveX, obj.moveY, obj.endX, obj.endY, obj.dashLength);
         },
 
         ellipse: function (ctx, obj) {
-            var anchorW = (obj.anchorX + obj.parent.anchorX)*obj.width,
-                anchorH = (obj.anchorY + obj.parent.anchorY)*obj.height;
-            ctx.ellipse(-anchorW + obj.width/2, -anchorH + obj.height/2, obj.width, obj.height);
+            ctx.ellipse(obj.width/2 + obj.moveX, obj.height/2 + obj.moveY, obj.width, obj.height);
         },
         clip: function (ctx) {
             ctx.clip();
         },
         quadraticCurveTo: function (ctx, obj) {
-            var anchorW = (obj.anchorX + obj.parent.anchorX)*obj.width,
-                anchorH = (obj.anchorY + obj.parent.anchorY)*obj.height;
-            var coords = (anchorW + anchorH + obj.moveX + obj.moveY == 0) ? obj.coords :
-                obj.coords.map(function (coord, i) {
-                return i % 2 === 0 ? coord - obj.moveX - anchorW : coord - obj.moveY - anchorH;
-            });
-            ctx.moveTo(-anchorW, -anchorH);
-            ctx.quadraticCurveTo.apply(ctx, coords);
+            ctx.moveTo(obj.moveX, obj.moveY);
+            ctx.quadraticCurveTo.apply(ctx, obj.coords);
         },
         bezierCurveTo: function (ctx, obj) {
-            var anchorW = (obj.anchorX + obj.parent.anchorX)*obj.width,
-                anchorH = (obj.anchorY + obj.parent.anchorY)*obj.height;
-            var coords = (anchorW + anchorH + obj.moveX + obj.moveY == 0) ? obj.coords :
-                obj.coords.map(function (coord, i) {
-                return i % 2 === 0 ? coord - obj.moveX - anchorW : coord - obj.moveY - anchorH;
-            });
-            ctx.moveTo(-anchorW, -anchorH);
-            ctx.bezierCurveTo.apply(ctx, coords);
+            ctx.moveTo(obj.moveX, obj.moveY);
+            ctx.bezierCurveTo.apply(ctx, obj.coords);
         }
     };
 
@@ -287,9 +324,11 @@
 
             this.x = 0;
             this.y = 0;
+            this.width = 0;
+            this.height = 0;
 
             this.visible = true;
-            this.alpha = 1;
+            this.alpha = undefined;
             this.scaleX = 1;
             this.scaleY = 1;
             this.rotation = 0;
@@ -297,6 +336,8 @@
             this.skewY = 0;
             this.anchorX = 0;
             this.anchorY = 0;
+            this.moveX = 0;
+            this.moveY = 0;
 
             this.$type = "ObjectContainer";
 
@@ -310,11 +351,6 @@
             }
 
             object.parent = this;
-            object.visible = EC.isDefined(object.visible) ? object.visible : this.visible;
-            object.alpha = EC.isDefined(object.alpha) ? object.alpha : this.alpha;
-            object.rotation = EC.isDefined(object.rotation) ? object.rotation : this.rotation;
-            object.scaleX = EC.isDefined(object.scaleX) ? object.scaleX : this.scaleX;
-            object.scaleY = EC.isDefined(object.scaleY) ? object.scaleY : this.scaleY;
 
             if( !EC.isNumber(index) ) {
                 this._children.push(object);
@@ -332,14 +368,7 @@
         },
 
         removeChild: function(object){
-
-            for(var i = 0; i < this._children.length; i++){
-                if( this._children[i] === object ){
-                    this._children.splice(i, 1);
-                    break;
-                }
-            }
-
+            this.getChilds().splice(this.getChildIndex(object), 1);
             this.numChildren = this._children.length;
             this._stopTweens(object);
             this._triggerRemove(object);
@@ -374,17 +403,17 @@
         },
 
         getChildIndex: function(childObj){
-            for(var i=0; i<this._children.length; i++){
-                if( this._children[i] == childObj ) return i;
-            }
-
-            return -1;
+           return this.getChilds().indexOf(childObj);
         },
 
         setChildIndex: function( childObj, index ){
             this.removeChild(childObj);
             this._children.splice(index, 0, childObj);
             return this;
+        },
+
+        getBounds: function () {
+            return new Bounds(this);
         },
 
         setParams: function ( params ) {
@@ -500,14 +529,16 @@
             }
 
         },
-        setTexture: function( texture ){
-            if( !EC.isObject(texture) )
-                throw new Error(String(texture) + "is a invalid texture");
-            if( 'nodeType' in texture ){
-                this.texture = texture;
+        setTexture: function( dataObject ){
+            if( !EC.isObject(dataObject) )
+                throw new Error(String(dataObject) + "is a invalid texture");
+            if( 'nodeType' in dataObject ){
+                this.texture = dataObject;
             } else {
-                EC.extend(this, texture);
+                EC.extend(this, dataObject);
             }
+
+            return this;
         }
     });
 
@@ -591,7 +622,7 @@
             this.endX = endX;
             this.endY = endY;
             this.radius = radius;
-            this.width = startX;
+            this.width = startX - startY;
             this.height = radius;
             this.drawType = 'arcTo';
             return this;
@@ -608,6 +639,7 @@
         moveTo: function (x, y) {
             this.moveX = x;
             this.moveY = y;
+            return this;
         },
         lineTo: function () {
             this.coords = slice.call(arguments);
@@ -715,12 +747,11 @@
     var Masker = Shape.extend({
         initialize: function(){
             Masker.superclass.initialize.apply(this, arguments);
-            this.$type = "Masker";
+            this.isMasker = true;
         },
         draw: function(ctx){
             Masker.superclass.draw.call(this, ctx);
             ctx.clip();
-            ctx.translate(-this.parent.x, -this.parent.y);
         }
     });
 
@@ -740,26 +771,36 @@
 
         },
         addChild: function( childObj ){
+
             childObj.renderContext = this.renderContext;
             childObj.stage = this.stage;
 
             this._addMask();
             Sprite.superclass.addChild.apply(this, arguments);
 
-            var moveX = childObj.moveX || 0;
-            var moveY = childObj.moveY || 0;
+            var x = childObj.x + childObj.moveX;
+            var y = childObj.y + childObj.moveY;
+            var width = childObj.width;
+            var height = childObj.height;
 
             if (this.getChilds().length == 1) {
-                this.width = childObj.x + moveX + childObj.width;
-                this.height = childObj.y + moveY + childObj.height;
-            } else {
-                if (childObj.x + moveX + childObj.width > this.width) {
-                    this.width = childObj.x + moveX + childObj.width;
+                if( this.width == 0 ) {
+                    this.width = x + width;
                 }
-                if (childObj.y + moveY + childObj.height > this.height) {
-                    this.height = childObj.y + moveY + childObj.height;
+                if( this.height == 0 ) {
+                    this.height = y + height;
+                }
+            } else {
+                if (this.width == 0 && x + width > this.width) {
+                    this.width = x + width;
+                }
+                if (this.height == 0 && y + height > this.height) {
+                    this.height = y + height;
                 }
             }
+
+            return this;
+
         },
         _addMask: function () {
             if( !this.mask || this._isMaskAdded ) return;
@@ -767,7 +808,7 @@
                 Sprite.superclass.addChild.call(this, this.mask, 0);
                 this._isMaskAdded = true;
             } else {
-                console.error("mask must be a instance of EC.Masker");
+                throw new Error("mask must be a instance of EC.Masker");
             }
         }
     });
@@ -915,6 +956,7 @@
             BitMapText.superclass.initialize.apply(this, arguments);
             this.text = "";
             this.font = "";
+            this.textAlign = 'left';
             this.letterSpacing = 0;
             this.$type = "BitMapText";
 
@@ -925,6 +967,22 @@
         _create: function(){
             this._fontData = (EC.isString( this.font ) ? RES.getRes(this.font + "_fnt") : this.font).data;
             this._fontTexture = RES.getRes(this._fontData.file.replace(/\.(\w+)$/, "_$1")).texture;
+        }
+    });
+
+    /**
+     * Point
+     * **/
+
+    var Point = EC.Event.extend({
+        initialize: function (x, y) {
+            Point.superclass.initialize.apply(this, arguments);
+            this.x = x || 0;
+            this.y = y || 0;
+        },
+        set: function (x, y) {
+            this.x = x;
+            this.y = y;
         }
     });
 
@@ -965,27 +1023,26 @@
             if( !EC.isObject(childObj) ){
                 throw new Error(String(childObj) + "is not a instance of EC");
             }
-            childObj.renderContext = this.renderContext;
-            childObj.stage = this;
             Stage.superclass.addChild.apply(this, arguments);
             this._triggerAddToStage(childObj);
+
+            return this;
         },
         render: function(){
             var self = this;
             var ctx = this.renderContext;
             var _render = function (obj) {
-                if (obj.$type == 'Sprite') {
-
-                    obj.mask && ctx.save();
-
-                    obj.getChilds().forEach(function(item){
-                        _render(item);
-                    });
-
-                    obj.mask && ctx.restore();
-
-                } else {
-                    self._renderItem(obj, ctx);
+                if( obj.visible ) {
+                    if (obj.$type == 'Sprite') {
+                        ctx.save();
+                        drawContext(ctx, obj);
+                        obj.getChilds().forEach(function (item) {
+                            _render(item);
+                        });
+                        ctx.restore();
+                    } else {
+                        self._renderItem(obj, ctx);
+                    }
                 }
             };
 
@@ -995,43 +1052,27 @@
             return this;
         },
         _renderItem: function(obj, ctx){
-
-            if( obj.visible === false ) return;
-
+            obj.isMasker || ctx.save();
+            drawContext(ctx, obj);
             switch ( obj.$type ){
                 case 'BitMap':
-                    ctx.save();
-                    drawContext(ctx, obj);
                     drawImg(ctx, obj);
-                    ctx.restore();
                     break;
                 case 'BitMapText':
                     drawBitMapText(ctx, obj);
                     break;
                 case 'TextField':
-                    ctx.save();
-                    drawContext(ctx, obj);
                     drawText(ctx, obj);
-                    ctx.restore();
                     break;
                 case 'Shape':
-                    ctx.save();
-                    drawContext(ctx, obj);
-                    drawShape(ctx, obj);
-                    ctx.restore();
-                    break;
-                case 'Masker':
-                    drawContext(ctx, obj);
                     drawShape(ctx, obj);
                     break;
             }
+            obj.isMasker || ctx.restore();
         },
         clear: function(){
             this.renderContext.clearRect(0, 0, this.width, this.height);
             return this;
-        },
-        clearChildren: function(){
-            this.removeAllChildren();
         },
         start: function(){
             if( this._isRendering ) return;
@@ -1047,8 +1088,12 @@
             return this;
         },
         _triggerAddToStage: function( childObj ){
+            var self = this;
 
             var _runAddToStage = function( obj ){
+
+                obj.renderContext = self.renderContext;
+                obj.stage = self;
 
                 obj.dispatch("addToStage", obj);
 
@@ -1057,6 +1102,8 @@
                 }
             };
 
+            childObj.renderContext = self.renderContext;
+            childObj.stage = self;
             childObj.dispatch("addToStage", childObj);
             childObj.getChilds().forEach(_runAddToStage);
         },
@@ -1147,7 +1194,7 @@
         "isPointInPath"
     ].forEach(function(method){
         Stage.prototype[method] = function(){
-            return this.renderContext[method].apply(this.renderContext, arguments);
+            return this.renderContext[method].apply(this, arguments);
         };
     });
 
@@ -1159,7 +1206,9 @@
         TextInput: TextInput,
         Masker: Masker,
         Sprite: Sprite,
-        Stage: Stage
+        Point: Point,
+        Stage: Stage,
+        isPointInPath: isPointInPath
     });
 
 }(window.EC);

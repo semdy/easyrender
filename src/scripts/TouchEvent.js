@@ -1,5 +1,5 @@
 /**
- * Created by mcake on 2016/9/6.
+ * Created by semdy on 2016/9/6.
  */
 
 (function(EC){
@@ -83,7 +83,7 @@
             var self = this;
             var ratio = this.stage.scaleRatio;
             var enableStack = this.enableStack.filter(function(obj){
-                return EC.Util.isPointInPath({x: self._touchX * ratio, y: self._touchY * ratio}, obj);
+                return EC.isPointInPath({x: self._touchX * ratio, y: self._touchY * ratio}, obj);
             });
 
             if( enableStack.length ) {
@@ -113,7 +113,7 @@
             }
         },
         _getTouchedTarget: function( target ){
-            var elSatck = [];
+            var elStack = [];
             var self = this;
             var ratio = this.stage.scaleRatio;
 
@@ -125,19 +125,19 @@
                     if( childs[i].$type === "Sprite" ){
                         getItems(childs[i]);
                     } else {
-                        elSatck.push(childs[i]);
+                        elStack.push(childs[i]);
                     }
                 }
             }
 
             getItems(target);
 
-            return elSatck.find(function (obj) {
-                return EC.Util.isPointInPath({x: self._touchX * ratio, y: self._touchY * ratio}, obj);
+            return elStack.find(function (obj) {
+                return EC.isPointInPath({x: self._touchX * ratio, y: self._touchY * ratio}, obj);
             });
         },
         _getTouchEnables: function(){
-            var enableSatck = [];
+            var enableStack = [];
 
             function getItems( obj ) {
                 var childs = obj.getChilds();
@@ -148,7 +148,7 @@
                         getItems(childs[i]);
                     }
                     if (childs[i].touchEnabled) {
-                        enableSatck.push(childs[i]);
+                        enableStack.push(childs[i]);
                     }
                 }
             }
@@ -156,10 +156,10 @@
             getItems(this.stage);
 
             if( this.stage.touchEnabled ){
-                enableSatck.push(this.stage);
+                enableStack.push(this.stage);
             }
 
-            return enableSatck;
+            return enableStack;
         },
         _getOriginalEventProps: function(event){
             var props = {};

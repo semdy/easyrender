@@ -72,12 +72,15 @@
             bitMapText.text = "123";
             bitMapText.x = 100;
             bitMapText.y = 100;
+            bitMapText.width = 400;
+            bitMapText.textAlign = 'center';
             bitMapText.letterSpacing = 5;
             stage.addChild(bitMapText);
 
-            var timer = new EC.Timer(200);
+            var timer = new EC.Timer(600);
             timer.on("timer", function () {
-                bitMapText.text = Math.floor(800 + Math.random()*1000).toString();
+                bitMapText.text = Math.floor(100 + Math.random()*100000).toString();
+                console.log(bitMapText.text);
             });
             timer.start();
 

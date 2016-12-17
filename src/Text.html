@@ -58,6 +58,8 @@
     text.width = 200;
     text.x = 10;
     text.y = 10;
+    text.size = 14;
+    text.textFamily = '宋体';
     text.multiple = true;
     text.text = "这是一段测试字符串。This is an test string.当在文本框输入内容后会同步显示到canvas上。";
     stage.addChild(text);
@@ -69,6 +71,12 @@
     text2.textAlign = "center";
     text2.text = "文本居中";
     stage.addChild(text2);
+
+    var text3 = new EC.TextField();
+    text3.x = 10;
+    text3.y = 250;
+    text3.text = "斜杠n\n换行";
+    stage.addChild(text3);
 
 </script>
 </body>

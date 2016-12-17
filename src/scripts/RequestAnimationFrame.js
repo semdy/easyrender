@@ -1,5 +1,5 @@
 /**
- * Created by mcake on 2016/9/6.
+ * Created by semdy on 2016/9/6.
  */
 var requestAnimationFrame =
     window.requestAnimationFrame        ||

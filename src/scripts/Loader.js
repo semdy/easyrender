@@ -1,5 +1,5 @@
 /**
- * Created by mcake on 2016/9/6.
+ * Created by semdy on 2016/9/6.
  */
 (function(RES){
     "use strict";
@@ -272,7 +272,7 @@
             };
         } else {
             xhr.onreadystatechange = function () {
-                if (xhr.readyState == 4) {
+                if (xhr.readyState === 4) {
                     if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304) {
                         xhr.onreadystatechange = new Function;
                         handleSuccess();

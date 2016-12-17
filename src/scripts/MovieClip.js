@@ -1,5 +1,5 @@
 /**
- * Created by mcake on 2016/9/6.
+ * Created by semdy on 2016/9/6.
  */
 
 (function(EC, undefined){
@@ -18,12 +18,17 @@
 
             this.setRES(resUrl, res);
             this._clip = new EC.BitMap(this.RESUrl);
-            this.addChild(this._clip);
 
             if( Array.isArray(this.RESUrl) ){
+                this.width = this.RESUrl[0].width;
+                this.height = this.RESUrl[0].height;
                 this.totalFrames = this.RESUrl.length;
                 this.setFrame = this.setFrameByPath;
             } else {
+                var _key = this.RES.mc[resKey].frames[0].res;
+                var _resData = this.RES.res[_key];
+                this.width = _resData.w;
+                this.height = _resData.h;
                 this.setFrame = this.setFrameBySprite;
             }
 
@@ -164,13 +169,20 @@
             this._clip.texture = resData.texture;
             this._clip.x = resItem.x || 0;
             this._clip.y = resItem.y || 0;
-            this._clip.width = resData.width || this.width || 0;
-            this._clip.height = resData.height || this.height || 0;
+            this._clip.width = resData.width || this._clip.width || 0;
+            this._clip.height = resData.height || this._clip.height || 0;
+            this.width = this._clip.width;
+            this.height = this._clip.height;
 
             return this;
         },
 
         _initEvents: function(){
+
+            this.on("addToStage", function () {
+                this.addChild(this._clip);
+            }, this);
+
             this._timer.on('timer', function(){
                 if( ++this.currentFrame > this.totalFrames - 1 ){
                     this.currentFrame = this._startFrame;

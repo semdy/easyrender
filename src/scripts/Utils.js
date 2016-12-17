@@ -1,5 +1,5 @@
 /**
- * Created by mcake on 2016/9/6.
+ * Created by semdy on 2016/9/6.
  */
 
 (function(EC){
@@ -68,29 +68,22 @@
         }
     };
 
-    var isPointInPath = function(coord, object){
-        var moveX = object.moveX || 0;
-        var moveY = object.moveY || 0;
-        if( coord.x > (object.x + moveX) && coord.x < (object.x + object.width + moveX) &&
-            coord.y > (object.y + moveY) && coord.y < (object.y + object.height + moveY) ){
-            return true;
-        }
-
-        return false;
-    };
-
-    var getParameter = function (name) {
+    function getParameter(name) {
         var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
         var r = window.location.search.substr(1).match(reg);
         if (r != null) return r[2]; return null;
-    };
+    }
+
+    function hitTest(object, target) {
+        return object.getBounds().intersects(target.getBounds());
+    }
 
     EC.Util = EC.Util || {};
 
     EC.extend(EC.Util, {
         color: colorTransfer,
-        isPointInPath: isPointInPath,
-        getParameter: getParameter
+        getParameter: getParameter,
+        hitTest: hitTest
     });
 
 })(window.EC);

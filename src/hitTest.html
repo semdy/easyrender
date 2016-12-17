@@ -42,7 +42,7 @@
 <script>
     var canvas = document.getElementById('canvas-shape');
     var stage = new EC.Stage(canvas, {
-        scaleMode: EC.isTouch ? 'fixedWidth' : 'noScale',
+        scaleMode: EC.isTouch ? 'showAll' : 'noScale',
         width: 750,
         height: 1334,
         showFps: true
@@ -54,45 +54,23 @@
         top: 0
     });
 
-    var input = new EC.TextInput();
-    input.x = 100;
-    input.y = 100;
-    input.borderColor = "#aaa";
-    input.borderRadius = 6;
-    input.width = 200;
-    input.height = 32;
-    input.fontSize = 14;
-    input.color = "#f90";
-    //input.inputType = "email";
-    input.placeholder = "please type a number";
-    stage.addChild(input);
+    var rect = new EC.Shape();
+    rect.stroke("#f90");
+    rect.rect(200, 50, 200, 100);
+    stage.addChild(rect);
 
-    input.on("focus", function (e) {
-        console.log("focus", e.target);
-    });
+    var rect2 = new EC.Shape();
+    rect2.stroke("#cc0000");
+    rect2.rect(120, 120, 100, 100);
+    stage.addChild(rect2);
 
-    input.on("change", function (e) {
-        console.log("change", e.value);
-    });
+    var rect3 = new EC.Shape();
+    rect3.stroke("#000");
+    rect3.rect(150, 250, 150, 100);
+    stage.addChild(rect3);
 
-    input.on("blur", function (e) {
-        console.log("blur", e.value);
-    });
-
-    input.on("input", function (e) {
-        console.log("input", e.value);
-    });
-
-    var textArea = new EC.TextInput();
-    textArea.x = 100;
-    textArea.y = 160;
-    textArea.width = 300;
-    textArea.height = 120;
-    textArea.fontSize = 14;
-    textArea.borderColor = "#aaa";
-    textArea.inputType = "textarea";
-    stage.addChild(textArea);
-
+    console.log(EC.Util.hitTest(rect, rect2));
+    console.log(EC.Util.hitTest(rect2, rect3));
 </script>
 </body>
 </html>

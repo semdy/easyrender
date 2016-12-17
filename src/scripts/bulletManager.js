@@ -101,7 +101,7 @@
             }
         },
         clear: function () {
-            this.stage.clearChildren();
+            this.stage.removeAllChildren();
             //this.subtitles = [];
         }
     });

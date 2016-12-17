@@ -1,0 +1,78 @@
+<!Doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>EC MovieClip</title>
+    <style>
+        body{
+            margin:0;
+        }
+        .movieclip{
+            position: absolute;
+            left:0;
+            top:0;
+            right:0;
+            bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+<canvas id="canvas-shape" class="movieclip"></canvas>
+
+<script src="scripts/libs/easyrender.js"></script>
+
+<script>
+    var canvas = document.getElementById('canvas-shape');
+    var stage = new EC.Stage(canvas, {
+        scaleMode: EC.isTouch ? 'showAll' : 'noScale',
+        width: 750,
+        height: 1334,
+        showFps: true
+    });
+
+    stage.showFps({
+        right: 0,
+        left: "auto",
+        top: 0
+    });
+
+    var sprite = new EC.Sprite();
+    sprite.x = 100;
+    sprite.y = 10;
+    stage.addChild(sprite);
+
+    var rect = new EC.Shape();
+    rect.stroke("#f90");
+    rect.rect(100, 50, 200, 100);
+    sprite.addChild(rect);
+
+    rect.touchEnabled = true;
+    rect.on("touch", function () {
+        rect.stroke("#cc0000");
+    });
+
+    var roundRect = new EC.Shape();
+    roundRect.stroke("#06c");
+    roundRect.roundRect(100, 250, 200, 100, 12);
+    sprite.addChild(roundRect);
+
+    roundRect.touchEnabled = true;
+    roundRect.on("touch", function () {
+        EC.Tween.get(roundRect).to({radius: 50}, 600);
+    });
+
+    var arc = new EC.Shape();
+    arc.stroke("#cc0000");
+    arc.arc(200, 450, 80, 0, 2, true);
+    stage.addChild(arc);
+
+    arc.touchEnabled = true;
+    arc.on("touch", function () {
+        arc.fill("#f90");
+    });
+</script>
+</body>
+</html>
