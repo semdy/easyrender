@@ -22,8 +22,8 @@
     }
     
     function fillBitMapText(obj) {
-        var data = obj._fontData.frames;
-        var texture = obj._fontTexture;
+        var data = obj.fontData.frames;
+        var texture = obj.fontTexture;
         var startX = 0;
         var lastWidth = 0;
         var objWidth = obj.width;
@@ -402,6 +402,10 @@
             return this._children;
         },
 
+        getBounds: function () {
+            return new Bounds(this);
+        },
+
         getChildIndex: function(childObj){
            return this.getChilds().indexOf(childObj);
         },
@@ -410,10 +414,6 @@
             this.removeChild(childObj);
             this._children.splice(index, 0, childObj);
             return this;
-        },
-
-        getBounds: function () {
-            return new Bounds(this);
         },
 
         setParams: function ( params ) {
@@ -451,12 +451,10 @@
 
         _stopTweens: function( target ){
             EC.Tween.removeTweens(target);
-            return this;
         },
 
         _stopAllTweens: function(){
             EC.Tween.removeAllTweens(this);
-            return this;
         }
     });
 
@@ -965,8 +963,8 @@
             }, this);
         },
         _create: function(){
-            this._fontData = (EC.isString( this.font ) ? RES.getRes(this.font + "_fnt") : this.font).data;
-            this._fontTexture = RES.getRes(this._fontData.file.replace(/\.(\w+)$/, "_$1")).texture;
+            this.fontData = (EC.isString( this.font ) ? RES.getRes(this.font + "_fnt") : this.font).data;
+            this.fontTexture = RES.getRes(this.fontData.file.replace(/\.(\w+)$/, "_$1")).texture;
         }
     });
 
@@ -976,7 +974,7 @@
 
     var Point = EC.Event.extend({
         initialize: function (x, y) {
-            Point.superclass.initialize.apply(this, arguments);
+            Point.superclass.initialize.call(this);
             this.x = x || 0;
             this.y = y || 0;
         },
