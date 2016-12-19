@@ -778,21 +778,26 @@
 
             var x = childObj.x + childObj.moveX;
             var y = childObj.y + childObj.moveY;
-            var width = childObj.width;
-            var height = childObj.height;
+            var lineGap = (childObj.lineWidth||0)/2;
+            var width = childObj.width + lineGap;
+            var height = childObj.height + lineGap;
 
             if (this.getChilds().length == 1) {
                 if( this.width == 0 ) {
                     this.width = x + width;
+                } else {
+                    this._isWidthDefined = true;
                 }
                 if( this.height == 0 ) {
                     this.height = y + height;
+                } else {
+                    this._isHeightDefined = true;
                 }
             } else {
-                if (this.width == 0 && x + width > this.width) {
+                if (!this._isWidthDefined && (x + width > this.width)) {
                     this.width = x + width;
                 }
-                if (this.height == 0 && y + height > this.height) {
+                if (!this._isHeightDefined && (y + height > this.height)) {
                     this.height = y + height;
                 }
             }
