@@ -78,6 +78,24 @@
     text3.text = "斜杠n\n换行";
     stage.addChild(text3);
 
+    var strokeText = new EC.TextField();
+    strokeText.x = 10;
+    strokeText.y = 350;
+    strokeText.size = 34;
+    strokeText.stroke = true;
+    strokeText.strokeColor = "#f90";
+    strokeText.text = "带描边的文字";
+    stage.addChild(strokeText);
+
+    var hollowText = new EC.TextField();
+    hollowText.x = 10;
+    hollowText.y = 400;
+    hollowText.size = 34;
+    hollowText.strokeOnly = true;
+    hollowText.strokeColor = "#f90";
+    hollowText.text = "空心的文字";
+    stage.addChild(hollowText);
+
 </script>
 </body>
 </html>

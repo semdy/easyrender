@@ -76,19 +76,21 @@
         var textX = obj.textAlign == "center" ? obj.width/2 : (obj.textAlign == "right" ? obj.width : 0),
             textY = 0;
 
-        if( obj.stroke ) {
-            ctx.strokeStyle = obj.textColor;
+        if( !obj.strokeOnly ) {
+            ctx.fillStyle = obj.textColor;
+            if (obj.multiple) {
+                textAutoLine(ctx, "fillText", obj.text, obj.width, textX, textY, obj.lineHeight);
+            } else {
+                textSplitLine(ctx, "fillText", obj.text, textX, textY, obj.lineHeight);
+            }
+        }
+
+        if( obj.stroke || obj.strokeOnly ) {
+            ctx.strokeStyle = obj.strokeColor;
             if( obj.multiple ){
                 textAutoLine(ctx, "strokeText", obj.text, obj.width, textX, textY, obj.lineHeight);
             } else {
                 textSplitLine(ctx, "strokeText", obj.text, textX, textY, obj.lineHeight);
-            }
-        } else {
-            ctx.fillStyle = obj.textColor;
-            if( obj.multiple ){
-                textAutoLine(ctx, "fillText", obj.text, obj.width, textX, textY, obj.lineHeight);
-            } else {
-                textSplitLine(ctx, "fillText", obj.text, textX, textY, obj.lineHeight);
             }
         }
     }
@@ -471,10 +473,12 @@
             this.textBaseline = "";
             this.textFamily = family || "Microsoft yahei,Arial,sans-serif";
             this.textColor = color || "#000";
+            this.strokeColor = color || "#000";
             this.textStyle = "normal";
             this.textWeight = "normal";
             this.lineHeight = this.size;
             this.stroke = false;
+            this.strokeOnly = false;
 
             this.x = x||0;
             this.y = y||0;
