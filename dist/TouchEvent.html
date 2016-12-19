@@ -61,7 +61,7 @@
 
     roundRect.touchEnabled = true;
     roundRect.on("touch", function () {
-        EC.Tween.get(roundRect).to({radius: 50}, 600);
+        EC.Tween.get(roundRect).to({radius: 50}, 600, EC.Easing.Bounce.Out);
     });
 
     var arc = new EC.Shape();

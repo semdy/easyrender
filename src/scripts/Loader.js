@@ -213,7 +213,7 @@
 
         if ( !xhr ) return;
 
-        if( args.beforeSend.call(args.context, xhr, xhr.statusText) === false ){
+        if( args.beforeSend.call(args.context, xhr) === false ){
             xhr.abort();
             return xhr;
         }
