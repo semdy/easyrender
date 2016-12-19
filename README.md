@@ -95,12 +95,6 @@ a lite frameworks for canvas
 		<td>undefined</td>
 	</tr>
 	<tr>
-		<td>off</td>
-		<td>name: 事件名<br>
-			callback: 事件监听listener</td>
-		<td>取消一个事件监听</td>
-	</tr>
-	<tr>
 		<td>ajax</td>
 		<td>params: ajax配置参数</td>
 		<td>发起ajax请求，用法与jQuery.ajax类似</td>
