@@ -599,13 +599,13 @@ a lite frameworks for canvas
 	<tr>
 		<td>textColor</td>
 		<td>String</td>
-		<td>#00</td>
+		<td>#000</td>
 		<td>文本颜色</td>
 	</tr>
 	<tr>
 		<td>strokeColor</td>
 		<td>String</td>
-		<td>#00</td>
+		<td>#000</td>
 		<td>字本描边颜色</td>
 	</tr>
 	<tr>
