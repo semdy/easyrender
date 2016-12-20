@@ -656,18 +656,6 @@ a lite frameworks for canvas
 		<td>描述</td>
 	</tr>
 	<tr>
-		<td>x</td>
-		<td>Number</td>
-		<td>0</td>
-		<td>横坐标</td>
-	</tr>
-	<tr>
-		<td>y</td>
-		<td>Number</td>
-		<td>0</td>
-		<td>纵坐标</td>
-	</tr>
-	<tr>
 		<td>sx</td>
 		<td>Number/undefined</td>
 		<td>undefined</td>
@@ -723,30 +711,6 @@ a lite frameworks for canvas
 		<td>类型</td>
 		<td>默认</td>
 		<td>描述</td>
-	</tr>
-	<tr>
-		<td>x</td>
-		<td>Number</td>
-		<td>0</td>
-		<td>横坐标</td>
-	</tr>
-	<tr>
-		<td>y</td>
-		<td>Number</td>
-		<td>0</td>
-		<td>纵坐标</td>
-	</tr>
-	<tr>
-		<td>width</td>
-		<td>Number</td>
-		<td>0</td>
-		<td>形状的宽度</td>
-	</tr>
-	<tr>
-		<td>height</td>
-		<td>Number</td>
-		<td>0</td>
-		<td>形状的高度</td>
 	</tr>
 	<tr>
 		<td>radius</td>
@@ -981,18 +945,6 @@ a lite frameworks for canvas
 		<td>描述</td>
 	</tr>
 	<tr>
-		<td>x</td>
-		<td>Number</td>
-		<td>0</td>
-		<td>横坐标</td>
-	</tr>
-	<tr>
-		<td>y</td>
-		<td>Number</td>
-		<td>0</td>
-		<td>纵坐标</td>
-	</tr>
-	<tr>
 		<td>width</td>
 		<td>Number</td>
 		<td>400</td>
@@ -1110,30 +1062,6 @@ a lite frameworks for canvas
 		<td>类型</td>
 		<td>默认</td>
 		<td>描述</td>
-	</tr>
-	<tr>
-		<td>x</td>
-		<td>Number</td>
-		<td>0</td>
-		<td>横坐标</td>
-	</tr>
-	<tr>
-		<td>y</td>
-		<td>Number</td>
-		<td>0</td>
-		<td>纵坐标</td>
-	</tr>
-	<tr>
-		<td>width</td>
-		<td>Number</td>
-		<td>0</td>
-		<td>宽度</td>
-	</tr>
-	<tr>
-		<td>height</td>
-		<td>Number</td>
-		<td>0</td>
-		<td>高度</td>
 	</tr>
 	<tr>
 		<td>text</td>
