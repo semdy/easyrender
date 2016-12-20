@@ -1086,8 +1086,12 @@
             }, this);
 
             if( !EC.isTouch ){
-                this.on("touchmove", function () {
+                this.on("touchenter", function () {
                     this.setButton("hover");
+                }, this);
+
+                this.on("touchout", function () {
+                    this.setButton("normal");
                 }, this);
             }
         }

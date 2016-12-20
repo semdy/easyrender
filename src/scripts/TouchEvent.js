@@ -18,7 +18,9 @@
         this._touchY = 0;
         this._offsetX = 0;
         this._offsetY = 0;
-        this._bound = {};
+        this._bound = null;
+        this._lastStack = [];
+        this._lastObject  = null;
         this._touchTimer = null;
     };
 
@@ -58,6 +60,14 @@
             event = isTouch ? event.changedTouches[0] : event;
 
             this._clearTouchTimer();
+
+            if( !EC.isTouch ) {
+                this._offsetX = this._offsetX || window.pageXOffset || doe.scrollLeft || dob.scrollLeft || 0;
+                this._offsetY = this._offsetY || window.pageYOffset || doe.scrollTop || dob.scrollTop || 0;
+                this._bound = this._bound || this.element.getBoundingClientRect();
+                this.enableStack = this._getTouchEnables();
+            }
+
             this._setTouchXY(event);
             this._triggerEvent("touchmove", event);
         },
@@ -73,15 +83,25 @@
             if( diffTime < 200 ){
                 this._triggerEvent("touch", event);
             }
+
+            this._resetTouch();
         },
         _clearTouchTimer: function(){
             if( this._touchTimer ) {
                 clearTimeout(this._touchTimer);
             }
         },
+        _resetTouch: function () {
+            this._offsetX = 0;
+            this._offsetY = 0;
+            this._bound = null;
+            this._lastStack = [];
+            this._lastObject = null;
+        },
         _triggerEvent: function(type, event){
             var self = this;
             var ratio = this.stage.scaleRatio;
+            var isMouseMove = !EC.isTouch && type === "touchmove";
             var enableStack = this.enableStack.filter(function(obj){
                 return EC.isPointInPath({x: self._touchX * ratio, y: self._touchY * ratio}, obj);
             });
@@ -99,6 +119,10 @@
                 for(var i = 0; i < enableStack.length; i++) {
                     obj = enableStack[i];
 
+                    if( isMouseMove && this._lastObject !== obj ) {
+                        obj.dispatch("touchenter", EC.extend(event, {type: "touchenter", target: obj}));
+                    }
+
                     if( event.isPropagationStopped() ) break;
 
                     if( !parent || obj === parent ) {
@@ -108,9 +132,32 @@
                             obj.dispatch(type, EC.extend(event, {target: obj}));
                         }
                         parent = obj.parent;
+                        this._lastObject = obj;
                     }
                 }
+
+                this._lastStack = enableStack;
+
+                if( isMouseMove ) {
+                    this.stage.canvas.style.cursor = "pointer";
+                }
+
+            } else {
+
+                this._lastObject = null;
+
+                if( isMouseMove ) {
+                    this.stage.canvas.style.cursor = "";
+                    this._triggerLastStack();
+                }
             }
+        },
+        _triggerLastStack: function () {
+            this._lastStack.forEach(function (obj) {
+              obj.dispatch("touchout", {type: "touchout", target: obj});
+            });
+
+            this._lastStack = [];
         },
         _getTouchedTarget: function( target ){
             var elStack = [];
