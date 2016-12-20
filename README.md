@@ -164,7 +164,7 @@ a lite frameworks for canvas
 			container: 节点父容器selector		
 		</td>
 		<td>一个简单的元素选择器</td>
-		<td>object</td>
+		<td>object/Array&lt;object&gt;</td>
 	</tr>
 </table>
 
