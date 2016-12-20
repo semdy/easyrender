@@ -476,16 +476,15 @@
             this.strokeColor = color || "#000";
             this.textStyle = "normal";
             this.textWeight = "normal";
-            this.lineHeight = this.size;
+            this.lineHeight = 20;
             this.stroke = false;
             this.strokeOnly = false;
+            this.multiple = false;
 
             this.x = x||0;
             this.y = y||0;
             this.width = width||0;
             this.height = height||0;
-            this.lineHeight = 20;
-            this.multiple = false;
 
             mixTextSize(this);
 
@@ -978,6 +977,123 @@
     });
 
     /**
+     * Button
+     * */
+
+    var Button = Sprite.extend({
+        initialize: function( statusArgs ){
+            Button.superclass.initialize.call(this);
+
+            var _DEFAULTS = {
+                x: 0,
+                y: 0,
+                size: 16,
+                textColor: "#000",
+                alpha: 1
+            };
+
+            var NORMAL = EC.extend({}, _DEFAULTS, this._getConfig(statusArgs.normal) || {});
+            var HOVER = EC.extend({}, _DEFAULTS, this._getConfig(statusArgs.hover) || {});
+            var ACTIVE = EC.extend({}, _DEFAULTS, this._getConfig(statusArgs.active) || {});
+
+            this.statusCfg = {
+                normal: NORMAL,
+                hover: HOVER,
+                active: ACTIVE
+            };
+
+            for(var i in this.statusCfg){
+                if( EC.isString(this.statusCfg[i].texture) ){
+                    EC.extend(this.statusCfg[i], RES.getRes(this.statusCfg[i].texture));
+                }
+            }
+
+            this.bitMap = new BitMap();
+            this.shape = new Shape();
+            this.textField = new TextField();
+
+            this.touchEnabled = true;
+
+            this.on("addToStage", function () {
+                this._create();
+                this._events();
+            }, this);
+        },
+        _create: function () {
+            this.setButton("normal");
+            this.addChild(this.bitMap);
+            this.addChild(this.shape);
+            this.addChild(this.textField);
+        },
+        _getConfig: function (status) {
+            return EC.isString(status) ? RES.getRes(status) : status;
+        },
+        setButton: function(status){
+            var _config = this.statusCfg[status];
+            _config = EC.extend({}, this.statusCfg.normal, _config);
+
+            EC.extend(this, {width: _config.width, height: _config.height});
+
+            if( _config.texture ) {
+                EC.extend(this.bitMap, {x: _config.x, y: _config.y, alpha: _config.alpha, texture: _config.texture, width: _config.width, height: _config.height});
+                this.bitMap.visible = true;
+            } else {
+                this.bitMap.visible = false;
+            }
+
+            if( _config.fillStyle || _config.strokeStyle ) {
+                EC.extend(this.shape, _config);
+                if( _config.radius && _config.radius > 0 ){
+                    this.shape.roundRect(0, 0, _config.width, _config.height, _config.radius);
+                } else {
+                    this.shape.rect(0, 0, _config.width, _config.height);
+                }
+
+                if( _config.fillStyle ) {
+                    this.shape.fill(_config.fillStyle);
+                }
+
+                if( _config.strokeStyle ) {
+                    this.shape.stroke(_config.strokeStyle);
+                }
+
+                this.shape.visible = true;
+            } else {
+                this.shape.visible = false;
+            }
+
+            if( _config.text ){
+                var injectCfg = {
+                    textAlign: "center",
+                    y: _config.y + (this.height - this.textField.height)/2,
+                    height: this.textField.height
+                };
+                EC.extend(this.textField, EC.extend({}, _config, injectCfg));
+                this.textField.visible = true;
+            } else {
+                this.textField.visible = false;
+            }
+
+            return _config;
+        },
+        _events: function () {
+            this.on("touchstart", function () {
+                this.setButton("active");
+            }, this);
+
+            this.on("touchend", function () {
+                this.setButton("normal");
+            }, this);
+
+            if( !EC.isTouch ){
+                this.on("touchmove", function () {
+                    this.setButton("hover");
+                }, this);
+            }
+        }
+    });
+
+    /**
      * Point
      * **/
 
@@ -1212,7 +1328,9 @@
         Shape: Shape,
         TextInput: TextInput,
         Masker: Masker,
+        DisplayObjectContainer: ObjectContainer,
         Sprite: Sprite,
+        Button: Button,
         Point: Point,
         Stage: Stage,
         isPointInPath: isPointInPath

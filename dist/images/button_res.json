@@ -1,0 +1,23 @@
+{
+	"groups":[
+	{
+		"keys":"button_hover_png,button_normal_png,button_active_png",
+		"name":"preload"
+	}],
+	"resources":[
+	{
+		"name":"button_hover_png",
+		"type":"image",
+		"url":"button_hover.png"
+	},
+	{
+		"name":"button_normal_png",
+		"type":"image",
+		"url":"button_normal.png"
+	},
+	{
+		"name":"button_active_png",
+		"type":"image",
+		"url":"button_active.png"
+	}]
+}

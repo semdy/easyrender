@@ -89,7 +89,9 @@
         },
 
         gotoAndStop: function( frameIndex ){
-            return this.setFrame( frameIndex );
+            this.stop();
+            this.setFrame( frameIndex );
+            return this;
         },
 
         prevFrame: function(){

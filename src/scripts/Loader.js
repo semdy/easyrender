@@ -455,6 +455,15 @@
         return null;
     };
 
+    var getTexture = function(resId){
+        var res = getRes(resId);
+        if( res ){
+            return res.texture;
+        } else {
+            return null;
+        }
+    };
+
     var getElement = function (selector, container) {
         if( typeof selector != 'string' ) return selector;
 
@@ -566,6 +575,7 @@
         },
         getAsset: getAsset,
         getRes: getRes,
+        getTexture: getTexture,
         el: getElement,
         baseUrl: 'images/'
     });

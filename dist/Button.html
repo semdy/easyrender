@@ -1,0 +1,92 @@
+<!Doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>EC MovieClip</title>
+    <style>
+        body{
+            margin:0;
+        }
+        .movieclip{
+            position: absolute;
+            left:0;
+            top:0;
+            right:0;
+            bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+<canvas id="canvas-button" class="movieclip"></canvas>
+
+<script src="scripts/libs/easyrender.js"></script>
+
+<script>
+    var resConfig = RES.loadJson("images/button_res.json");
+    resConfig.on("success", function(resData){
+
+        var loader = RES.loadGroup("preload", resData);
+        var stage;
+
+        loader.on("complete", function () {
+            startGame();
+        });
+
+        function startGame(){
+            var canvas = document.getElementById('canvas-button');
+            stage = new EC.Stage(canvas);
+            setButton1();
+            setButton2();
+        }
+
+        function setButton1(){
+            var button = new EC.Button({
+                normal: {
+                    texture: 'button_normal_png'
+                },
+                hover: {
+                    texture: 'button_hover_png'
+                },
+                active: {
+                    texture: 'button_active_png'
+                }
+            });
+            button.x = 100;
+            button.y = 100;
+            stage.addChild(button);
+
+        }
+
+        function setButton2(){
+            var button = new EC.Button({
+                normal: {
+                    fillStyle: '#ccc',
+                    radius: 10,
+                    text: "button normal",
+                    width:138,
+                    height:48
+                },
+                hover: {
+                    fillStyle: 'green',
+                    text: "button hovered",
+                    textColor: "#fff"
+                },
+                active: {
+                    fillStyle: '#ff0000',
+                    text: "button actived",
+                    textColor: "#06c"
+                }
+            });
+            button.x = 100;
+            button.y = 200;
+            stage.addChild(button);
+
+        }
+
+    });
+</script>
+</body>
+</html>
