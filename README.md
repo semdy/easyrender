@@ -164,7 +164,7 @@ a lite frameworks for canvas
 			container: 节点父容器selector		
 		</td>
 		<td>一个简单的元素选择器</td>
-		<td>object/Array&lt;object&gt;</td>
+		<td>DOMObject/Array&lt;DOMObject&gt;</td>
 	</tr>
 </table>
 
@@ -184,22 +184,6 @@ a lite frameworks for canvas
 		<td>stop</td>
 		<td>--</td>
 		<td>停止当前ticker</td>
-	</tr>
-	<tr>
-		<td>off</td>
-		<td>name: 事件名<br>
-			callback: 事件监听listener</td>
-		<td>取消一个事件监听</td>
-	</tr>
-	<tr>
-		<td>dispatch / emit</td>
-		<td>name: 事件名</td>
-		<td>触发一个事件</td>
-	</tr>
-	<tr>
-		<td>clear</td>
-		<td>--</td>
-		<td>清空事件池</td>
 	</tr>
 </table>
 
