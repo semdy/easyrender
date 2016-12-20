@@ -495,13 +495,6 @@ a lite frameworks for canvas
 		<td>EC.DisplayObjectContainer</td>
 	</tr>
 	<tr>
-		<td>addChild</td>
-		<td>Object: childObject -> 子集对象<br>
-			Number: index -> 子集的添加位置</td>
-		<td>向容器添加子集</td>
-		<td>EC.DisplayObjectContainer</td>
-	</tr>
-	<tr>
 		<td>removeChild</td>
 		<td>Object: childObject -> 子集对象</td>
 		<td>容器中移除一个子集</td>
