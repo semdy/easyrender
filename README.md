@@ -1,7 +1,7 @@
 # easyrender
 a lite frameworks for canvas
 #简要文档
-## Util ##
+## EC.Util ##
 <table>
 	<tr>
 		<td>method</td>
@@ -35,7 +35,7 @@ a lite frameworks for canvas
 	</tr>
 </table>
 
-## Event ##
+## EC.Event ##
 <table>
 	<tr>
 		<td>method</td>
@@ -168,7 +168,7 @@ a lite frameworks for canvas
 	</tr>
 </table>
 
-## Ticker ##
+## EC.Ticker ##
 <table>
 	<tr>
 		<td>method</td>
@@ -203,7 +203,7 @@ a lite frameworks for canvas
 	</tr>
 </table>
 
-## Timer ##
+## EC.Timer ##
 <table>
 	<tr>
 		<td>method</td>
