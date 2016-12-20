@@ -557,81 +557,6 @@ a lite frameworks for canvas
 	</tr>
 </table>
 
-## EC.MovieClip ##
-`extends EC.Sprite`
-<table>
-	<tr>
-		<td>method</td>
-		<td>parameter</td>
-		<td>描述</td>
-		<td>return</td>
-	</tr>
-	<tr>
-		<td>constructor</td>
-		<td>Object/String: resUrl -> MovieClip图片资源<br>
-			Object/String: resConfig -> MovieClip配置参数</td>
-		<td>精灵图动画</td>
-		<td>MovieClip</td>
-	</tr>
-	<tr>
-		<td>gotoAndPlay</td>
-		<td>Number: startFrame -> 动画播放的起始帧<br>
-			Number: playTimes -> 动画播放次数，当为-1时表示重复循环播放<br>
-			Nubmer: frameRate -> 动画帧速，默认为24		
-		</td>
-		<td>开始播放动画</td>
-		<td>MovieClip</td>
-	</tr>
-	<tr>
-		<td>gotoAndStop</td>
-		<td>Number: endFrame -> 停止动画并停留在指定帧</td>
-		<td>停止动画</td>
-		<td>MovieClip</td>
-	</tr>
-	<tr>
-		<td>prevFrame</td>
-		<td>--</td>
-		<td>回退一帧</td>
-		<td>MovieClip</td>
-	</tr>
-	<tr>
-		<td>nextFrame</td>
-		<td>--</td>
-		<td>前进一帧</td>
-		<td>MovieClip</td>
-	</tr>
-	<tr>
-		<td>play</td>
-		<td>--</td>
-		<td>开始动画</td>
-		<td>MovieClip</td>
-	</tr>
-	<tr>
-		<td>stop</td>
-		<td>--</td>
-		<td>开始动画</td>
-		<td>MovieClip</td>
-	</tr>
-	<tr>
-		<td>pause</td>
-		<td>Number: time -> 动画暂停时间，然后继续动画，不设定则不会继续</td>
-		<td>暂停动画</td>
-		<td>MovieClip</td>
-	</tr>
-	<tr>
-		<td>wait</td>
-		<td>Number: time -> 动画结束后，延迟指定时间执行complete事件</td>
-		<td>动画结束指定延迟执行complete事件</td>
-		<td>MovieClip</td>
-	</tr>
-	<tr>
-		<td>setFrameRate</td>
-		<td>Number: frameRate -> 设置帧速</td>
-		<td>暂停动画</td>
-		<td>MovieClip</td>
-	</tr>
-</table>
-
 ## EC.TextField ##
 `extends EC.DisplayObjectContainer`
 <table>
@@ -1275,6 +1200,81 @@ a lite frameworks for canvas
 		</td>
 		<td>设置x,y的值</td>
 		<td>EC.Point</td>
+	</tr>
+</table>
+
+## EC.MovieClip ##
+`extends EC.Sprite`
+<table>
+	<tr>
+		<td>method</td>
+		<td>parameter</td>
+		<td>描述</td>
+		<td>return</td>
+	</tr>
+	<tr>
+		<td>constructor</td>
+		<td>Object/String: resUrl -> MovieClip图片资源<br>
+			Object/String: resConfig -> MovieClip配置参数</td>
+		<td>精灵图动画</td>
+		<td>MovieClip</td>
+	</tr>
+	<tr>
+		<td>gotoAndPlay</td>
+		<td>Number: startFrame -> 动画播放的起始帧<br>
+			Number: playTimes -> 动画播放次数，当为-1时表示重复循环播放<br>
+			Nubmer: frameRate -> 动画帧速，默认为24		
+		</td>
+		<td>开始播放动画</td>
+		<td>MovieClip</td>
+	</tr>
+	<tr>
+		<td>gotoAndStop</td>
+		<td>Number: endFrame -> 停止动画并停留在指定帧</td>
+		<td>停止动画</td>
+		<td>MovieClip</td>
+	</tr>
+	<tr>
+		<td>prevFrame</td>
+		<td>--</td>
+		<td>回退一帧</td>
+		<td>MovieClip</td>
+	</tr>
+	<tr>
+		<td>nextFrame</td>
+		<td>--</td>
+		<td>前进一帧</td>
+		<td>MovieClip</td>
+	</tr>
+	<tr>
+		<td>play</td>
+		<td>--</td>
+		<td>开始动画</td>
+		<td>MovieClip</td>
+	</tr>
+	<tr>
+		<td>stop</td>
+		<td>--</td>
+		<td>开始动画</td>
+		<td>MovieClip</td>
+	</tr>
+	<tr>
+		<td>pause</td>
+		<td>Number: time -> 动画暂停时间，然后继续动画，不设定则不会继续</td>
+		<td>暂停动画</td>
+		<td>MovieClip</td>
+	</tr>
+	<tr>
+		<td>wait</td>
+		<td>Number: time -> 动画结束后，延迟指定时间执行complete事件</td>
+		<td>动画结束指定延迟执行complete事件</td>
+		<td>MovieClip</td>
+	</tr>
+	<tr>
+		<td>setFrameRate</td>
+		<td>Number: frameRate -> 设置帧速</td>
+		<td>暂停动画</td>
+		<td>MovieClip</td>
 	</tr>
 </table>
 
