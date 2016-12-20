@@ -548,7 +548,7 @@ a lite frameworks for canvas
 </table>
 
 ## EC.Sprite ##
-> extends EC.DisplayObjectContainer
+`extends EC.DisplayObjectContainer`
 <table>
 	<tr>
 		<td>properties</td>
@@ -565,7 +565,7 @@ a lite frameworks for canvas
 </table>
 
 ## EC.MovieClip ##
-> extends EC.Sprite
+`extends EC.Sprite`
 <table>
 	<tr>
 		<td>method</td>
@@ -640,7 +640,7 @@ a lite frameworks for canvas
 </table>
 
 ## EC.TextField ##
-> extends EC.DisplayObjectContainer 
+`extends EC.DisplayObjectContainer`
 <table>
 	<tr>
 		<td>properties</td>
@@ -729,7 +729,7 @@ a lite frameworks for canvas
 </table>
 
 ## EC.BitMap ##
-> extends EC.DisplayObjectContainer
+`extends EC.DisplayObjectContainer`
 <table>
 	<tr>
 		<td>properties</td>
@@ -798,7 +798,7 @@ a lite frameworks for canvas
 </table>
 
 ## EC.Shape ##
-> extends EC.DisplayObjectContainer
+`extends EC.DisplayObjectContainer`
 <table>
 	<tr>
 		<td>properties</td>
@@ -1051,10 +1051,10 @@ a lite frameworks for canvas
 </table>
 
 ## EC.Masker ##
-> extends EC.Shape
+`extends EC.Shape`
 
 ## EC.TextInput ##
-> extends EC.Sprite
+`extends EC.Sprite`
 <table>
 	<tr>
 		<td>properties</td>
@@ -1185,7 +1185,7 @@ a lite frameworks for canvas
 </table>
 
 ## EC.BitMapText ##
-> extends EC.Sprite
+`extends EC.Sprite`
 <table>
 	<tr>
 		<td>properties</td>
@@ -1244,7 +1244,7 @@ a lite frameworks for canvas
 </table>
 
 ## EC.Point ##
-> extends EC.Event
+`extends EC.Event`
 <table>
 	<tr>
 		<td>properties</td>
@@ -1286,7 +1286,7 @@ a lite frameworks for canvas
 </table>
 
 ## EC.Stage ##
-> extends EC.DisplayObjectContainer
+`extends EC.DisplayObjectContainer`
 <table>
 	<tr>
 		<td>properties</td>
