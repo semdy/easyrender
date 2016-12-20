@@ -40,8 +40,7 @@
 <!-- endbuild -->
 
 <script>
-    var resConfig = RES.loadJson("images/button_res.json");
-    resConfig.on("success", function(resData){
+    RES.loadJson("images/button_res.json").then(function(resData){
 
         var loader = RES.loadGroup("preload", resData);
         var stage;
