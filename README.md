@@ -391,7 +391,7 @@ a lite frameworks for canvas
 </table>
 
 ## EC.DisplayObjectContainer ##
- >extends EC.Event
+`extends EC.Event`
 <table>
 	<tr>
 		<td>properties</td>
