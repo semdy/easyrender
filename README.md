@@ -104,7 +104,7 @@ a lite frameworks for canvas
 		<td>request</td>
 		<td>params: ajax配置参数</td>
 		<td>配置参数与ajax相同，但返回内容不同。<br>
-			支持的写法EC.request(params).then(succFun, errFun).always(alwaysFun);<br>
+			支持的写法RES.request(params).then(succFun, errFun).always(alwaysFun);<br>
 			虽支持promise写法，但是并不是真正的promise模式
 		</td>
 		<td>Event</td>
