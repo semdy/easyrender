@@ -857,6 +857,7 @@
         _create: function(){
             var pad = this.padding;
             this.touchEnabled = true;
+            this.cursor = "";
             this.padding = EC.isArray(pad) ? pad : [pad, pad, pad, pad];
 
             this.input = new Shape();
