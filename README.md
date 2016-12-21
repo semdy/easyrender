@@ -12,13 +12,13 @@ a lite frameworks for canvas
 	<tr>
 		<td rowspan="2">color</td>
 		<td>String: rgb -> 颜色rgb</td>
-		<td><code>colorTransfer.toHex(rgb)</code> -> RGB颜色转换为16进制</td>
+		<td><code>toHex(rgb)</code> -> RGB颜色转换为16进制</td>
 		<td>String: hex</td>
 	</tr>
 	<tr>
 		<td>String: hex -> 颜色16进制值 <br>
 			Number: alpha -> 颜色透明度</td>
-		<td><code>colorTransfer.toRgb(hex, alpha)</code> -> 16进制颜色转为RGB格式</td>
+		<td><code>toRgb(hex, alpha)</code> -> 16进制颜色转为RGB格式</td>
 		<td>String: rgb</td>
 	</tr>
 	<tr>
@@ -75,6 +75,7 @@ a lite frameworks for canvas
 </table>
 
 ## RES ##
+`extends EC.Event`
 <table>
 	<tr>
 		<td>method</td>
