@@ -137,7 +137,7 @@
                     }
 
                     if( isMouseMove && this._lastObject !== obj ) {
-                        this.stage.canvas.style.cursor = obj.cursor;
+                        this.element.style.cursor = obj.cursor;
                         obj.dispatch("touchenter", EC.extend(event, {type: "touchenter", target: obj}));
                     }
 
@@ -160,7 +160,7 @@
                     obj.dispatch("touchout", {type: "touchout", target: obj});
                 });
             } else {
-                this.stage.canvas.style.cursor = "";
+                this.element.style.cursor = "";
             }
 
             this._lastStack = [];
