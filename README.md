@@ -581,6 +581,12 @@ a lite frameworks for canvas
 		<td>true</td>
 		<td>是否可见</td>
 	</tr>
+<tr>
+		<td>touchEnabled</td>
+		<td>Boolean</td>
+		<td>false</td>
+		<td>是否开启响应事件</td>
+	</tr>
 	<tr>
 		<td>alpha</td>
 		<td>Number/undefined</td>
@@ -634,6 +640,12 @@ a lite frameworks for canvas
 		<td>Number</td>
 		<td>--</td>
 		<td>返回当前容器子集的个数</td>
+	</tr>
+<tr>
+		<td>cursor</td>
+		<td>String</td>
+		<td>pointer</td>
+		<td>鼠标滑过时显示的鼠标样式，仅PC下有效</td>
 	</tr>
 </table>
 

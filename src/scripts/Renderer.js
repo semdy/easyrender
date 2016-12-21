@@ -1144,9 +1144,6 @@
             this.start();
         },
         addChild: function( childObj ){
-            if( !EC.isObject(childObj) ){
-                throw new Error(String(childObj) + "is not a instance of EC");
-            }
             Stage.superclass.addChild.apply(this, arguments);
             this._triggerAddToStage(childObj);
 
