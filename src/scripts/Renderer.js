@@ -340,6 +340,7 @@
             this.anchorY = 0;
             this.moveX = 0;
             this.moveY = 0;
+            this.cursor = 'pointer';
 
             this.$type = "ObjectContainer";
 
@@ -363,10 +364,6 @@
             this.numChildren = this._children.length;
 
             return this;
-        },
-
-        addChildAt: function( object, index ){
-            return this.addChild(object, index);
         },
 
         removeChild: function(object){

@@ -168,7 +168,126 @@ a lite frameworks for canvas
 	</tr>
 </table>
 
+### RES events ###
+<table>
+	<tr>
+		<td>name</td>
+		<td>描述</td>
+	</tr>
+	<tr>
+		<td>success</td>
+		<td>当request/image/script处理成功时执行的回调</td>
+	</tr>
+<tr>
+		<td>error</td>
+		<td>当request/image/script处理失败时执行的回调</td>
+	</tr>
+<tr>
+		<td>complete</td>
+		<td>当request/resource加载完成时执行的回调</td>
+	</tr>
+<tr>
+		<td>progress</td>
+		<td>当resource正在加载时执行的回调，传递两个参数loaded, total</td>
+	</tr>
+</table>
+
+### ajax options ###
+<table>
+	<tr>
+		<td>name</td>
+		<td>默认值</td>
+		<td>描述</td>
+	</tr>
+	<tr>
+		<td>url</td>
+		<td>""</td>
+		<td>请求地址</td>
+	</tr>
+<tr>
+		<td>type</td>
+		<td>GET</td>
+		<td>请求类型</td>
+	</tr>
+<tr>
+		<td>async</td>
+		<td>true</td>
+		<td>请同步或异步</td>
+	</tr>
+<tr>
+		<td>data</td>
+		<td>{}</td>
+		<td>请求参数配置</td>
+	</tr>
+<tr>
+		<td>headers</td>
+		<td>{}</td>
+		<td>设置请求响应头</td>
+	</tr>
+<tr>
+		<td>cache</td>
+		<td>true</td>
+		<td>是否可缓存</td>
+	</tr>
+<tr>
+		<td>cors</td>
+		<td>false</td>
+		<td>通过withCredentials跨域请求</td>
+	</tr>
+<tr>
+		<td>beforeSend</td>
+		<td>noop</td>
+		<td>请求发生前执行的回调，当返回false时，终止请求</td>
+	</tr>
+<tr>
+		<td>success</td>
+		<td>noop</td>
+		<td>请求成功时执行的回调</td>
+	</tr>
+<tr>
+		<td>error</td>
+		<td>noop</td>
+		<td>请求失败时执行的回调</td>
+	</tr>
+<tr>
+		<td>complete</td>
+		<td>noop</td>
+		<td>请求成功或失败时执行的回调</td>
+	</tr>
+<tr>
+		<td>timeout</td>
+		<td>0</td>
+		<td>设置超时上限, 为0时则不设上限</td>
+	</tr>
+<tr>
+		<td>context</td>
+		<td>null</td>
+		<td>配置上下文</td>
+	</tr>
+<tr>
+		<td>dataType</td>
+		<td>text</td>
+		<td>设置返回的数据类型,可选值有：text, html, xml, json, jsonp</td>
+	</tr>
+<tr>
+		<td>callbackName</td>
+		<td>?</td>
+		<td>请求类型为jsonp时，设置的回调函数名称</td>
+	</tr>
+<tr>
+		<td>contentType</td>
+		<td>application/x-www-form-urlencoded;charset=UTF-8</td>
+		<td>设置请求响应类型</td>
+	</tr>
+<tr>
+		<td>createXHR</td>
+		<td>new XMLHttpRequest</td>
+		<td>自定义XMLHttpRequest</td>
+	</tr>
+</table>
+
 ## EC.Ticker ##
+> extends EC.Event
 <table>
 	<tr>
 		<td>method</td>
@@ -187,7 +306,20 @@ a lite frameworks for canvas
 	</tr>
 </table>
 
+### EC.Ticker events ###
+<table>
+	<tr>
+		<td>name</td>
+		<td>描述</td>
+	</tr>
+	<tr>
+		<td>ticker</td>
+		<td>当Ticker运行时执行的回调</td>
+	</tr>
+</table>
+
 ## EC.Timer ##
+> extends EC.Event
 <table>
 	<tr>
 		<td>method</td>
@@ -237,6 +369,26 @@ a lite frameworks for canvas
 		<td>--</td>
 		<td>重置计时</td>
 		<td>Event</td>
+	</tr>
+</table>
+
+### EC.Timer events ###
+<table>
+	<tr>
+		<td>name</td>
+		<td>描述</td>
+	</tr>
+	<tr>
+		<td>timer</td>
+		<td>当Timer运行时执行的回调</td>
+	</tr>
+<tr>
+		<td>complete</td>
+		<td>当Timer结束时执行的回调</td>
+	</tr>
+<tr>
+		<td>pause</td>
+		<td>当Timer暂停时执行的回调</td>
 	</tr>
 </table>
 
@@ -477,6 +629,12 @@ a lite frameworks for canvas
 		<td>0</td>
 		<td>纵向中心点</td>
 	</tr>
+<tr>
+		<td>numChildren</td>
+		<td>Number</td>
+		<td>--</td>
+		<td>返回当前容器子集的个数</td>
+	</tr>
 </table>
 
 ### EC.DisplayObjectContainer methods ###
@@ -516,7 +674,7 @@ a lite frameworks for canvas
 		<td>getBounds</td>
 		<td>--</td>
 		<td>获取当前容器的边界</td>
-		<td>EC.DisplayObjectContainer</td>
+		<td>new Bounds()</td>
 	</tr>
 <tr>
 		<td>getChildIndex</td>
@@ -537,6 +695,76 @@ a lite frameworks for canvas
 		<td>Object: params -> 参数集</td>
 		<td>设置当前容器的相关属性</td>
 		<td>EC.DisplayObjectContainer</td>
+	</tr>
+</table>
+
+### EC.DisplayObjectContainer events ###
+<table>
+	<tr>
+		<td>name</td>
+		<td>描述</td>
+	</tr>
+	<tr>
+		<td>addToStage</td>
+		<td>当前容器添加到舞台时执行的回调</td>
+	</tr>
+<tr>
+		<td>remove</td>
+		<td>在被从父容器中移除时执行的回调</td>
+	</tr>
+<tr>
+		<td>enterframe</td>
+		<td>舞台实时渲染时执行的回调</td>
+	</tr>
+</table>
+
+## Bounds ##
+<table>
+	<tr>
+		<td>properties</td>
+		<td>类型</td>
+		<td>默认</td>
+		<td>描述</td>
+	</tr>
+	<tr>
+		<td>x</td>
+		<td>Number</td>
+		<td>--</td>
+		<td>返回边界的x坐标</td>
+	</tr>
+	<tr>
+		<td>y</td>
+		<td>Number</td>
+		<td>--</td>
+		<td>返回边界的y坐标</td>
+	</tr>
+	<tr>
+		<td>width</td>
+		<td>Number</td>
+		<td>--</td>
+		<td>返回边界的宽度</td>
+	</tr>
+	<tr>
+		<td>height</td>
+		<td>Number</td>
+		<td>--</td>
+		<td>返回边界的高度</td>
+	</tr>
+</table>
+
+### Bounds methods ###
+<table>
+	<tr>
+		<td>methods</td>
+		<td>parameter</td>
+		<td>描述</td>
+		<td>return</td>
+	</tr>
+	<tr>
+		<td>intersects</td>
+		<td>Object: target -> 被检测的目标对象</td>
+		<td>检测两个组件是否有交叉</td>
+		<td>Boolean</td>
 	</tr>
 </table>
 
@@ -1054,6 +1282,30 @@ a lite frameworks for canvas
 	</tr>
 </table>
 
+### EC.TextInput events ###
+<table>
+	<tr>
+		<td>name</td>
+		<td>描述</td>
+	</tr>
+	<tr>
+		<td>focus</td>
+		<td>当输入框聚集时执行的回调</td>
+	</tr>
+<tr>
+		<td>change</td>
+		<td>当输入框的值发生变化时执行的回调</td>
+	</tr>
+<tr>
+		<td>blur</td>
+		<td>当输入框失去聚集时执行的回调</td>
+	</tr>
+<tr>
+		<td>input</td>
+		<td>实时监控输入框值的变化</td>
+	</tr>
+</table>
+
 ## EC.BitMapText ##
 `extends EC.Sprite`
 <table>
@@ -1229,6 +1481,22 @@ a lite frameworks for canvas
 	</tr>
 </table>
 
+### EC.MovieClip events ###
+<table>
+	<tr>
+		<td>name</td>
+		<td>描述</td>
+	</tr>
+	<tr>
+		<td>complete</td>
+		<td>当动画停止时执行的回调</td>
+	</tr>
+<tr>
+		<td>loopcomplete</td>
+		<td>当动画播放完一轮时执行的回调</td>
+	</tr>
+</table>
+
 ## EC.Stage ##
 `extends EC.DisplayObjectContainer`
 <table>
@@ -1343,6 +1611,42 @@ a lite frameworks for canvas
 	</tr>
 </table>
 
+### TouchEvents ###
+<table>
+	<tr>
+		<td>name</td>
+		<td>描述</td>
+	</tr>
+	<tr>
+		<td>touchstart</td>
+		<td>手指或鼠标按下时执行的回调</td>
+	</tr>
+<tr>
+		<td>longtouch</td>
+		<td>长按时执行的回调</td>
+	</tr>
+<tr>
+		<td>touchmove</td>
+		<td>手指或鼠标移动时执行的回调</td>
+	</tr>
+<tr>
+		<td>touchend</td>
+		<td>手指或鼠标抬起时执行的回调</td>
+	</tr>
+<tr>
+		<td>touch</td>
+		<td>手指或鼠标按下并抬起时执行的回调</td>
+	</tr>
+<tr>
+		<td>touchenter</td>
+		<td>手指或鼠标进入时执行的回调</td>
+	</tr>
+<tr>
+		<td>touchout</td>
+		<td>手指或鼠标离开时执行的回调</td>
+	</tr>
+</table>
+
 ## live demo ##
 - [弹幕](https://semdy.github.io/easyrender/dist/index.html "弹幕")
 - [奔跑的兔子](https://semdy.github.io/easyrender/dist/MovieClip.html "奔跑的兔子")
@@ -1355,4 +1659,5 @@ a lite frameworks for canvas
 - [BitMapText](https://semdy.github.io/easyrender/dist/BitMapText.html)
 - [Button](https://semdy.github.io/easyrender/dist/Button.html)
 - [TouchEvent](https://semdy.github.io/easyrender/dist/TouchEvent.html)
+- [Drag](https://semdy.github.io/easyrender/dist/Drag.html)
 - [碰撞检测](https://semdy.github.io/easyrender/dist/hitTest.html)
