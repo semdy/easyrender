@@ -287,7 +287,7 @@ a lite frameworks for canvas
 </table>
 
 ## EC.Ticker ##
-> extends EC.Event
+`extends EC.Event`
 <table>
 	<tr>
 		<td>method</td>
@@ -319,7 +319,7 @@ a lite frameworks for canvas
 </table>
 
 ## EC.Timer ##
-> extends EC.Event
+`extends EC.Event`
 <table>
 	<tr>
 		<td>method</td>
@@ -1494,6 +1494,10 @@ a lite frameworks for canvas
 <tr>
 		<td>loopcomplete</td>
 		<td>当动画播放完一轮时执行的回调</td>
+	</tr>
+<tr>
+		<td>pause</td>
+		<td>当动画暂停时执行的回调</td>
 	</tr>
 </table>
 

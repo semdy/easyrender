@@ -198,6 +198,10 @@
                 this.off('enterframe');
                 this.dispatch('complete');
             }, this);
+
+            this._timer.on('pause', function(){
+                this.dispatch('pause');
+            }, this);
         }
 
     });
