@@ -329,7 +329,6 @@
             this.width = 0;
             this.height = 0;
 
-            this.visible = true;
             this.alpha = undefined;
             this.scaleX = 1;
             this.scaleY = 1;
@@ -340,8 +339,11 @@
             this.anchorY = 0;
             this.moveX = 0;
             this.moveY = 0;
-            this.cursor = 'pointer';
 
+            this.visible = true;
+            this.touchEnabled = false;
+
+            this.cursor = 'pointer';
             this.$type = "ObjectContainer";
 
             this._children = [];
