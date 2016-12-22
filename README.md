@@ -1,5 +1,5 @@
 # easyrender
-a lite frameworks for canvas, simply, faster and liter. for more infomation see API document or [demos](#live-demo).
+a lite frameworks for canvas, simply, faster and liter. for more information see API document or [demos](#live-demo).
 #简要文档
 
 ## EC提供的属性 ##
