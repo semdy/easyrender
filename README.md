@@ -45,6 +45,20 @@ a lite frameworks for canvas, simply, faster and liter. for more infomation see 
 		<td>return</td>
 	</tr>
 	<tr>
+		<td>extend</td>
+		<td>Object: source -> 继承的对象<br>
+			Object: props... -> 被继承的对象
+		</td>
+		<td>对象的继承</td>
+		<td>source</td>
+	</tr>
+	<tr>
+		<td>provide</td>
+		<td>Object: props -> 扩展的方法或属性</td>
+		<td>扩展EC的静态方法或属性</td>
+		<td>EC</td>
+	</tr>
+	<tr>
 		<td>classExtend</td>
 		<td>Object: protoProps -> 继承的原型链<br>
 			Object: staticProps -> 设置额外的静态属性
@@ -59,6 +73,44 @@ a lite frameworks for canvas, simply, faster and liter. for more infomation see 
 		</td>
 		<td>检测坐标点是否在组件边界内</td>
 		<td>Boolean</td>
+	</tr>
+	<tr>
+		<td>isDefined</td>
+		<td>Object: obj</td>
+		<td>检查变量是否被定义</td>
+		<td>Boolean</td>
+	</tr>
+	<tr>
+		<td>isNumber</td>
+		<td>Object: obj</td>
+		<td>obj是否为数字类型</td>
+		<td>Boolean</td>
+	</tr>
+	<tr>
+		<td>isString</td>
+		<td>Object: obj</td>
+		<td>obj是否为字符串类型</td>
+		<td>Boolean</td>
+	</tr>
+	<tr>
+		<td>isObject</td>
+		<td>Object: obj</td>
+		<td>obj是否为Object</td>
+		<td>Boolean</td>
+	</tr>
+	<tr>
+		<td>isArray</td>
+		<td>Object: obj</td>
+		<td>obj是否为数组</td>
+		<td>Boolean</td>
+	</tr>
+	<tr>
+		<td>getStyle</td>
+		<td>Object: element -> DOMObject<br>
+			String: attr -> 样式属性
+		</td>
+		<td>获取指定节点样式</td>
+		<td>String</td>
 	</tr>
 </table>
 

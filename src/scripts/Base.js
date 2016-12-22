@@ -99,7 +99,7 @@ var EC = {
     /**
      * Extend
      * **/
-   var Extend = EC.extend = function (source) {
+   var Extend = function (source) {
         var props = slice.call(arguments, 1);
         var prop, p;
         for (var i = 0; i < props.length; i++) {
@@ -116,6 +116,7 @@ var EC = {
     EC.provide = function( props ){
         if( typeof props !== 'object' ) return;
         Extend(EC, props);
+        return EC;
     };
 
     EC.provide({
@@ -173,6 +174,7 @@ var EC = {
     };
 
     EC.provide({
+        extend: Extend,
         classExtend: ClassExtend,
         ua: ua,
         isTouch: isTouch,
