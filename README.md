@@ -1,5 +1,5 @@
 # easyrender
-a lite frameworks for canvas
+a lite frameworks for canvas, simply, faster and liter. for more infomation see API document or [demos](#live-demo); 
 #简要文档
 
 ## EC提供的属性 ##
@@ -775,6 +775,12 @@ a lite frameworks for canvas
 		<td>Object: params -> 参数集</td>
 		<td>设置当前容器的相关属性</td>
 		<td>EC.DisplayObjectContainer</td>
+	</tr>
+<tr>
+		<td>size</td>
+		<td>--</td>
+		<td>获取容器子集的个数</td>
+		<td>Number</td>
 	</tr>
 </table>
 

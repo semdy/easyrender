@@ -138,7 +138,7 @@
 
                     if( isMouseMove && this._lastObject !== obj ) {
                         obj.dispatch("touchenter", EC.extend(event, {type: "touchenter", target: obj}));
-                        this.element.style.cursor = obj.cursor;
+                        this.element.style.cursor = obj.$type == "Stage" ? "" : obj.cursor;
                     }
 
                     this._lastObject = obj;
@@ -209,7 +209,7 @@
             getItems(this.stage);
 
             if( this.stage.touchEnabled ){
-                enableStack.push(this.stage);
+                enableStack.unshift(this.stage);
             }
 
             return enableStack;

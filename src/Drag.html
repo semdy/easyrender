@@ -61,6 +61,7 @@
     var rect = new EC.Shape();
     rect.fill("#f90");
     rect.rect(100, 50, 200, 100);
+    rect.cursor = "move";
     stage.addChild(rect);
 
     rect.touchEnabled = true;
@@ -74,6 +75,7 @@
     });
 
     var roundRect = new EC.Shape();
+    roundRect.cursor = "move";
     roundRect.stroke("#06c");
     roundRect.roundRect(100, 250, 200, 100, 12);
     stage.addChild(roundRect);
@@ -89,6 +91,7 @@
     });
 
     var arc = new EC.Shape();
+    arc.cursor = "move";
     arc.stroke("#cc0000");
     arc.arc(200, 450, 80, 0, 2, true);
     stage.addChild(arc);
@@ -103,9 +106,7 @@
         stage.setChildIndex(arc, 10);
     });
 
-    stage.cursor = "move";
     stage.touchEnabled = true;
-
     stage.on("touchmove", function (e) {
         if( target ){
             target.x = target._lastX + e.stageX - lastStageX;
