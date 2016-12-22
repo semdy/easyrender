@@ -706,7 +706,7 @@ a lite frameworks for canvas, simply, faster and liter. for more infomation see 
 <tr>
 		<td>numChildren</td>
 		<td>Number</td>
-		<td>--</td>
+		<td>0</td>
 		<td>返回当前容器子集的个数</td>
 	</tr>
 <tr>
