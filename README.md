@@ -59,7 +59,7 @@ a lite frameworks for canvas
 		</td>
 		<td>检测坐标点是否在组件边界内</td>
 		<td>Boolean</td>
-	</tr
+	</tr>
 </table>
 
 ## EC.Util ##
