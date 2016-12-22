@@ -32,7 +32,7 @@ a lite frameworks for canvas, simply, faster and liter. for more infomation see 
 		<td>EVENTS</td>
 		<td>Object</td>
 		<td>--</td>
-		<td>属性：START，MOVE，END, RESIZE</td>
+		<td>属性：START, MOVE, END, RESIZE</td>
 	</tr>
 </table>
 
