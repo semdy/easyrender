@@ -1092,6 +1092,18 @@ a lite frameworks for canvas, simply, faster and liter. for more infomation see 
 		<td>""</td>
 		<td>最大斜接长度</td>
 	</tr>
+	<tr>
+		<td>dashLength</td>
+		<td>Number</td>
+		<td>0</td>
+		<td>虚线的长度(较老的浏览器可能不支持)</td>
+	</tr>
+	<tr>
+		<td>dashGap</td>
+		<td>Number</td>
+		<td>0</td>
+		<td>虚线之间的间隙(较老的浏览器可能不支持)</td>
+	</tr>
 </table>
 
 ### EC.Shape methods ###

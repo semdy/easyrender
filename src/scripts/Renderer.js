@@ -164,6 +164,11 @@
         ctx.lineJoin = obj.lineJoin;
         ctx.lineWidth = obj.lineWidth || 0;
         ctx.miterLimit = obj.miterLimit;
+        if( obj.dashLength > 0 ) {
+            try {
+                ctx.setLineDash([obj.dashLength, obj.dashGap||obj.dashLength]);
+            } catch(e){}
+        }
     }
 
     function getMin(vals){
@@ -559,6 +564,8 @@
             this.width = w||0;
             this.height = h||0;
             this.radius = 0;
+            this.dashLength = 0;
+            this.dashGap = 0;
             this.shadowColor = "#000";
             this.shadowBlur = 0;
             this.shadowOffsetX = 0;
@@ -663,12 +670,13 @@
             this.drawType = 'line';
             return this;
         },
-        dashedLine: function (x, y, endX, endY, dashLength) {
+        dashedLine: function (x, y, endX, endY, dashLength, dashGap) {
             this.moveX = x;
             this.moveY = y;
             this.endX = endX;
             this.endY = endY;
             this.dashLength = dashLength;
+            this.dashGap = dashGap || dashLength;
             this.width = endX - x;
             this.height = this.lineWidth;
             this.drawType = 'dashedLine';
@@ -718,16 +726,21 @@
             return this;
         },
         dashedLine: function (x1, y1, x2, y2, dashLength) {
-            var dashLen = dashLength === undefined ? 5 : dashLength,
-                xpos = x2 - x1,
-                ypos = y2 - y1,
-                numDashes = Math.floor(Math.sqrt(xpos * xpos + ypos * ypos) / dashLen);
+            if( this.setLineDash ){
+                this.moveTo(x1, y1);
+                this.lineTo(x2, y2);
+            } else {
+                var dashLen = dashLength === undefined ? 5 : dashLength,
+                    xpos = x2 - x1,
+                    ypos = y2 - y1,
+                    numDashes = Math.floor(Math.sqrt(xpos * xpos + ypos * ypos) / dashLen);
 
-            for (var i = 0; i < numDashes; i++) {
-                if (i % 2 === 0) {
-                    this.moveTo(x1 + (xpos / numDashes) * i, y1 + (ypos / numDashes) * i);
-                } else {
-                    this.lineTo(x1 + (xpos / numDashes) * i, y1 + (ypos / numDashes) * i);
+                for (var i = 0; i < numDashes; i++) {
+                    if (i % 2 === 0) {
+                        this.moveTo(x1 + (xpos / numDashes) * i, y1 + (ypos / numDashes) * i);
+                    } else {
+                        this.lineTo(x1 + (xpos / numDashes) * i, y1 + (ypos / numDashes) * i);
+                    }
                 }
             }
             return this;
