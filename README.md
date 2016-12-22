@@ -1,6 +1,67 @@
 # easyrender
 a lite frameworks for canvas
 #简要文档
+
+## EC提供的属性 ##
+<table>
+	<tr>
+		<td>properties</td>
+		<td>类型</td>
+		<td>默认</td>
+		<td>描述</td>
+	</tr>
+	<tr>
+		<td>ua</td>
+		<td>String</td>
+		<td>navigator.userAgent</td>
+		<td>浏览器标识</td>
+	</tr>
+	<tr>
+		<td>isTouch</td>
+		<td>Boolean</td>
+		<td>视浏览器类型而定</td>
+		<td>是否是可触摸设备</td>
+	</tr>
+	<tr>
+		<td>noop</td>
+		<td>Function</td>
+		<td>function(){}</td>
+		<td>空方法</td>
+	</tr>
+	<tr>
+		<td>EVENTS</td>
+		<td>Object</td>
+		<td>--</td>
+		<td>属性：START，MOVE，END, RESIZE</td>
+	</tr>
+</table>
+
+## EC提供的静态方法 ##
+<table>
+	<tr>
+		<td>method</td>
+		<td>parameter</td>
+		<td>描述</td>
+		<td>return</td>
+	</tr>
+	<tr>
+		<td>classExtend</td>
+		<td>Object: protoProps -> 继承的原型链<br>
+			Object: staticProps -> 设置额外的静态属性
+		</td>
+		<td>类的继承</td>
+		<td>新的constructor</td>
+	</tr>
+	<tr>
+		<td>isPointInPath</td>
+		<td>Object: {x, y} -> 坐标点 <br>
+			Object: object -> 组件对象
+		</td>
+		<td>检测坐标点是否在组件边界内</td>
+		<td>Boolean</td>
+	</tr
+</table>
+
 ## EC.Util ##
 <table>
 	<tr>
@@ -158,6 +219,12 @@ a lite frameworks for canvas
 		<td>resId: 资源label</td>
 		<td>获取资源配置项</td>
 		<td>object</td>
+	</tr>
+	<tr>
+		<td>getTexture</td>
+		<td>resId: 资源label</td>
+		<td>获取资源纹理图</td>
+		<td>IMG DOMObject</td>
 	</tr>
 	<tr>
 		<td>el</td>
@@ -962,19 +1029,19 @@ a lite frameworks for canvas
 	<tr>
 		<td>fillStyle</td>
 		<td>String</td>
-		<td>""</td>
+		<td>#000</td>
 		<td>填充样式</td>
 	</tr>
 	<tr>
 		<td>strokeStyle</td>
 		<td>String</td>
-		<td>""</td>
+		<td>#000</td>
 		<td>描边样式</td>
 	</tr>
 	<tr>
 		<td>shadowColor</td>
 		<td>String</td>
-		<td>""</td>
+		<td>#000</td>
 		<td>阴影颜色</td>
 	</tr>
 	<tr>

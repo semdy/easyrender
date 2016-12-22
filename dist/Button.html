@@ -74,26 +74,40 @@
         function setButton2(){
             var button = new EC.Button({
                 normal: {
-                    fillStyle: '#ccc',
-                    radius: 10,
-                    text: "button normal",
+                    fillStyle: '#428bca',
+                    radius: 4,
+                    text: "normal",
+                    textColor: "#fff",
                     width:138,
-                    height:48
+                    height:48,
+                    shadowBlur: 20,
+                    shadowColor: "rgba(0,0,0,.4)",
+                    shadowOffsetX: 5,
+                    shadowOffsetY: 5
                 },
                 hover: {
                     fillStyle: 'green',
-                    text: "button hovered",
+                    text: "hovered",
                     textColor: "#fff"
                 },
                 active: {
                     fillStyle: '#ff0000',
-                    text: "button actived",
-                    textColor: "#06c"
+                    text: "actived",
+                    textColor: "#fff"
+                },
+                disabled:{
+                    fillStyle: "#ccc",
+                    textColor: "#777",
+                    text: 'disabled'
                 }
             });
             button.x = 100;
             button.y = 200;
             stage.addChild(button);
+
+            setTimeout(function () {
+                button.setButton('disabled');
+            }, 5000);
 
         }
 

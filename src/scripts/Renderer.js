@@ -31,6 +31,7 @@
         var itemData;
         var bitMapText;
         obj._children = [];
+        obj.width = obj.height = 0;
         obj.text.split("").forEach(function (n) {
             itemData = data[n];
             bitMapText = new BitMap();
@@ -209,8 +210,8 @@
         var y = object.y + ( includeMoveOffset ? object.moveY : 0 );
         var parent = object.parent;
         while( parent ){
-            x += (parent.x + ( includeMoveOffset ? parent.moveX : 0 ));
-            y += (parent.y + ( includeMoveOffset ? parent.moveY : 0 ));
+            x += parent.x;
+            y += parent.y;
             parent = parent.parent;
         }
 
@@ -411,6 +412,10 @@
            return this.getChilds().indexOf(childObj);
         },
 
+        size: function () {
+           return this._children.length;
+        },
+
         setChildIndex: function( childObj, index ){
             this.removeChild(childObj);
             this._children.splice(index, 0, childObj);
@@ -554,23 +559,22 @@
             this.width = w||0;
             this.height = h||0;
             this.radius = 0;
+            this.shadowColor = "#000";
+            this.shadowBlur = 0;
+            this.shadowOffsetX = 0;
+            this.shadowOffsetY = 0;
             this._fill = false;
             this._stroke = false;
             this._closePath = false;
 
             this.$type = "Shape";
         },
-        _setStyle: function(type, color, alpha, shadowColor, shadowBlur, shadowOffsetX, shadowOffsetY){
+        _setStyle: function(type, color, alpha){
             if(typeof alpha == 'number' && alpha < 1){
                 this[type] = EC.Util.color.toRgb(color, alpha);
             } else {
-                this[type] = color;
+                this[type] = color || "#000";
             }
-
-            this.shadowColor = shadowColor || 0;
-            this.shadowBlur = shadowBlur || 0;
-            this.shadowOffsetX = shadowOffsetX || 0;
-            this.shadowOffsetY = shadowOffsetY || 0;
         },
         fill: function(){
             var args = slice.call(arguments);
@@ -784,7 +788,7 @@
             var width = childObj.width + lineGap;
             var height = childObj.height + lineGap;
 
-            if (this.getChilds().length == 1) {
+            if (this.size() == 1) {
                 if( this.width == 0 ) {
                     this.width = x + width;
                 } else {
@@ -901,13 +905,13 @@
             this.textField.x = this.borderWidth + this.padding[3];
             this.textField.y = this.inputType == "textarea" ? this.padding[0] : (this.height - this.textField.height + this.borderWidth)/2;
 
-            this._setInputStyle();
-
             this.mask = new Masker();
             this.mask.rect(0, 0, this.width + this.borderWidth, this.height + this.borderWidth);
 
             this.addChild(this.input);
             this.addChild(this.textField);
+
+            this._setInputStyle();
             document.body.appendChild(this.inputText);
 
         },
@@ -915,9 +919,10 @@
             var self = this;
             var ratio = 1/this.stage.scaleRatio;
             var lineHeight = this.inputType != "textarea" ? this.height : this.lineHeight;
+            var totalOffset = getTotalOffset(this);
             this.inputText.style.cssText = "display:none;position:absolute;border:none;background:none;outline:none;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none;appearance:none;-webkit-text-size-adjust:none;text-size-adjust:none;-webkit-box-sizing:border-box;box-sizing:border-box;overflow:hidden;resize:none;" +
-                "left:"+ (this.x + this.input.x)*ratio +"px;top:"+ (this.y + this.input.y)*ratio +"px;width:"+ this.width*ratio +"px;height:"+ this.height*ratio +"px;line-height:"+ lineHeight*ratio +"px;font-size:"+ this.fontSize*ratio +"px;font-family:"+ (this.fontFamily || this.textField.textFamily) +";color:"+ this.color +";padding:" +
-                this.padding.map(function (pad) {return pad + self.borderWidth/2*ratio + "px"}).join(" ");
+                "left:"+ (totalOffset.x + self.borderWidth/2)*ratio +"px;top:"+ totalOffset.y*ratio +"px;width:"+ this.width*ratio +"px;height:"+ this.height*ratio +"px;line-height:"+ lineHeight*ratio +"px;font-size:"+ this.fontSize*ratio +"px;font-family:"+ (this.fontFamily || this.textField.textFamily) +";color:"+ this.color +";padding:" +
+                this.padding.map(function (pad) {return (pad + self.borderWidth/2)*ratio + "px"}).join(" ");
         },
         _events: function () {
             this.on("touch", function () {
@@ -995,11 +1000,13 @@
             var NORMAL = EC.extend({}, _DEFAULTS, this._getConfig(statusArgs.normal) || {});
             var HOVER = EC.extend({}, _DEFAULTS, this._getConfig(statusArgs.hover) || {});
             var ACTIVE = EC.extend({}, _DEFAULTS, this._getConfig(statusArgs.active) || {});
+            var DISABLED = EC.extend({}, _DEFAULTS, this._getConfig(statusArgs.disabled) || {});
 
             this.statusCfg = {
                 normal: NORMAL,
                 hover: HOVER,
-                active: ACTIVE
+                active: ACTIVE,
+                disabled: DISABLED
             };
 
             for(var i in this.statusCfg){
@@ -1011,8 +1018,6 @@
             this.bitMap = new BitMap();
             this.shape = new Shape();
             this.textField = new TextField();
-
-            this.touchEnabled = true;
 
             this.on("addToStage", function () {
                 this._create();
@@ -1029,7 +1034,9 @@
             return EC.isString(status) ? RES.getRes(status) : status;
         },
         setButton: function(status){
-            var _config = this.statusCfg[status];
+            this.touchEnabled = status == 'disabled' ? false : true;
+
+            var _config = EC.isString( status ) ? this.statusCfg[status] : status;
             _config = EC.extend({}, this.statusCfg.normal, _config);
 
             EC.extend(this, {width: _config.width, height: _config.height});
