@@ -137,8 +137,8 @@
                     }
 
                     if( isMouseMove && this._lastObject !== obj ) {
-                        this.element.style.cursor = obj.cursor;
                         obj.dispatch("touchenter", EC.extend(event, {type: "touchenter", target: obj}));
+                        this.element.style.cursor = obj.cursor;
                     }
 
                     this._lastObject = obj;
