@@ -1435,9 +1435,9 @@ a lite frameworks for canvas
 	<tr>
 		<td>setButton</td>
 		<td>
-			String: status -> 按钮状态
+			String/Object: status -> 按钮状态
 		</td>
-		<td>设置按钮状态 normal, hover, active三选其一<br>
+		<td>设置按钮状态 normal, hover, active, disabled四选其一<br>
 			具体详见 [Button demo](https://semdy.github.io/easyrender/dist/Button.html)	
 		</td>
 		<td>EC.Button</td>
