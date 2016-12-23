@@ -352,7 +352,12 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 <tr>
 		<td>cors</td>
 		<td>false</td>
-		<td>通过withCredentials跨域请求</td>
+		<td>是否通过withCredentials跨域请求</td>
+	</tr>
+<tr>
+		<td>global</td>
+		<td>true</td>
+		<td>是否触发ajax全局的相关事件</td>
 	</tr>
 <tr>
 		<td>beforeSend</td>
@@ -387,7 +392,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 <tr>
 		<td>dataType</td>
 		<td>text</td>
-		<td>设置返回的数据类型,可选值有：text, html, xml, json, jsonp</td>
+		<td>设置返回的数据类型,可选值有：text, html, xml, json, jsonp, script</td>
 	</tr>
 <tr>
 		<td>callbackName</td>
@@ -400,7 +405,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>设置请求响应类型</td>
 	</tr>
 <tr>
-		<td>createXHR</td>
+		<td>xhr</td>
 		<td>new XMLHttpRequest</td>
 		<td>自定义XMLHttpRequest</td>
 	</tr>

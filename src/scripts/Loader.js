@@ -140,6 +140,7 @@
         headers: {},
         cache: true,
         cors: false,
+        global: true,
         beforeSend: EC.noop,
         success: EC.noop,
         error: EC.noop,
@@ -149,7 +150,7 @@
         dataType: "text",
         callbackName: "?",
         contentType: 'application/x-www-form-urlencoded;charset=UTF-8',
-        createXHR: function () {
+        xhr: function () {
             if ( !!window.XMLHttpRequest ) {
                 return new XMLHttpRequest();
             } else {
@@ -163,7 +164,7 @@
         accepts: {
             xml: "application/xml, text/xml",
             html: "text/html",
-            script: "text/javascript, application/javascript",
+            script: "text/javascript, application/javascript, application/ecmascript, application/x-ecmascript",
             json: "application/json, text/javascript",
             text: "text/plain",
             _default: "*/*"
@@ -199,21 +200,21 @@
         return data;
     }
 
-    function mixFn(beforeFn, afterFn){
+    function mixFn(beforeFn, afterFn, triggerGlobal){
         return function(){
-            beforeFn.apply(this, arguments);
-            afterFn.apply(this, arguments);
+            triggerGlobal && beforeFn.apply(this, arguments);
+            return afterFn.apply(this, arguments);
         }
     }
 
     function createAJAX( args ){
         args = EC.extend({}, ajaxSettings, args||{});
 
-        var xhr = args.createXHR();
+        var xhr = args.xhr();
 
         if ( !xhr ) return;
 
-        if( args.beforeSend.call(args.context, xhr) === false ){
+        if( mixFn(ajaxSettings.beforeSend, args.beforeSend, args.global).call(args.context, xhr) === false ){
             xhr.abort();
             return xhr;
         }
@@ -228,17 +229,17 @@
             if( timeout ){
                 clearTimeout(timeout);
             }
-            mixFn(ajaxSettings.success, args.success).call(args.context, dataType == 'jsonp' ? res : (dataType == 'xml' ? xhr.responseXML :
+            mixFn(ajaxSettings.success, args.success, args.global).call(args.context, dataType == 'jsonp' ? res : (dataType == 'xml' ? xhr.responseXML :
                 (dataType == 'json' ? JSON.parse(xhr.responseText) : xhr.responseText)), xhr);
-            mixFn(ajaxSettings.complete, args.complete).call(args.context, xhr, xhr.status, xhr.statusText);
+            mixFn(ajaxSettings.complete, args.complete, args.global).call(args.context, xhr, xhr.status, xhr.statusText);
         }
 
         function handleError() {
             if( timeout ){
                 clearTimeout(timeout);
             }
-            mixFn(ajaxSettings.error, args.error).call(args.context, xhr, xhr.status, xhr.statusText);
-            mixFn(ajaxSettings.complete, args.complete).call(args.context, xhr, xhr.status, xhr.statusText);
+            mixFn(ajaxSettings.error, args.error, args.global).call(args.context, xhr, xhr.status, xhr.statusText);
+            mixFn(ajaxSettings.complete, args.complete, args.global).call(args.context, xhr, xhr.status, xhr.statusText);
         }
 
         if( args.async && args.timeout > 0 ) {
