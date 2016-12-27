@@ -142,6 +142,9 @@
     }
 
     function getMaxLenText(textArr){
+        if( textArr.length == 1 ){
+            return textArr[0];
+        }
         var maxLens = textArr.map(function (text) {
             return text.length;
         });
