@@ -962,9 +962,9 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>文本垂直对齐方式</td>
 	</tr>
 	<tr>
-		<td>textFamily</td>
+		<td>fontFamily</td>
 		<td>String</td>
-		<td>Microsoft yahei,Arial,sans-serif</td>
+		<td>Arial</td>
 		<td>字体</td>
 	</tr>
 	<tr>
@@ -992,10 +992,16 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>字体加粗</td>
 	</tr>
 	<tr>
-		<td>lineHeight</td>
+		<td>lineSpacing</td>
 		<td>Number</td>
-		<td>20</td>
-		<td>行高</td>
+		<td>2</td>
+		<td>行间距</td>
+	</tr>
+	<tr>
+		<td>numLines</td>
+		<td>Number</td>
+		<td>1</td>
+		<td>行数</td>
 	</tr>
 	<tr>
 		<td>stroke</td>
@@ -1402,7 +1408,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 <tr>
 		<td>lineHeight</td>
 		<td>Number</td>
-		<td>20</td>
+		<td>14</td>
 		<td>输入框文本行高</td>
 	</tr>
 <tr>

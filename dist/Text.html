@@ -44,7 +44,6 @@
     text.x = 10;
     text.y = 10;
     text.size = 14;
-    text.textFamily = '宋体';
     text.multiple = true;
     text.text = "这是一段测试字符串。This is an test string.当在文本框输入内容后会同步显示到canvas上。";
     stage.addChild(text);
@@ -69,6 +68,7 @@
     strokeText.size = 34;
     strokeText.stroke = true;
     strokeText.strokeColor = "#f90";
+    strokeText.fontFamily = 'Microsoft yahei';
     strokeText.text = "带描边的文字";
     stage.addChild(strokeText);
 
@@ -78,6 +78,7 @@
     hollowText.size = 34;
     hollowText.strokeOnly = true;
     hollowText.strokeColor = "#f90";
+    hollowText.fontFamily = 'Microsoft yahei';
     hollowText.text = "空心的文字";
     stage.addChild(hollowText);
 

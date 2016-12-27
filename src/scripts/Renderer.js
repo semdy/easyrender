@@ -70,9 +70,9 @@
     }
 
     function drawText(ctx, obj){
-        ctx.font = obj.font || (obj.textStyle + " " + obj.textWeight + " " + obj.size + "px/" + obj.lineHeight + "px " + obj.textFamily);
+        ctx.font = obj.font || (obj.textStyle + " " + obj.textWeight + " " + obj.size + "px " + obj.fontFamily);
         ctx.textAlign = obj.textAlign;
-        ctx.textBaseline = obj.textBaseline || "top";
+        ctx.textBaseline = obj.textBaseline;
 
         var textX = obj.textAlign == "center" ? obj.width/2 : (obj.textAlign == "right" ? obj.width : 0),
             textY = 0;
@@ -80,31 +80,49 @@
         if( !obj.strokeOnly ) {
             ctx.fillStyle = obj.textColor;
             if (obj.multiple) {
-                textAutoLine(ctx, "fillText", obj.text, obj.width, textX, textY, obj.lineHeight);
+                textAutoLine(ctx, "fillText", obj, textX, textY);
             } else {
-                textSplitLine(ctx, "fillText", obj.text, textX, textY, obj.lineHeight);
+                textSplitLine(ctx, "fillText", obj, textX, textY);
             }
         }
 
         if( obj.stroke || obj.strokeOnly ) {
             ctx.strokeStyle = obj.strokeColor;
             if( obj.multiple ){
-                textAutoLine(ctx, "strokeText", obj.text, obj.width, textX, textY, obj.lineHeight);
+                textAutoLine(ctx, "strokeText", obj, textX, textY);
             } else {
-                textSplitLine(ctx, "strokeText", obj.text, textX, textY, obj.lineHeight);
+                textSplitLine(ctx, "strokeText", obj, textX, textY);
             }
         }
     }
 
-    function textSplitLine(ctx, drawType, str, initX, initY, lineHeight) {
-        str.split(/\n/).forEach(function (text, i) {
+    function textSplitLine(ctx, drawType, obj, initX, initY) {
+        var textArr = obj.text.split(/\n/);
+        var lineHeight = obj.size + obj.lineSpacing;
+
+        obj.numLines = textArr.length;
+        textArr.forEach(function (text, i) {
             ctx[drawType](text, initX, initY + lineHeight * i);
         });
+
+        if( !obj._isWidthDefined ) {
+            if (obj._lastText != obj.text) {
+                mixTextSize(obj, textArr);
+                obj._lastText = obj.text;
+            }
+        } else {
+            obj.height = lineHeight * obj.numLines - obj.lineSpacing;
+        }
     }
 
-    function textAutoLine(ctx, drawType, str, width, initX, initY, lineHeight){
+    function textAutoLine(ctx, drawType, obj, initX, initY){
+        var lineHeight = obj.size + obj.lineSpacing;
+        var width = obj.width;
         var lineWidth = 0;
         var lastSubStrIndex = 0;
+        var str = obj.text;
+        var numLines = 1;
+
         for( var i = 0; i < str.length; i++ ){
             lineWidth += ctx.measureText(str[i]).width;
             if( lineWidth > width - initX ){
@@ -112,17 +130,30 @@
                 initY += lineHeight;
                 lineWidth = 0;
                 lastSubStrIndex = i;
+                numLines += 1;
             }
             if( i == str.length - 1 ){
                 ctx[drawType](str.substring(lastSubStrIndex, i + 1), initX, initY);
             }
         }
+
+        obj.numLines = numLines;
+        obj.height = lineHeight * numLines - obj.lineSpacing;
     }
 
-    function mixTextSize(obj){
-        tmpContext.font = obj.size + "px " + obj.textFamily;
-        obj.width = tmpContext.measureText(obj.text).width;
-        obj.height = obj.size + 4;
+    function getMaxLenText(textArr){
+        var maxLens = textArr.map(function (text) {
+            return text.length;
+        });
+        return textArr[maxLens.indexOf(getMax(maxLens))];
+    }
+
+    function mixTextSize(obj, textArr){
+        var text = getMaxLenText(textArr || obj.text.split(/\n/));
+        tmpContext.font = obj.font || (obj.textStyle + " " + obj.textWeight + " " + obj.size + "px " + obj.fontFamily);
+        tmpContext.textAlign = obj.textAlign;
+        obj.width = tmpContext.measureText(text).width;
+        obj.height = (obj.size + obj.lineSpacing) * obj.numLines - obj.lineSpacing;
     }
 
     function drawShape(ctx, obj){
@@ -479,13 +510,14 @@
             this.text = text || "";
             this.size = size || 16;
             this.textAlign = align || "start";
-            this.textBaseline = "";
-            this.textFamily = family || "Microsoft yahei,Arial,sans-serif";
+            this.textBaseline = "top";
             this.textColor = color || "#000";
+            this.fontFamily = family || "Arial";
             this.strokeColor = color || "#000";
             this.textStyle = "normal";
             this.textWeight = "normal";
-            this.lineHeight = 20;
+            this.lineSpacing = 2;
+            this.numLines = 1;
             this.stroke = false;
             this.strokeOnly = false;
             this.multiple = false;
@@ -495,9 +527,21 @@
             this.width = width||0;
             this.height = height||0;
 
-            mixTextSize(this);
-
             this.$type = "TextField";
+
+            if( this.width == 0 ){
+                mixTextSize(this);
+                this.on("addToStage", function () {
+                    if( !this._isWidthDefined && this.width == 0 ) {
+                        mixTextSize(this);
+                        this._lastText = this.text;
+                    } else {
+                        this._isWidthDefined = true;
+                    }
+                }, this);
+            } else {
+                this._isWidthDefined = true;
+            }
         }
     });
 
@@ -858,7 +902,7 @@
             this.placeholderColor = "#999";
             this.placeholder = "";
             this.fontFamily = "";
-            this.lineHeight = 20;
+            this.lineHeight = 14;
             this.inputType = "text";
 
             this.on("addToStage", function () {
@@ -914,7 +958,7 @@
             this.textField.multiple = true;
             this.textField.lineHeight = this.inputType != "textarea" ? this.height : this.lineHeight;
             this.textField.size = this.fontSize;
-            this.textField.textFamily = this.fontFamily || this.textField.textFamily;
+            this.textField.fontFamily = this.fontFamily || this.textField.fontFamily;
             this.textField.x = this.borderWidth + this.padding[3];
             this.textField.y = this.inputType == "textarea" ? this.padding[0] : (this.height - this.textField.height + this.borderWidth)/2;
 
@@ -934,7 +978,7 @@
             var lineHeight = this.inputType != "textarea" ? this.height : this.lineHeight;
             var totalOffset = getTotalOffset(this);
             this.inputText.style.cssText = "display:none;position:absolute;border:none;background:none;outline:none;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none;appearance:none;-webkit-text-size-adjust:none;text-size-adjust:none;-webkit-box-sizing:border-box;box-sizing:border-box;overflow:hidden;resize:none;" +
-                "left:"+ (totalOffset.x + self.borderWidth/2)*ratio +"px;top:"+ totalOffset.y*ratio +"px;width:"+ this.width*ratio +"px;height:"+ this.height*ratio +"px;line-height:"+ lineHeight*ratio +"px;font-size:"+ this.fontSize*ratio +"px;font-family:"+ (this.fontFamily || this.textField.textFamily) +";color:"+ this.color +";padding:" +
+                "left:"+ (totalOffset.x + self.borderWidth/2)*ratio +"px;top:"+ totalOffset.y*ratio +"px;width:"+ this.width*ratio +"px;height:"+ this.height*ratio +"px;line-height:"+ lineHeight*ratio +"px;font-size:"+ this.fontSize*ratio +"px;font-family:"+ (this.fontFamily || this.textField.fontFamily) +";color:"+ this.color +";padding:" +
                 this.padding.map(function (pad) {return (pad + self.borderWidth/2)*ratio + "px"}).join(" ");
         },
         _events: function () {
