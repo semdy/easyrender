@@ -1408,8 +1408,14 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 <tr>
 		<td>lineHeight</td>
 		<td>Number</td>
-		<td>14</td>
+		<td>16</td>
 		<td>输入框文本行高</td>
+	</tr>
+<tr>
+		<td>lineSpacing</td>
+		<td>Number</td>
+		<td>2</td>
+		<td>输入框文本行间距</td>
 	</tr>
 <tr>
 		<td>color</td>
