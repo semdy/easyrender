@@ -953,7 +953,7 @@
 
             this.textField.width = this.width - this.padding[1] - this.padding[3];
             this.textField.multiple = true;
-            this.textField.lineHeight = this.inputType != "textarea" ? this.height : this.lineHeight;
+            this.textField.lineSpacing = this.inputType != "textarea" ? this.height : this.lineHeight;
             this.textField.size = this.fontSize;
             this.textField.fontFamily = this.fontFamily || this.textField.fontFamily;
             this.textField.x = this.borderWidth + this.padding[3];
