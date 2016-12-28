@@ -119,6 +119,17 @@
             button.y = 200;
             stage.addChild(button);
 
+            //仅在PC环境下有效
+            button.on("touchenter", function (e) {
+                //button.cursor = "move";
+                console.log(e.type + "_2");
+            });
+
+            //仅在PC环境下有效
+            button.on("touchout", function (e) {
+                console.log(e.type + "_2");
+            });
+
             setTimeout(function () {
                 button.setButton('disabled');
             }, 5000);

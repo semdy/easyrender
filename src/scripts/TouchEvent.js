@@ -136,11 +136,12 @@
                         obj.dispatch(type, EC.extend(event, {target: obj}));
                     }
 
-                    if (isMouseMove && obj.touchEnabled && this._lastObject !== obj) {
+                    if (isMouseMove && obj.touchEnabled && !obj._touchentered && this._lastObject !== obj) {
                         obj.dispatch("touchenter", EC.extend(event, {type: "touchenter", target: obj}));
                         if( obj.cursor ) {
                             this.element.style.cursor = obj.cursor;
                         }
+                        obj._touchentered = true;
                     }
 
                     obj = obj.parent;
@@ -151,10 +152,17 @@
             this._lastObject = enableObject;
         },
         _triggerLastStack: function () {
-            if( this._lastObject ) {
-                this._lastObject.dispatch("touchout", {type: "touchout", target: this._lastObject});
+            var obj = this._lastObject;
+
+            if( obj ) {
+                obj.dispatch("touchout", {type: "touchout", target: obj});
                 this.element.style.cursor = "";
                 this._lastObject = null;
+            }
+
+            while( obj ){
+                delete obj._touchentered;
+                obj = obj.parent;
             }
         },
         _getTouchedTarget: function( target ){
