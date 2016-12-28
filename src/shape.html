@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-    <title>EC MovieClip</title>
+    <title>EC Shape</title>
     <style>
         body{
             margin:0;
@@ -83,6 +83,12 @@
     arc.stroke("#cc0000");
     arc.arc(10, 470, 80, 0, 2, true); //x, y, radius, startAngle, endAngle, counterclockwise
     stage.addChild(arc);
+
+    var dashArc = new EC.Shape();
+    dashArc.dashLength = 5;
+    dashArc.stroke("green");
+    dashArc.arc(200, 470, 80, 0, 2, true); //x, y, radius, startAngle, endAngle, counterclockwise
+    stage.addChild(dashArc);
 
     var arcTo = new EC.Shape();
     arcTo.stroke("#000");

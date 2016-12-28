@@ -19,7 +19,6 @@
         this._offsetX = 0;
         this._offsetY = 0;
         this._bound = null;
-        this._lastStack = [];
         this._lastObject  = null;
         this._touchTimer = null;
     };
@@ -101,18 +100,21 @@
             this._offsetX = 0;
             this._offsetY = 0;
             this._bound = null;
-            this._lastStack = [];
             this._lastObject = null;
         },
         _triggerEvent: function(type, event){
             var self = this;
             var ratio = this.stage.scaleRatio;
             var isMouseMove = !EC.isTouch && type === "touchmove";
-            var enableStack = this.enableStack.filter(function(obj){
+            var enableObject = this.enableStack.find(function(obj){
                 return EC.isPointInPath({x: self._touchX * ratio, y: self._touchY * ratio}, obj);
             });
 
-            if( enableStack.length ) {
+            if (isMouseMove && this._lastObject != enableObject) {
+                this._triggerLastStack();
+            }
+
+            if( enableObject ) {
                 var eventObj = EC.extend({
                     type: type,
                     stageX: this._touchX * ratio,
@@ -121,49 +123,39 @@
 
                 event = new Event(event, eventObj);
 
-                var parent, obj;
-                for(var i = 0; i < enableStack.length; i++) {
-                    obj = enableStack[i];
+                var obj = enableObject;
+                while( obj ){
 
                     if( event.isPropagationStopped() ) break;
 
-                    if( !parent || obj === parent ) {
-                        if( obj.$type === "Sprite" || obj.$type === "Stage" ){
+                    if (obj.$type === "Sprite" || obj.$type === "Stage") {
+                        if (obj.touchEnabled) {
                             obj.dispatch(type, EC.extend(event, {target: this._getTouchedTarget(obj) || obj}));
-                        } else {
-                            obj.dispatch(type, EC.extend(event, {target: obj}));
                         }
-                        parent = obj.parent;
+                    } else {
+                        obj.dispatch(type, EC.extend(event, {target: obj}));
                     }
 
-                    if( isMouseMove && this._lastObject !== obj ) {
+                    if (isMouseMove && obj.touchEnabled && this._lastObject !== obj) {
                         obj.dispatch("touchenter", EC.extend(event, {type: "touchenter", target: obj}));
-                        this.element.style.cursor = obj.$type == "Stage" ? "" : obj.cursor;
+                        if( obj.cursor ) {
+                            this.element.style.cursor = obj.cursor;
+                        }
                     }
 
-                    this._lastObject = obj;
+                    obj = obj.parent;
                 }
 
-                this._lastStack = enableStack;
-
-            } else {
-
-                this._lastObject = null;
-                if( isMouseMove ) {
-                    this._triggerLastStack();
-                }
             }
+
+            this._lastObject = enableObject;
         },
         _triggerLastStack: function () {
-            if( this._lastStack.length ) {
-                this._lastStack.forEach(function (obj) {
-                    obj.dispatch("touchout", {type: "touchout", target: obj});
-                });
-            } else {
+            if( this._lastObject ) {
+                this._lastObject.dispatch("touchout", {type: "touchout", target: this._lastObject});
                 this.element.style.cursor = "";
+                this._lastObject = null;
             }
-
-            this._lastStack = [];
         },
         _getTouchedTarget: function( target ){
             var elStack = [];
@@ -209,7 +201,7 @@
             getItems(this.stage);
 
             if( this.stage.touchEnabled ){
-                enableStack.unshift(this.stage);
+                enableStack.push(this.stage);
             }
 
             return enableStack;

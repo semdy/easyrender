@@ -106,10 +106,7 @@
         });
 
         if( !obj._isWidthDefined ) {
-            if (obj._lastText != obj.text) {
-                mixTextSize(obj, textArr);
-                obj._lastText = obj.text;
-            }
+            mixTextSize(obj, textArr);
         } else {
             obj.height = lineHeight * obj.numLines - obj.lineSpacing;
         }
@@ -384,7 +381,7 @@
             this.touchEnabled = false;
 
             this.cursor = 'pointer';
-            this.$type = "ObjectContainer";
+            this.$type = 'Sprite';
 
             this._children = [];
             this.numChildren = 0;
@@ -537,7 +534,6 @@
                 this.on("addToStage", function () {
                     if( !this._isWidthDefined && this.width == 0 ) {
                         mixTextSize(this);
-                        this._lastText = this.text;
                     } else {
                         this._isWidthDefined = true;
                     }
@@ -830,8 +826,6 @@
             this.y = y||0;
             this.width = w||0;
             this.height = h||0;
-
-            this.$type = "Sprite";
 
         },
         addChild: function( childObj ){
@@ -1195,6 +1189,7 @@
             this.width = parseFloat(this.canvas.getAttribute("width")) || this.options.width;
             this.height = parseFloat(this.canvas.getAttribute("height")) || this.options.height;
             this.scaleRatio = 1;
+            this.cursor = "";
             this._isRendering = false;
             this._ticker = new EC.Ticker();
 
