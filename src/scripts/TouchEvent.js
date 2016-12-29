@@ -5,12 +5,27 @@
 (function(EC){
     "use strict";
 
-    var doc = document,
-        dob = doc.body,
-        doe = doc.documentElement;
-
     var EVENTS = EC.EVENTS,
         isTouch = EC.isTouch;
+
+    var getWindowOffset = function () {
+        var x, y;
+        if( typeof pageXOffset !== "undefined" ){
+            x = window.pageXOffset;
+            y = window.pageYOffset;
+        } else {
+            var doc = document,
+                dob = doc.body,
+                doe = doc.documentElement;
+
+            x = doe.scrollLeft || dob.scrollLeft || 0;
+            y = doe.scrollTop || dob.scrollTop || 0;
+        }
+        return {
+            x: x,
+            y: y
+        }
+    };
 
     var TouchEvent = function(){
         this.enableStack = [];
@@ -39,10 +54,11 @@
         _onTouchStart: function(event){
             //event.preventDefault();
             event = isTouch ? event.targetTouches[0] : event;
+            var offset = getWindowOffset();
 
             this._startTime = Date.now();
-            this._offsetX = window.pageXOffset || doe.scrollLeft || dob.scrollLeft || 0;
-            this._offsetY = window.pageYOffset || doe.scrollTop || dob.scrollTop || 0;
+            this._offsetX = offset.x;
+            this._offsetY = offset.y;
             this._bound = this.element.getBoundingClientRect();
 
             this._clearTouchTimer();
@@ -62,8 +78,9 @@
             this._clearTouchTimer();
 
             if( !EC.isTouch ) {
-                this._offsetX = this._offsetX || window.pageXOffset || doe.scrollLeft || dob.scrollLeft || 0;
-                this._offsetY = this._offsetY || window.pageYOffset || doe.scrollTop || dob.scrollTop || 0;
+                var offset = getWindowOffset();
+                this._offsetX = offset.x;
+                this._offsetY = offset.y;
                 this._bound = this._bound || this.element.getBoundingClientRect();
                 this.enableStack = this._getTouchEnables();
             }
