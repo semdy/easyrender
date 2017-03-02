@@ -138,9 +138,11 @@
         async: true,
         data: {},
         headers: {},
+        xhrFields: {},
         cache: true,
         cors: false,
         global: true,
+        crossDomain: false,
         beforeSend: EC.noop,
         success: EC.noop,
         error: EC.noop,
@@ -170,6 +172,9 @@
             _default: "*/*"
         }
     };
+
+  var originAnchor = document.createElement('a');
+      originAnchor.href = window.location.href;
     
     function globalAjaxSetup( settings ) {
         EC.extend(ajaxSettings, settings||{});
@@ -214,16 +219,17 @@
 
         if ( !xhr ) return;
 
-        if( mixFn(ajaxSettings.beforeSend, args.beforeSend, args.global).call(args.context, xhr) === false ){
-            xhr.abort();
-            return xhr;
-        }
-
         var dataType = args.dataType.toLowerCase(),
             type = args.type.toUpperCase(),
             url = args.url,
             data = getUrlModule(args.data, args.cache),
             timeout;
+
+        if ( !args.crossDomain ) {
+            var urlAnchor = document.createElement('a');
+            urlAnchor.href = args.url;
+            args.crossDomain = (originAnchor.protocol + '//' + originAnchor.host) !== (urlAnchor.protocol + '//' + urlAnchor.host);
+        }
 
         function handleSuccess( res ) {
             if( timeout ){
@@ -240,6 +246,12 @@
             }
             mixFn(ajaxSettings.error, args.error, args.global).call(args.context, xhr, xhr.status, xhr.statusText);
             mixFn(ajaxSettings.complete, args.complete, args.global).call(args.context, xhr, xhr.status, xhr.statusText);
+        }
+
+        if( mixFn(ajaxSettings.beforeSend, args.beforeSend, args.global).call(args.context, xhr) === false ){
+            xhr.abort();
+            handleError();
+            return xhr;
         }
 
         if( args.async && args.timeout > 0 ) {
@@ -287,12 +299,14 @@
         xhr.open(type, url, args.async);
 
         if ( args.cors ) {
-            try{
-                xhr.withCredentials = true;
-            } catch (e) {}
+            args.xhrFields.withCredentials = true;
         }
 
-        if ( !args.cors ) {
+        for (var name in args.xhrFields) {
+            xhr[name] = args.xhrFields[name];
+        }
+
+        if ( !args.crossDomain || !args.cors ) {
             args.headers["X-Requested-With"] = "XMLHttpRequest";
         }
 

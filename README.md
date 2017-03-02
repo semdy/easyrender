@@ -355,6 +355,16 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>是否通过withCredentials跨域请求</td>
 	</tr>
 <tr>
+        <td>crossDomain</td>
+        <td>false</td>
+        <td>是否允许跨域请求</td>
+    </tr>
+<tr>
+        <td>xhrFields</td>
+        <td>{}</td>
+        <td>给xhr添加额外属性</td>
+    </tr>
+<tr>
 		<td>global</td>
 		<td>true</td>
 		<td>是否触发ajax全局的相关事件</td>
