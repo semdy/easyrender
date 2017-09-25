@@ -103,7 +103,7 @@
 
         callback = callback[1];
 
-        if( callback == "?" ){
+        if( callback === "?" ){
             callback = "jsonp" + (Date.now() + Math.random()*1e18);
             url = url.replace("callback=?", "callback=" + callback);
         }
@@ -185,7 +185,7 @@
         if( !cache ){
             var rnd = Date.now() + Math.random() * 1e18;
         }
-        if( typeof params == 'object' ){
+        if( typeof params === 'object' ){
             data = [];
             if( !cache ) {
                 params._ = rnd;
@@ -195,7 +195,7 @@
             }
             data = data.join("&");
         }
-        else if( typeof params == 'string' ) {
+        else if( typeof params === 'string' ) {
             data = params;
             if( !cache ){
                 data += "&_=" + rnd;
@@ -235,8 +235,8 @@
             if( timeout ){
                 clearTimeout(timeout);
             }
-            mixFn(ajaxSettings.success, args.success, args.global).call(args.context, dataType == 'jsonp' ? res : (dataType == 'xml' ? xhr.responseXML :
-                (dataType == 'json' ? JSON.parse(xhr.responseText) : xhr.responseText)), xhr);
+            mixFn(ajaxSettings.success, args.success, args.global).call(args.context, dataType === 'jsonp' ? res : (dataType === 'xml' ? xhr.responseXML :
+                (dataType === 'json' ? JSON.parse(xhr.responseText) : xhr.responseText)), xhr);
             mixFn(ajaxSettings.complete, args.complete, args.global).call(args.context, xhr, xhr.status, xhr.statusText);
         }
 
@@ -263,12 +263,12 @@
             }, args.timeout);
         }
 
-        if( type == 'GET' && data ){
+        if( type === 'GET' && data ){
             url += url.indexOf("?") > -1 ? ("&" + data) : ("?" + data);
             data = null;
         }
 
-        if( dataType == "jsonp" ) {
+        if( dataType === "jsonp" ) {
             url += ((url.indexOf("?") > -1 ? "&" : "?") + "callback=" + args.callbackName);
             loadJsonp(url, handleSuccess, handleError);
             return xhr;
@@ -286,7 +286,7 @@
         } else {
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
-                    if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304) {
+                    if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
                         xhr.onreadystatechange = new Function;
                         handleSuccess();
                     } else {
@@ -389,11 +389,11 @@
     };
 
     var loadAsset = function (cfgItem, callback) {
-        if (typeof cfgItem != 'object') {
+        if (typeof cfgItem !== 'object') {
             return;
         }
 
-        if (cfgItem.type == 'image') {
+        if (cfgItem.type === 'image') {
             loadTexture(cfgItem, function(){
                 callback && callback(cfgItem);
             });
@@ -403,7 +403,7 @@
                 var obj = EC.extend({}, cfgItem, {data: data});
                 assets[cfgItem.name] = obj;
 
-                if( cfgItem.type == 'sheet' || cfgItem.type == 'font' ){
+                if( cfgItem.type === 'sheet' || cfgItem.type === 'font' ){
                     var url = cfgItem.url.substr(0, cfgItem.url.lastIndexOf("/") + 1) + data.file;
                     var name = data.file.replace(/\.(\w+)$/, "_$1");
                     var resObj = EC.extend({}, cfgItem, {url: url, name: name, type: 'image'});
@@ -448,7 +448,7 @@
             return console.error(resId + " does not exist!");
         }
 
-        if( asset.type == 'json' || asset.type == 'sheet' ){
+        if( asset.type === 'json' || asset.type === 'sheet' ){
             if( sheetKey ) {
                 var resConfig = {};
                 var data = asset.data.frames[sheetKey];
@@ -480,14 +480,14 @@
     };
 
     var getElement = function (selector, container) {
-        if( typeof selector != 'string' ) return selector;
+        if( typeof selector !== 'string' ) return selector;
 
         if( !/^(#|\.)/.test( selector ) ) return null;
 
         var type = selector.charAt(0);
         container = container || document;
 
-        if (type == "#") {
+        if (type === "#") {
             return document.getElementById(selector.substr(1, selector.length));
         }
 
@@ -512,7 +512,7 @@
 
     var getKeys = function( groupKey, data ){
         var group = data.groups.find(function( group ){
-            return group.name == groupKey;
+            return group.name === groupKey;
         });
 
         if( group === undefined ){
@@ -598,7 +598,7 @@
     ['get', 'post', 'getJSON'].forEach(function (type, index) {
         RES.request[type] = function (url, params) {
             type = type.replace(/JSON?$/, "");
-            return new Request({url: url, type: type, data: params, dataType: index == 2 ? 'json' : 'text'});
+            return new Request({url: url, type: type, data: params, dataType: index === 2 ? 'json' : 'text'});
         };
     });
 

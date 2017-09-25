@@ -45,7 +45,7 @@
             this.totalFrames = this.frame.frames.length;
 
             if( !Array.isArray(this.RESUrl) ) {
-                if( EC.isObject(this.RESUrl) && "nodeType" in this.RESUrl ){
+                if( EC.isObject(this.RESUrl) && ("nodeType" in this.RESUrl) ){
                     this.RESUrl = {
                         texture: this.RESUrl,
                         width: this.RESUrl.width,
