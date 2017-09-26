@@ -20,33 +20,6 @@ var EC = {
     return +( new Date() );
   });
 
-  Object.create = function () {
-
-    function Temp() {}
-
-    return function (proto) {
-
-      if (!(proto === null || typeof proto === "object" || typeof proto === "function")) {
-        throw TypeError('Argument must be an object, or null');
-      }
-
-      Temp.prototype = proto;
-      var obj = new Temp();
-      Temp.prototype = null;
-
-      if (arguments.length > 1) {
-        var Properties = Object(arguments[1]);
-        for (var prop in Properties) {
-          if (hasOwn.call(Properties, prop)) {
-            obj[prop] = Properties[prop];
-          }
-        }
-      }
-
-      return obj;
-    };
-  }();
-
   !!funProto.bind || (funProto.bind = function () {
     var self = this,
       context = [].shift.call(arguments),
@@ -77,6 +50,33 @@ var EC = {
   };
 
   !!Object.assign || (Object.assign = Extend);
+
+  var inherits = function() {
+
+    function Temp() {}
+
+    return function (proto) {
+
+      if (!(proto === null || typeof proto === "object" || typeof proto === "function")) {
+        throw TypeError('Argument must be an object, or null');
+      }
+
+      Temp.prototype = proto;
+      var obj = new Temp();
+      Temp.prototype = null;
+
+      if (arguments.length > 1) {
+        var Properties = Object(arguments[1]);
+        for (var prop in Properties) {
+          if (hasOwn.call(Properties, prop)) {
+            obj[prop] = Properties[prop];
+          }
+        }
+      }
+
+      return obj;
+    };
+  }();
 
 
   var isTouch = 'ontouchstart' in document;
@@ -167,7 +167,7 @@ var EC = {
 
     Extend(child, parent, staticProps);
 
-    child.prototype = Object.create(parent.prototype, protoProps);
+    child.prototype = inherits(parent.prototype, protoProps);
     child.prototype.constructor = child;
 
     child.superclass = parent.prototype;

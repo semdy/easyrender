@@ -1,21 +1,23 @@
 <!Doctype html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-    <title>drag</title>
-    <style>
-        body{
-            margin:0;
-        }
-        .movieclip{
-            position: absolute;
-            left:0;
-            top:0;
-            right:0;
-            bottom: 0;
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>drag</title>
+  <style>
+    body {
+      margin: 0;
+    }
+
+    .movieclip {
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+    }
+  </style>
 </head>
 
 <body>
@@ -25,83 +27,83 @@
 <script src="scripts/libs/easyrender.js"></script>
 
 <script>
-    var canvas = document.getElementById('canvas-shape');
-    var stage = new EC.Stage(canvas, {
-        scaleMode: EC.isTouch ? 'showAll' : 'noScale',
-        width: 750,
-        height: 1334,
-        showFps: true
-    });
+  var canvas = document.getElementById('canvas-shape');
+  var stage = new EC.Stage(canvas, {
+    scaleMode: EC.isTouch ? 'showAll' : 'noScale',
+    width: 750,
+    height: 1334,
+    showFps: true
+  });
 
-    stage.showFps({
-        right: 0,
-        left: "auto",
-        top: 0
-    });
+  stage.showFps({
+    right: 0,
+    left: "auto",
+    top: 0
+  });
 
-    var target;
-    var lastStageX = 0;
-    var lastStageY = 0;
+  var target;
+  var lastStageX = 0;
+  var lastStageY = 0;
 
-    var rect = new EC.Shape();
-    rect.fill("#f90");
-    rect.rect(100, 50, 200, 100);
-    rect.cursor = "move";
-    stage.addChild(rect);
+  var rect = new EC.Shape();
+  rect.fill("#f90");
+  rect.rect(100, 50, 200, 100);
+  rect.cursor = "move";
+  stage.addChild(rect);
 
-    rect.touchEnabled = true;
-    rect.on("touchstart", function (e) {
-        target = rect;
-        target._lastX = target.x;
-        target._lastY = target.y;
-        lastStageX = e.stageX;
-        lastStageY = e.stageY;
-        stage.setChildIndex(rect, 10);
-    });
+  rect.touchEnabled = true;
+  rect.on("touchstart", function (e) {
+    target = rect;
+    target._lastX = target.x;
+    target._lastY = target.y;
+    lastStageX = e.stageX;
+    lastStageY = e.stageY;
+    stage.setChildIndex(rect, 10);
+  });
 
-    var roundRect = new EC.Shape();
-    roundRect.cursor = "move";
-    roundRect.stroke("#06c");
-    roundRect.roundRect(100, 250, 200, 100, 12);
-    stage.addChild(roundRect);
+  var roundRect = new EC.Shape();
+  roundRect.cursor = "move";
+  roundRect.stroke("#06c");
+  roundRect.roundRect(100, 250, 200, 100, 12);
+  stage.addChild(roundRect);
 
-    roundRect.touchEnabled = true;
-    roundRect.on("touchstart", function (e) {
-        target = roundRect;
-        target._lastX = target.x;
-        target._lastY = target.y;
-        lastStageX = e.stageX;
-        lastStageY = e.stageY;
-        stage.setChildIndex(roundRect, 10);
-    });
+  roundRect.touchEnabled = true;
+  roundRect.on("touchstart", function (e) {
+    target = roundRect;
+    target._lastX = target.x;
+    target._lastY = target.y;
+    lastStageX = e.stageX;
+    lastStageY = e.stageY;
+    stage.setChildIndex(roundRect, 10);
+  });
 
-    var arc = new EC.Shape();
-    arc.cursor = "move";
-    arc.stroke("#cc0000");
-    arc.arc(100, 450, 100, 0, 2, true);
-    stage.addChild(arc);
+  var arc = new EC.Shape();
+  arc.cursor = "move";
+  arc.stroke("#cc0000");
+  arc.arc(100, 450, 100, 0, 2, true);
+  stage.addChild(arc);
 
-    arc.touchEnabled = true;
-    arc.on("touchstart", function (e) {
-        target = arc;
-        target._lastX = target.x;
-        target._lastY = target.y;
-        lastStageX = e.stageX;
-        lastStageY = e.stageY;
-        stage.setChildIndex(arc, 10);
-    });
+  arc.touchEnabled = true;
+  arc.on("touchstart", function (e) {
+    target = arc;
+    target._lastX = target.x;
+    target._lastY = target.y;
+    lastStageX = e.stageX;
+    lastStageY = e.stageY;
+    stage.setChildIndex(arc, 10);
+  });
 
-    stage.touchEnabled = true;
-    stage.on("touchmove", function (e) {
-        if( target ){
-            target.x = target._lastX + e.stageX - lastStageX;
-            target.y = target._lastY + e.stageY - lastStageY;
-        }
-    });
+  stage.touchEnabled = true;
+  stage.on("touchmove", function (e) {
+    if (target) {
+      target.x = target._lastX + e.stageX - lastStageX;
+      target.y = target._lastY + e.stageY - lastStageY;
+    }
+  });
 
-    stage.on("touchend", function (e) {
-        target = null;
-    });
+  stage.on("touchend", function (e) {
+    target = null;
+  });
 
 </script>
 </body>

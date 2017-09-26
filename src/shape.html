@@ -90,6 +90,12 @@
     dashArc.arc(200, 470, 80, 0, 2, true); //x, y, radius, startAngle, endAngle, counterclockwise
     stage.addChild(dashArc);
 
+    var sector = new EC.Shape();
+    sector.stroke("#387894");
+    sector.sector(400, 470, 80, 0, 1.5, false); //x, y, radius, startAngle, endAngle, counterclockwise
+    sector.close();
+    stage.addChild(sector);
+
     var arcTo = new EC.Shape();
     arcTo.stroke("#000");
     arcTo.x = 500;

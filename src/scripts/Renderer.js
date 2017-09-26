@@ -35,9 +35,9 @@
     var objX = obj.x;
     var item;
     var bitMapText;
-    obj._children = [];
+    obj.children = [];
     obj.width = obj.height = 0;
-    obj.text.split("").forEach(function (n) {
+    obj.$textArr.forEach(function (n) {
       item = data[n];
       bitMapText = new BitMap();
       EC.extend(bitMapText, {
@@ -66,7 +66,7 @@
 
   function drawBitMapText(ctx, obj) {
     fillBitMapText(obj);
-    obj.getChilds().forEach(function (childObj) {
+    obj.each(function (childObj) {
       ctx.save();
       drawContext(ctx, childObj);
       drawImg(ctx, childObj);
@@ -105,6 +105,10 @@
     var strArr = str.split("");
 
     for (var i = 0; i < strArr.length; i++) {
+      if (strArr[i] === '\n') {
+        lineWidth = 0;
+        continue;
+      }
       lineWidth += getTextWidth(obj, strArr[i]);
       if (lineWidth > obj.width) {
         lineWidth = 0;
@@ -125,7 +129,7 @@
     return textArr[maxLens.indexOf(getMax(maxLens))];
   }
 
-  function getTextWidth(obj, text){
+  function getTextWidth(obj, text) {
     tmpCtx.font = obj.font || (obj.textStyle + " " + obj.textWeight + " " + obj.size + "px " + obj.fontFamily);
     tmpCtx.textAlign = obj.textAlign;
     return tmpCtx.measureText(text).width;
@@ -138,7 +142,7 @@
   }
 
   function drawContext(ctx, obj) {
-    var parent = obj.parent;
+    var parent = obj.parent || {};
     var moveX = obj.moveX * (obj.anchorX > 0 ? 1 : 0);
     var moveY = obj.moveY * (obj.anchorY > 0 ? 1 : 0);
     var anchorW = obj.anchorX * obj.width;
@@ -233,29 +237,23 @@
     }
   }
 
-  function checkPointByCoords(coord, width, height, totalX, totalY) {
-    if (coord.x >= totalX && coord.x <= (width + totalX) &&
-      coord.y >= totalY && coord.y <= (height + totalY)) {
-      return true;
-    }
-
-    return false;
-  }
-
   function isPointInPath(coord, object) {
     var objectOffset = getTotalOffset(object);
-    if (object.$type === 'Shape') {
-      var ctx = object.renderContext;
-      ctx.save();
-      ctx.translate(objectOffset.x, objectOffset.y);
-      ctx.beginPath();
-      drawShapeFuns[object.drawType](ctx, object);
-      ctx.restore();
-      return ctx.isPointInPath(coord.x, coord.y);
-    } else {
-      return checkPointByCoords(coord, object.width, object.height, objectOffset.x, objectOffset.y);
-    }
+    var ctx = object.renderContext;
 
+    var ObjConstructor = function () {};
+    ObjConstructor.prototype = object;
+    var newObj = new ObjConstructor();
+    newObj.x = objectOffset.x;
+    newObj.y = objectOffset.y;
+
+    ctx.save();
+    drawContext(ctx, newObj);
+    ctx.beginPath();
+    drawShapeFuns[newObj.drawType||'rect'](ctx, newObj);
+    ctx.restore();
+
+    return ctx.isPointInPath(coord.x, coord.y);
   }
 
   function Bounds(object) {
@@ -268,7 +266,7 @@
 
   Bounds.prototype = {
     intersects: function (target) {
-      if ((target.x <= this.x + this.width) && (target.x + target.width >= this.x) &&
+      if((target.x <= this.x + this.width) && (target.x + target.width >= this.x) &&
         (target.y <= this.y + this.height) && (target.y + target.height >= this.y)) {
         return true;
       }
@@ -284,6 +282,11 @@
 
     arc: function (ctx, obj) {
       ctx.arc(obj.radius + obj.moveX, obj.radius + obj.moveY, obj.radius, obj.startAngle * PI, obj.endAngle * PI, obj.counterclockwise);
+    },
+
+    sector: function (ctx, obj) {
+      ctx.moveTo(obj.radius + obj.moveX, obj.radius + obj.moveY);
+      this.arc.apply(this, arguments);
     },
 
     arcTo: function (ctx, obj) {
@@ -314,13 +317,16 @@
     ellipse: function (ctx, obj) {
       ctx.ellipse(obj.width / 2 + obj.moveX, obj.height / 2 + obj.moveY, obj.width, obj.height);
     },
+
     clip: function (ctx) {
       ctx.clip();
     },
+
     quadraticCurveTo: function (ctx, obj) {
       ctx.moveTo(obj.moveX, obj.moveY);
       ctx.quadraticCurveTo.apply(ctx, obj.coords);
     },
+
     bezierCurveTo: function (ctx, obj) {
       ctx.moveTo(obj.moveX, obj.moveY);
       ctx.bezierCurveTo.apply(ctx, obj.coords);
@@ -358,12 +364,13 @@
       this.cursor = 'pointer';
       this.$type = 'Sprite';
 
-      this._children = [];
+      this.children = [];
 
       Object.defineProperty(this, 'numChildren', {
-        get: function(){
+        get: function () {
           return this.size();
-        }
+        },
+        enumerable: true
       });
     },
 
@@ -375,9 +382,9 @@
       object.parent = this;
 
       if (!EC.isNumber(index)) {
-        this._children.push(object);
+        this.children.push(object);
       } else {
-        this._children.splice(index, 0, object);
+        this.children.splice(index, 0, object);
       }
 
       return this;
@@ -398,22 +405,63 @@
         obj.dispatch("remove", obj);
 
         if (obj.$type === 'Sprite') {
-          obj.getChilds().forEach(_runRemove);
+          obj.each(_runRemove);
         }
       };
 
       childObj.dispatch("remove", childObj);
-      childObj.getChilds().forEach(_runRemove);
+      childObj.each(_runRemove);
     },
 
     removeAllChildren: function () {
       this._stopAllTweens();
-      this._children = [];
+      this.children = [];
       return this;
     },
 
     getChilds: function () {
-      return this._children;
+      return this.children;
+    },
+
+    each: function (iterator) {
+      var childs = this.getChilds(),
+        i = 0, len = childs.length;
+
+      for (; i < len; i++) {
+        if (iterator.call(this, childs[i], i, childs) === false) break;
+      }
+
+      return this;
+    },
+
+    broadcast: function () {
+      var self = this;
+      var args = slice.call(arguments);
+
+      function _triggerEvent(obj) {
+        obj.dispatch.apply(self, args);
+        obj.each(function (obj) {
+          _triggerEvent(obj);
+        });
+      }
+
+      _triggerEvent(this);
+
+      return this;
+    },
+
+    emit: function () {
+      var self = this;
+      var args = slice.call(arguments);
+      var parent = this.parent;
+
+      this.dispatch.apply(self, args);
+      while (parent) {
+        parent.dispatch.apply(self, args);
+        parent = parent.parent;
+      }
+
+      return this;
     },
 
     getBounds: function () {
@@ -425,12 +473,12 @@
     },
 
     size: function () {
-      return this._children.length;
+      return this.children.length;
     },
 
     setChildIndex: function (childObj, index) {
       this.removeChild(childObj);
-      this._children.splice(index, 0, childObj);
+      this.children.splice(index, 0, childObj);
       return this;
     },
 
@@ -494,39 +542,74 @@
       this.textStyle = "normal";
       this.textWeight = "normal";
       this.lineSpacing = 2;
-      this.numLines = 1;
       this.stroke = false;
       this.strokeOnly = false;
       this.multiple = false;
 
       this.x = x || 0;
       this.y = y || 0;
-      this.width = width || 0;
-      this.height = height || 0;
+      this.$width = width || 0;
+      this.$height = height || 0;
 
       this.$type = "TextField";
 
+      this._isWidthDefined = false;
+      this._isHeightDefined = false;
+
       Object.defineProperty(this, 'text', {
-        get: function(){
+        get: function () {
           return this.$text;
         },
         set: function (newVal) {
           this.$text = newVal;
-          if(this.multiple){
+          if (this.multiple) {
             this.$textArr = calcTextArr(this, newVal).split(/\n/);
-          } else {
-            this.$textArr = newVal.split(/\n/);
-            this.width = getTextWidth(this, getMaxLenText(this.$textArr));
           }
-          this.height = (this.size + this.lineSpacing) * this.numLines - this.lineSpacing;
-        }
+          else {
+            this.$textArr = newVal.split(/\n/);
+            if (!this._isWidthDefined) {
+              this.$width = getTextWidth(this, getMaxLenText(this.$textArr));
+            }
+          }
+          if (!this._isHeightDefined) {
+            this.$height = (this.size + this.lineSpacing) * this.numLines - this.lineSpacing;
+          }
+        },
+        enumerable: true
       });
 
       Object.defineProperty(this, 'numLines', {
         get: function () {
           return this.$textArr.length;
-        }
+        },
+        enumerable: true
       });
+
+      Object.defineProperty(this, 'width', {
+        set: function (newVal) {
+          this.$width = newVal;
+          this._isWidthDefined = true;
+        },
+        get: function () {
+          return this.$width;
+        },
+        enumerable: true
+      });
+
+      Object.defineProperty(this, 'height', {
+        set: function (newVal) {
+          this.$height = newVal;
+          this._isHeightDefined = true;
+        },
+        get: function () {
+          return this.$height;
+        },
+        enumerable: true
+      });
+
+      if(this.$text) {
+        this.text = this.$text;
+      }
 
     }
   });
@@ -656,10 +739,15 @@
       this.radius = radius;
       this.startAngle = startAngle;
       this.endAngle = endAngle;
-      this.counterclockwise = counterclockwise;
+      this.counterclockwise = counterclockwise || false;
       this.width = this.radius * 2;
       this.height = this.radius * 2;
       this.drawType = 'arc';
+      return this;
+    },
+    sector: function () {
+      this.arc.apply(this, arguments);
+      this.drawType = 'sector';
       return this;
     },
     arcTo: function (startX, startY, endX, endY, radius) {
@@ -967,7 +1055,7 @@
       var ratio = 1 / this.stage.scaleRatio;
       var lineHeight = this.inputType !== "textarea" ? this.height : this.lineHeight;
       var totalOffset = getTotalOffset(this);
-      this.inputText.style.cssText = "display:none;position:absolute;border:none;background:none;outline:none;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none;appearance:none;-webkit-text-size-adjust:none;text-size-adjust:none;-webkit-box-sizing:border-box;box-sizing:border-box;overflow:hidden;resize:none;" +
+      this.inputText.style.cssText = "display:none;position:absolute;border:none;background:none;outline:none;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none;appearance:none;-webkit-text-size-adjust:none;text-size-adjust:none;-webkit-box-sizing:border-box;box-sizing:border-box;overflow:auto;resize:none;" +
         "left:" + (totalOffset.x + self.borderWidth / 2) * ratio + "px;top:" + totalOffset.y * ratio + "px;width:" + this.width * ratio + "px;height:" + this.height * ratio + "px;line-height:" + lineHeight * ratio + "px;font-size:" + this.fontSize * ratio + "px;font-family:" + (this.fontFamily || this.textField.fontFamily) + ";color:" + this.color + ";padding:" +
         this.padding.map(function (pad) {
           return (pad + self.borderWidth / 2) * ratio + "px"
@@ -1014,11 +1102,23 @@
   var BitMapText = Sprite.extend({
     initialize: function () {
       BitMapText.superclass.initialize.apply(this, arguments);
-      this.text = "";
+      this.$text = "";
       this.font = "";
       this.textAlign = 'left';
       this.letterSpacing = 0;
       this.$type = "BitMapText";
+      this.$textArr = [];
+
+      Object.defineProperty(this, 'text', {
+        set: function (newVal) {
+          this.$text = newVal;
+          this.$textArr = newVal.split("");
+        },
+        get: function () {
+          return this.$text;
+        },
+        enumerable: true
+      });
 
       this.on("addToStage", function () {
         this._create();
@@ -1126,6 +1226,7 @@
       }
 
       if (_config.text) {
+        this.textField.text = _config.text;
         var injectCfg = {
           textAlign: "center",
           y: _config.y + (this.height - this.textField.height) / 2,
@@ -1186,7 +1287,6 @@
       this.canvas = canvas;
       this.renderContext = this.canvas.getContext('2d');
       this.compositeOperation = "source-over";
-      /*source-over source-atop source-in source-out destination-over destination-atop destination-in destination-out xor lighter copy source-over*/
       this.$type = "Stage";
       this.options = EC.extend({}, {
         showFps: false,
@@ -1230,7 +1330,7 @@
           if (obj.$type === 'Sprite') {
             ctx.save();
             drawContext(ctx, obj);
-            obj.getChilds().forEach(function (item) {
+            obj.each(function (item) {
               _render(item);
             });
             ctx.restore();
@@ -1241,7 +1341,7 @@
       };
 
       ctx.globalCompositeOperation = this.compositeOperation;
-      this._children.forEach(_render);
+      this.children.forEach(_render);
 
       return this;
     },
@@ -1292,14 +1392,14 @@
         obj.dispatch("addToStage", obj);
 
         if (obj.$type === 'Sprite') {
-          obj.getChilds().forEach(_runAddToStage);
+          obj.each(_runAddToStage);
         }
       };
 
       childObj.renderContext = self.renderContext;
       childObj.stage = self;
       childObj.dispatch("addToStage", childObj);
-      childObj.getChilds().forEach(_runAddToStage);
+      childObj.each(_runAddToStage);
     },
     _triggerEnterFrame: function () {
 
@@ -1308,11 +1408,11 @@
         obj.dispatch("enterframe", obj);
 
         if (obj.$type === 'Sprite') {
-          obj.getChilds().forEach(_runEnterFrame);
+          obj.each(_runEnterFrame);
         }
       };
 
-      this.getChilds().forEach(_runEnterFrame);
+      this.each(_runEnterFrame);
     },
     setAdapter: function () {
       var parent = this.canvas.parentNode;

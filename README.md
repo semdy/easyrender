@@ -850,6 +850,29 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>获取容器子集的个数</td>
 		<td>Number</td>
 	</tr>
+<tr>
+        <td>each</td>
+        <td>Function: iterator -> 迭代器
+        </td>
+        <td>子节点迭代器，当返回false时，中止迭代</td>
+        <td>EC.DisplayObjectContainer</td>
+    </tr>
+<tr>
+        <td>broadcast</td>
+        <td>String: name -> 事件名称<br>
+            [...args]  -> 事件传值
+        </td>
+        <td>向子节点(包括自己)广播事件</td>
+        <td>EC.DisplayObjectContainer</td>
+    </tr>
+<tr>
+        <td>emit</td>
+        <td>String: name -> 事件名称<br>
+            [...args]  -> 事件传值
+        </td>
+        <td>向父节点(包括自己)广播事件</td>
+        <td>EC.DisplayObjectContainer</td>
+    </tr>
 </table>
 
 ### EC.DisplayObjectContainer events ###
