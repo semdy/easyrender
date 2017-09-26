@@ -2,7 +2,7 @@
  * Created by semdy on 2016/9/6.
  */
 
-(function (EC) {
+(function (EC, undefined) {
   "use strict";
 
   var EVENTS = EC.EVENTS,
@@ -23,13 +23,13 @@
   }
 
   function getBounding(el, e) {
-    if (isFirefox && e.layerX !== null && e.layerX !== e.offsetX) {
+    if (isFirefox && e.layerX !== undefined && e.layerX !== e.offsetX) {
       return {
         x: e.layerX,
         y: e.layerY
       }
     }
-    else if (e.offsetX !== null) {
+    else if (e.offsetX !== undefined) {
       return {
         x: e.offsetX,
         y: e.offsetY
