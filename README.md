@@ -177,7 +177,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>取消一个事件监听</td>
 	</tr>
 	<tr>
-		<td>dispatch / emit</td>
+		<td>dispatch</td>
 		<td>name: 事件名</td>
 		<td>触发一个事件</td>
 	</tr>
