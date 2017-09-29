@@ -104,6 +104,12 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>Object: obj</td>
 		<td>obj是否为数组</td>
 		<td>Boolean</td>
+
+<tr>
+		<td>camelize</td>
+		<td>String: key</td>
+		<td>将"a-b-c"转换成"aBC"的写法</td>
+		<td>String</td>
 	</tr>
 	<tr>
 		<td>getStyle</td>

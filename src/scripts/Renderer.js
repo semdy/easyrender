@@ -39,8 +39,7 @@
     obj.width = obj.height = 0;
     obj.$textArr.forEach(function (n) {
       item = data[n];
-      bitMapText = new BitMap();
-      EC.extend(bitMapText, {
+      bitMapText = new BitMap().setParams({
         texture: texture,
         width: item.w,
         height: item.h,
@@ -84,16 +83,16 @@
 
     if (!obj.strokeOnly) {
       ctx.fillStyle = obj.textColor;
-      drawTextLines(ctx, "fillText", obj, textX, textY);
+      drawMultiText(ctx, "fillText", obj, textX, textY);
     }
 
     if (obj.stroke || obj.strokeOnly) {
       ctx.strokeStyle = obj.strokeColor;
-      drawTextLines(ctx, "strokeText", obj, textX, textY);
+      drawMultiText(ctx, "strokeText", obj, textX, textY);
     }
   }
 
-  function drawTextLines(ctx, drawType, obj, initX, initY) {
+  function drawMultiText(ctx, drawType, obj, initX, initY) {
     var lineHeight = obj.size + obj.lineSpacing;
     obj.$textArr.forEach(function (text, i) {
       ctx[drawType](text, initX, initY + lineHeight * i);

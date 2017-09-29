@@ -137,16 +137,14 @@ var EC = {
     isObject: function (obj) {
       return typeof obj === 'object';
     },
-    isArray: Array.isArray || function (obj) {
-      return toString.call(obj) === "[object Array]";
-    },
-    upperKey: function (key) {
+    isArray: Array.isArray,
+    camelize: function (key) {
       return key.replace(/\-(\w)/g, function (m, n) {
         return n.toUpperCase();
       });
     },
     getStyle: function (node, prop) {
-      return window.getComputedStyle(node, null)[EC.upperKey(prop)];
+      return window.getComputedStyle(node, null)[EC.camelize(prop)];
     }
   });
 
