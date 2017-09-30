@@ -13,7 +13,7 @@
             this.y = this.startY;
             this.triggered = false;
             this.setText(this.bulletText);
-            this.endX = -this.width * 2;
+            this.endX = -this.width;
             this.shootTo();
         },
         shootTo: function () {
@@ -59,7 +59,7 @@
         for (var i = 0; i < 100; i++) {
             this.subtitles[this.subtitles.length] = {
                 color: "#fff",
-                text: "~~~text" + strs.substr(0, random(1, 30)) + i + "~~~"
+                text: "text" + strs.substr(0, random(1, 30)) + i
             };
         }
 
