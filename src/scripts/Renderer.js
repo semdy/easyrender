@@ -657,7 +657,7 @@
     },
     setTexture: function (dataObject) {
       if (!EC.isObject(dataObject))
-        throw new Error(String(dataObject) + "is a invalid texture");
+        throw new TypeError(String(dataObject) + "is a invalid texture");
       if ('nodeType' in dataObject) {
         this.texture = dataObject;
       } else {
