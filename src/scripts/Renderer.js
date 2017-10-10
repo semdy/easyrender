@@ -359,6 +359,7 @@
 
       this.visible = true;
       this.touchEnabled = false;
+      this._stageAdded = false;
 
       this.cursor = 'pointer';
       this.$type = 'Sprite';
@@ -371,6 +372,12 @@
         },
         enumerable: true
       });
+
+      this.once("addToStage", function (e) {
+        this.renderContext = e.renderContext;
+        this.stage = e.stage;
+        this._stageAdded = true;
+      }, this);
     },
 
     addChild: function (object, index) {
@@ -386,6 +393,10 @@
         this.children.splice(index, 0, object);
       }
 
+      if(this._stageAdded){
+        this._triggerAddToStage(object, this.stage);
+      }
+
       return this;
     },
 
@@ -395,6 +406,20 @@
       this._triggerRemove(object);
 
       return this;
+    },
+
+    _triggerAddToStage: function (childObj, context) {
+      var setParams = function(obj){
+        return {target: obj, renderContext: context.renderContext, stage: context};
+      };
+      var _runAddToStage = function (obj) {
+        obj.dispatch("addToStage", setParams(obj));
+        if (obj.$type === 'Sprite') {
+          obj.each(_runAddToStage);
+        }
+      };
+      childObj.dispatch("addToStage", setParams(childObj));
+      childObj.each(_runAddToStage);
     },
 
     _triggerRemove: function (childObj) {
@@ -909,9 +934,6 @@
     },
     addChild: function (childObj) {
 
-      childObj.renderContext = this.renderContext;
-      childObj.stage = this.stage;
-
       this._addMask();
       Sprite.superclass.addChild.apply(this, arguments);
 
@@ -1317,7 +1339,7 @@
     },
     addChild: function (childObj) {
       Stage.superclass.addChild.apply(this, arguments);
-      this._triggerAddToStage(childObj);
+      this._triggerAddToStage(childObj, this);
 
       return this;
     },
@@ -1379,26 +1401,6 @@
       this.dispatch("stop");
       this._isRendering = false;
       return this;
-    },
-    _triggerAddToStage: function (childObj) {
-      var self = this;
-
-      var _runAddToStage = function (obj) {
-
-        obj.renderContext = self.renderContext;
-        obj.stage = self;
-
-        obj.dispatch("addToStage", obj);
-
-        if (obj.$type === 'Sprite') {
-          obj.each(_runAddToStage);
-        }
-      };
-
-      childObj.renderContext = self.renderContext;
-      childObj.stage = self;
-      childObj.dispatch("addToStage", childObj);
-      childObj.each(_runAddToStage);
     },
     _triggerEnterFrame: function () {
 
