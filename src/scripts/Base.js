@@ -9,11 +9,11 @@ var EC = {
 (function (EC) {
   "use strict";
 
-  var slice = Array.prototype.slice,
+  var
+    slice = Array.prototype.slice,
     toString = Object.prototype.toString,
     hasOwn = Object.prototype.hasOwnProperty,
     arrayProto = Array.prototype,
-    objProto = Object.prototype,
     funProto = Function.prototype;
 
   !!Date.now || (Date.now = function () {
@@ -42,14 +42,12 @@ var EC = {
   });
 
   !!Array.isArray || (Array.isArray = function (obj) {
-    return objProto.toString.call(obj) === '[object Array]';
+    return toString.call(obj) === '[object Array]';
   });
 
   arrayProto.contains = arrayProto.includes || function (prop) {
     return this.indexOf(prop) > -1;
   };
-
-  !!Object.assign || (Object.assign = Extend);
 
   var inherits = function() {
 
@@ -101,19 +99,21 @@ var EC = {
   /**
    * Extend
    * **/
-  function Extend(source) {
-    var props = slice.call(arguments, 1);
-    var prop, p;
-    for (var i = 0; i < props.length; i++) {
-      for (p in (prop = props[i])) {
-        if (prop.hasOwnProperty(p)) {
-          source[p] = prop[p];
+  var Extend = (function(){
+    return Object.assign || function (source) {
+      var props = slice.call(arguments, 1);
+      var prop, p;
+      for (var i = 0; i < props.length; i++) {
+        for (p in (prop = props[i])) {
+          if (prop.hasOwnProperty(p)) {
+            source[p] = prop[p];
+          }
         }
       }
-    }
 
-    return source;
-  }
+      return source;
+    }
+  })();
 
   EC.provide = function (props) {
     if (typeof props !== 'object') return;
@@ -141,6 +141,11 @@ var EC = {
     camelize: function (key) {
       return key.replace(/\-(\w)/g, function (m, n) {
         return n.toUpperCase();
+      });
+    },
+    lowercase: function(key){
+      return key.replace(/[A-Z]/g, function (m) {
+        return "-" + m.toLowerCase();
       });
     },
     getStyle: function (node, prop) {

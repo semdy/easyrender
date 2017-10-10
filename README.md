@@ -112,6 +112,12 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>String</td>
 	</tr>
 	<tr>
+    		<td>lowercase</td>
+    		<td>String: key</td>
+    		<td>将"aBC"转换成"a-b-c"的写法</td>
+    		<td>String</td>
+    	</tr>
+	<tr>
 		<td>getStyle</td>
 		<td>Object: element -> DOMObject<br>
 			String: attr -> 样式属性
