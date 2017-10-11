@@ -1617,6 +1617,12 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>设置x,y的值</td>
 		<td>EC.Point</td>
 	</tr>
+	<tr>
+    		<td>clone</td>
+    		<td></td>
+    		<td>拷贝一份Point</td>
+    		<td>EC.Point</td>
+    	</tr>
 </table>
 
 ## EC.MovieClip ##

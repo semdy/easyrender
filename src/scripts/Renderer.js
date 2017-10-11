@@ -1295,6 +1295,9 @@
     set: function (x, y) {
       this.x = x;
       this.y = y;
+    },
+    clone: function() {
+      return new Point(this.x, this.y);
     }
   });
 
