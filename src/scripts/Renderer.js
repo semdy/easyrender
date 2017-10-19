@@ -1292,12 +1292,51 @@
       this.x = x || 0;
       this.y = y || 0;
     },
+    toString: function() {
+      return "[object EC.Point(" + this.x + "," + this.y + ")]";
+    },
     set: function (x, y) {
       this.x = x;
       this.y = y;
     },
     clone: function() {
       return new Point(this.x, this.y);
+    },
+    add: function(e) {
+      return new Point(this.x + e.x, this.y + e.y);
+    },
+    distance: function(){
+      return Point.calcDistance(this.x, this.y, 0, 0);
+    },
+    copyFrom: function(t) {
+      this.set(t.x, t.y);
+    },
+    equals: function(t) {
+      return this.x === t.x && this.y === t.y;
+    },
+    normalize: function(t) {
+      var self = this,
+        o = self / e.distance();
+      self.x *= o;
+      self.y *= o;
+    },
+    offset: function(t, e) {
+      this.x += t;
+      this.y += e;
+    },
+    subtract: function(e) {
+      return new Point(this.x - e.x, this.y - e.y);
+    }
+  });
+
+  EC.extend(Point, {
+    calcDistance: function(x1, y1, x2, y2) {
+      var n = Math.abs(x2 - x1),
+        s = Math.abs(y2 - y1);
+      return Math.sqrt(n * n + s * s);
+    },
+    distance: function(e, o) {
+      return this.calcDistance(e.x, e.y, o.x, o.y);
     }
   });
 
