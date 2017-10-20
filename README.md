@@ -1884,3 +1884,4 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 - [TouchEvent](https://semdy.github.io/easyrender/dist/TouchEvent.html)
 - [Drag](https://semdy.github.io/easyrender/dist/Drag.html)
 - [碰撞检测](https://semdy.github.io/easyrender/dist/hitTest.html)
+- [物理世界](https://semdy.github.io/easyrender/dist/physics.html)
