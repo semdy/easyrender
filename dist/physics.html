@@ -1,0 +1,139 @@
+<!Doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>EC Shape</title>
+    <style>
+        body{
+            margin:0;
+        }
+        .movieclip{
+            position: absolute;
+            left:0;
+            top:0;
+            right:0;
+            bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+<canvas id="canvas-shape" class="movieclip"></canvas>
+
+<script src="scripts/libs/easyrender.js"></script>
+<script>
+    var canvas = document.getElementById('canvas-shape');
+    var stage = new EC.Stage(canvas, {
+        scaleMode: EC.isTouch ? 'showAll' : 'noScale',
+        width: 800,
+        height: 800,
+        showFps: true
+    });
+
+    stage.showFps({
+        right: 0,
+        left: "auto",
+        top: 0
+    });
+
+    var createGround = function() {
+      var result = new EC.Shape();
+      result.fill('#00000');
+      result.rect(0,0,800,20);
+      return result;
+    };
+
+
+    var createSprite = function() {
+      var result = new EC.Shape();
+      result.fill('green');
+      result.rect(0,0,80,40);
+      return result;
+    };
+
+    function onAddToStage(){
+      var factor = 50;
+      var sh = stage.height / factor;
+      var sw = stage.width / factor;
+
+      //创建world
+      var world = new p2.World({
+        gravity: [0, -80]
+      });
+      world.sleepMode = p2.World.BODY_SLEEPING;
+      //创建地面
+      var gshape = new p2.Plane();
+      var gbody = new p2.Body({
+        position:[0,-sh/2]
+      });
+      gbody.addShape(gshape);
+      world.addBody(gbody);
+
+      //添加显示对象
+      var ground = createGround();
+      gbody.displays = [ground];
+      this.addChild(ground);
+
+      var self = this;
+      var boxStack = [];
+      function createBox(){
+        //添加长方形刚体
+        var boxShape = new p2.Rectangle(1, 1);
+        var boxBody = new p2.Body({mass: 4, position: [sw/2, 0], angularVelocity: 5});
+        boxBody.addShape(boxShape);
+        world.addBody(boxBody);
+        //添加长方形刚体的显示对象
+        var display = createSprite();
+        display.width = boxShape.width * factor;
+        display.height = boxShape.height * factor;
+        display.anchorX = 0.5;
+        display.anchorY = 0.5;
+        //同步egret对象和p2对象
+        boxBody.displays = [display];
+        update();
+        self.addChild(display);
+
+        function update() {
+            display.x = boxBody.position[0] * factor;
+            display.y = sh - boxBody.position[1] * factor;
+            display.rotation = 360 - boxBody.angle * 180 / Math.PI;
+            /*if(boxBody.sleepState === p2.Body.SLEEPING) {
+              display.alpha = 0.5;
+            } else {
+              display.alpha = 1;
+            }*/
+        }
+
+        return {
+          update: update
+        }
+      }
+
+      var timer = new EC.Timer(500);
+      timer.on('timer', function(){
+        boxStack.push(createBox());
+      });
+      timer.start();
+
+      function Tick(){
+        world.step(1/60);
+        ground.x = gbody.position[0] * factor;
+        ground.y = sh - gbody.position[1] * factor + ground.height;
+        ground.rotation = 360 - gbody.angle * 180 / Math.PI;
+
+        boxStack.forEach(function(box){
+          box.update();
+        });
+      }
+
+      //添加帧事件侦听
+      this.on('enterframe', Tick, this);
+      Tick();
+    }
+
+    onAddToStage.call(stage);
+</script>
+</body>
+</html>

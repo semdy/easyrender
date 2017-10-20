@@ -1326,6 +1326,9 @@
     },
     subtract: function(e) {
       return new Point(this.x - e.x, this.y - e.y);
+    },
+    getAngle: function(){
+      return Point.getAngle(0, 0, this.x, this.y);
     }
   });
 
@@ -1337,6 +1340,40 @@
     },
     distance: function(e, o) {
       return this.calcDistance(e.x, e.y, o.x, o.y);
+    },
+    getAngle: function(px, py, mx, my){
+      var x = Math.abs(px-mx);
+      var y = Math.abs(py-my);
+      var z = Math.sqrt(Math.pow(x,2)+Math.pow(y,2));
+      var cos = y/z;
+      var radina = Math.acos(cos);//用反三角函数求弧度
+      var angle = 180/(Math.PI/radina);//将弧度转换成角度
+
+      if(mx > px && my > py){//目标点在第四象限
+        angle = 180 - angle;
+      }
+
+      if(mx === px && my > py){//目标点在y轴负方向上
+        angle = 180;
+      }
+
+      if(mx > px && my === py){//目标点在x轴正方向上
+        angle = 90;
+      }
+
+      if(mx < px && my > py){//目标点在第三象限
+        angle = 180 + angle;
+      }
+
+      if(mx < px && my === py){//目标点在x轴负方向
+        angle = 270;
+      }
+
+      if(mx < px && my < py){//目标点在第二象限
+        angle = 360 - angle;
+      }
+
+      return angle;
     }
   });
 
@@ -1350,7 +1387,6 @@
       this.canvas = canvas;
       this.renderContext = this.canvas.getContext('2d');
       this.compositeOperation = "source-over";
-      this.$type = "Stage";
       this.options = EC.extend({}, {
         showFps: false,
         scaleMode: 'showAll',
@@ -1404,7 +1440,7 @@
       };
 
       ctx.globalCompositeOperation = this.compositeOperation;
-      this.children.forEach(_render);
+      _render(this);
 
       return this;
     },
@@ -1447,15 +1483,13 @@
     _triggerEnterFrame: function () {
 
       var _runEnterFrame = function (obj) {
-
         obj.dispatch("enterframe", obj);
-
         if (obj.$type === 'Sprite') {
           obj.each(_runEnterFrame);
         }
       };
 
-      this.each(_runEnterFrame);
+      _runEnterFrame(this);
     },
     setAdapter: function () {
       var parent = this.canvas.parentNode;
@@ -1488,11 +1522,9 @@
         isShowFPS && this.FPS.begin();
         this.clear();
         this.render();
-        this.dispatch("enterframe");
+        this._triggerEnterFrame();
         isShowFPS && this.FPS.end();
       }, this);
-
-      this.on("enterframe", this._triggerEnterFrame, this);
 
       if (this.options.scaleMode !== 'noScale') {
         window.addEventListener(EC.EVENTS.RESIZE, function () {
