@@ -135,7 +135,7 @@ var EC = {
       return typeof obj === 'function';
     },
     isObject: function (obj) {
-      return typeof obj === 'object';
+      return typeof obj === 'object' && obj !== null;
     },
     isArray: Array.isArray,
     camelize: function (key) {

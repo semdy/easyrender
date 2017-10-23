@@ -189,9 +189,9 @@
     return Math.max.apply(Math, vals);
   }
 
-  function getLineSize(coords) {
-    var widths = [],
-      heights = [];
+  function getLineSize(coords, moveX, moveY) {
+    var widths = [moveX],
+        heights = [moveY];
     coords.forEach(function (coord) {
       widths.push(coord[0]);
       heights.push(coord[1]);
@@ -203,9 +203,8 @@
     }
   }
 
-  function getQuadraticLineSize(coords) {
-    var widths = [],
-      heights = [];
+  function getQuadraticLineSize(coords, moveX, moveY) {
+    var widths = [moveX], heights = [moveY];
     coords.forEach(function (coord, i) {
       if (i % 2 === 0) {
         widths.push(coord);
@@ -799,9 +798,9 @@
       this.moveY = y;
       return this;
     },
-    lineTo: function () {
-      this.coords = slice.call(arguments);
-      var lineSize = getLineSize(this.coords);
+    lineTo: function (x, y) {
+      this.coords.push([x,y]);
+      var lineSize = getLineSize(this.coords, this.moveX, this.moveY);
       this.width = lineSize.width;
       this.height = lineSize.height;
       this.drawType = 'lineTo';
@@ -843,7 +842,7 @@
     },
     quadraticCurveTo: function () {
       this.coords = slice.call(arguments);
-      var lineSize = getQuadraticLineSize([this.moveX, this.moveY].concat(this.coords));
+      var lineSize = getQuadraticLineSize(this.coords, this.moveX, this.moveY);
       this.width = lineSize.width;
       this.height = lineSize.height;
       this.drawType = 'quadraticCurveTo';
@@ -851,7 +850,7 @@
     },
     bezierCurveTo: function () {
       this.coords = slice.call(arguments);
-      var lineSize = getQuadraticLineSize([this.moveX, this.moveY].concat(this.coords));
+      var lineSize = getQuadraticLineSize(this.coords, this.moveX, this.moveY);
       this.width = lineSize.width;
       this.height = lineSize.height;
       this.drawType = 'bezierCurveTo';
@@ -1481,14 +1480,12 @@
       return this;
     },
     _triggerEnterFrame: function () {
-
       var _runEnterFrame = function (obj) {
         obj.dispatch("enterframe", obj);
         if (obj.$type === 'Sprite') {
           obj.each(_runEnterFrame);
         }
       };
-
       _runEnterFrame(this);
     },
     setAdapter: function () {
@@ -1522,6 +1519,7 @@
         isShowFPS && this.FPS.begin();
         this.clear();
         this.render();
+        EC.Tween.group.update();
         this._triggerEnterFrame();
         isShowFPS && this.FPS.end();
       }, this);

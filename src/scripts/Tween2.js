@@ -1,66 +1,12 @@
 /**
  * Created by semdy on 2016/9/6.
  */
-(function (EC, undefined) {
+(function (EC) {
   "use strict";
 
   /**
    * Tween 动画类
    * **/
-
-  var Group = function () {
-    this._tweens = {};
-  };
-
-  Group.prototype = {
-    getAll: function () {
-      return Object.keys(this._tweens).map(function (tweenId) {
-        return this._tweens[tweenId];
-      }.bind(this));
-
-    },
-
-    removeAll: function () {
-      this._tweens = {};
-    },
-
-    add: function (tween) {
-      this._tweens[tween.getId()] = tween;
-    },
-
-    remove: function (tween) {
-      delete this._tweens[tween.getId()];
-    },
-
-    update: function (keeping) {
-      var tween;
-      var _tweens = this._tweens;
-      var tweenIds = Object.keys(this._tweens);
-
-      if (tweenIds.length === 0) {
-        return false;
-      }
-
-      while (tweenIds.length > 0) {
-        tweenIds.forEach(function (tweenId) {
-          tween = _tweens[tweenId];
-          if (tween && tween.update() === false) {
-            tween._isPlaying = false;
-            if (!keeping) {
-              delete _tweens[tweenId];
-            }
-          }
-        });
-
-        tweenIds = [];
-      }
-
-      return true;
-
-    }
-  };
-
-  var group = new Group();
 
   var isFunction = EC.isFunction;
   var isNumber = EC.isNumber;
@@ -86,7 +32,6 @@
     this._tweenTimeline = [];
     this._shouldTimelineAdd = true;
     this._isFirstTimeline = true;
-    this._id = Tween.nextId();
 
     if (_cfg.reverse === true) {
       this._repeatCount = 2;
@@ -99,27 +44,18 @@
     if(_cfg.loop === true || _cfg.yoyo === true) {
       this._repeatCount = -1;
     }
-
-    this.start();
   };
 
   Tween.cache = {};
+  Tween.timerCache = {};
   Tween.uuid = 0;
   Tween.expando = '@Tween-' + +new Date;
   Tween.get = function (obj, cfg) {
     return new Tween(obj, cfg);
   };
 
-  Tween.group = group;
-  Tween.Group = Group;
-
-  Tween._nextId = 0;
-  Tween.nextId = function () {
-    return Tween._nextId++;
-  };
-
   Tween.removeTweens = function (target) {
-    if (EC.isObject(target) && target[Tween.expando]) {
+    if (target && target[Tween.expando] && Tween.timerCache[target[Tween.expando]]) {
       Tween.get(target).stop();
     }
 
@@ -128,7 +64,7 @@
 
   Tween.removeAllTweens = function (container) {
     if(!(container instanceof EC.DisplayObjectContainer)) return this;
-    container.children.forEach(function (target) {
+    container.getChilds().forEach(function (target) {
       Tween.removeTweens(target);
     });
 
@@ -136,13 +72,35 @@
   };
 
   Tween.prototype = {
-    getId: function () {
-      return this._id;
-    },
-    start: function () {
-      group.add(this);
+    start: function (attrs, duration, easing) {
+      var self = this;
+      var _object = this._tweenObj;
+      var timer = Tween.timerCache[_object[Tween.expando]];
       this._isPlaying = true;
       this._startCallbackFired = false;
+
+      if (timer) {
+        return this;
+      }
+
+      this._startTime = Date.now();
+      this._duration = duration || 1000;
+      this._easingFunction = easing || EC.Easing.Linear.None;
+      this._startAttrs = {};
+      this._endAttrs = attrs || {};
+
+      for (var attr in this._endAttrs) {
+        if (_object[attr] === undefined) {
+          continue;
+        }
+        this._startAttrs[attr] = Number(_object[attr]);
+      }
+
+      +function callUpdate(){
+        timer = requestAnimationFrame(callUpdate);
+        Tween.timerCache[_object[Tween.expando]] = timer;
+        self.update();
+      }();
 
       return this;
     },
@@ -151,9 +109,10 @@
         return this;
       }
 
-      group.remove(this);
+      var expando = this._tweenObj[Tween.expando];
+      cancelAnimationFrame(Tween.timerCache[expando]);
       this._clearTimeline();
-      delete Tween.cache[this._tweenObj[Tween.expando]];
+      delete Tween.timerCache[expando];
       this._isPlaying = false;
       this._shouldTimelineAdd = true;
       this._isFirstTimeline = true;
@@ -164,35 +123,8 @@
     isPlaying: function () {
       return this._isPlaying;
     },
-    _setProperty: function (attrs, duration, easing) {
-      this._startTime = Date.now();
-      this._duration = duration || 1000;
-      this._easingFunction = easing || EC.Easing.Linear.None;
-      this._startAttrs = {};
-      this._endAttrs = attrs || {};
-
-      for (var attr in this._endAttrs) {
-        if (this._tweenObj[attr] === undefined) {
-          continue;
-        }
-        this._startAttrs[attr] = Number(this._tweenObj[attr]);
-      }
-
-    },
-    _addTimeline: function(data){
-      if(this._shouldTimelineAdd) {
-        if(this._isFirstTimeline){
-          this._tweenTimeline.push([EC.extend({}, this._startAttrs), this._duration, this._easingFunction]);
-          this._isFirstTimeline = false;
-        }
-        this._tweenTimeline.push(data);
-      }
-    },
-    _clearTimeline: function(){
-      this._tweenTimeline = [];
-    },
     to: function (attrs, duration, easing) {
-      this.queue(this._setProperty.bind(this, attrs, duration, easing));
+      this.queue(this.start.bind(this, attrs, duration, easing));
       this._addTimeline([attrs, duration, easing]);
 
       return this;
@@ -208,8 +140,6 @@
     update: function () {
 
       var percent, _object, value;
-
-      if(this._shouldUpdate === false) return true;
 
       this._triggerStart();
 
@@ -237,12 +167,11 @@
       this._triggerUpdate();
 
       if (percent === 1) {
+        this.stop();
         this.dequeue();
 
         var fx = Tween.cache[_object[Tween.expando]] || [];
         if (!fx.length) {
-
-          this._triggerComplete();
 
           if (this._repeatCount === -1 || ++this._repeatIndex < this._repeatCount) {
             this._shouldTimelineAdd = false;
@@ -254,19 +183,28 @@
               }
             }.bind(this));
 
-            return true;
           }
           else {
-            this.stop();
-            return false;
+            delete Tween.cache[_object[Tween.expando]];
           }
 
-        } else {
-          return true;
+          this._triggerComplete();
+
         }
       }
 
-      return true;
+    },
+    _addTimeline: function(data){
+      if(this._shouldTimelineAdd) {
+        if(this._isFirstTimeline){
+          this._tweenTimeline.push([EC.extend({}, this._startAttrs), this._duration, this._easingFunction]);
+          this._isFirstTimeline = false;
+        }
+        this._tweenTimeline.push(data);
+      }
+    },
+    _clearTimeline: function(){
+      this._tweenTimeline = [];
     },
     onUpdate: function (callback) {
       this._updateCallback = callback;
@@ -327,11 +265,10 @@
       if (fn === 'running') {
         fn = fx.shift();
       }
-
+console.log(fn)
       if (fn) {
         fx.unshift('running');
         if (isNumber(fn)) {
-          self._shouldUpdate = false;
           delay = window.setTimeout(function () {
             window.clearTimeout(delay);
             delay = null;
@@ -340,7 +277,6 @@
         }
         else if (isFunction(fn)) {
           fn.call(self);
-          self._shouldUpdate = true;
         }
       }
 

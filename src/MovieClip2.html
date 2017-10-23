@@ -32,7 +32,6 @@
 <!-- build:js scripts/libs/easyrender.js -->
 <script src="scripts/Base.js"></script>
 <script src="scripts/RequestAnimationFrame.js"></script>
-<script src="scripts/p2.js"></script>
 <script src="scripts/Utils.js"></script>
 <script src="scripts/Event.js"></script>
 <script src="scripts/Loader.js"></script>
@@ -78,12 +77,22 @@
             mc.anchorX = 0.5;
             mc.anchorY = 0.5;
             mc.gotoAndPlay(1, -1);
-            EC.Tween.get(mc).to({scaleX: 0.5, scaleY: 0.5}, 600, EC.Easing.Circular.Out)
-                    .wait(600)
-                    .to({scaleX: 1, scaleY: 1}, 600, EC.Easing.Circular.In)
-                    .call(function(){
-                        console.log("complete");
-                    });
+            EC.Tween.get(mc, {loop: true})
+            .to({scaleX: 0.5, scaleY: 0.5}, 600, EC.Easing.Circular.Out)
+            .wait(2000)
+            .to({scaleX: 1, scaleY: 1}, 600, EC.Easing.Circular.In)
+            .call(function(){
+                console.log("complete");
+            })
+            .onStart(function(){
+                console.log('start')
+            })
+            .onStart(function(){
+                console.log('start')
+            })
+            .onUpdate(function(){
+                //console.log('update')
+            });
 
             stage.addChild(mc);
 
