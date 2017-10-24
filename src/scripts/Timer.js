@@ -6,14 +6,18 @@
   "use strict";
 
   var Timer = EC.Event.extend({
-    initialize: function (delay, repeatCount) {
+    initialize: function (delay, repeatCount, opts) {
       Timer.superclass.initialize.call(this);
+
+      opts = opts || {};
 
       this._currentCount = 0;
       this._lastTime = 0;
       this._repeatCount = repeatCount;
       this._waitTime = 0;
-      this._ticker = new EC.Ticker();
+      this._ticker = new EC.Ticker({
+        useInterval: opts.useInterval || false
+      });
       this.delay = delay;
 
       this._initEvents();

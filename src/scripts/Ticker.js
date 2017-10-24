@@ -6,25 +6,38 @@
   "use strict";
 
   var Ticker = EC.Event.extend({
-    initialize: function () {
+    initialize: function (options) {
       Ticker.superclass.initialize.call(this);
-      this.ticker = null;
+      options = options || {};
+      this.useInterval = options.useInterval || false;
+      this._ticker = null;
     },
 
     start: function () {
       var self = this;
 
-      +function runTicker() {
-        self.ticker = requestAnimationFrame(runTicker);
-        self.dispatch('ticker');
-      }();
+      if(this.useInterval){
+        self._ticker = setInterval(function(){
+          self.dispatch('ticker');
+        }, 1000 / 60);
+      }
+      else {
+        +function runTicker() {
+          self._ticker = requestAnimationFrame(runTicker);
+          self.dispatch('ticker');
+        }();
+      }
 
       return this;
     },
     stop: function () {
-      if (this.ticker) {
-        cancelAnimationFrame(this.ticker);
-        delete this.ticker;
+      if (this._ticker) {
+        if(this.useInterval){
+          clearInterval(this._ticker)
+        } else {
+          cancelAnimationFrame(this._ticker);
+        }
+        delete this._ticker;
       }
 
       return this;

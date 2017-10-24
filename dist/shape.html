@@ -92,7 +92,10 @@
     var lineTo = new EC.Shape();
     lineTo.stroke("#f90");
     lineTo.moveTo(30, 780);
-    lineTo.lineTo([50,850],[300,950],[600,600],[700,850]); //[x, y]
+    lineTo.lineTo(50,850);
+    lineTo.lineTo(300,950);
+    lineTo.lineTo(600,600);
+    lineTo.lineTo(700,850);
     stage.addChild(lineTo);
 
     var bezierCurveTo = new EC.Shape();

@@ -32,7 +32,7 @@ gulp.task('clean', function () {
 });
 
 gulp.task('copyjs', function(){
-    return gulp.src(['src/scripts/jquery.min.js', 'src/scripts/bulletManager.js', 'src/scripts/chat-bullet.js'])
+    return gulp.src(['src/scripts/jquery.min.js', 'src/scripts/bulletManager.js', 'src/scripts/chat-bullet.js','src/scripts/p2.js'])
         .pipe(gulp.dest('dist/scripts'));
 });
 

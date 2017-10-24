@@ -1389,6 +1389,7 @@
       this.options = EC.extend({}, {
         showFps: false,
         scaleMode: 'showAll',
+        forceUpdate: false,
         width: window.innerWidth,
         height: window.innerHeight
       }, options || {});
@@ -1397,7 +1398,9 @@
       this.scaleRatio = 1;
       this.cursor = "";
       this._isRendering = false;
-      this._ticker = new EC.Ticker();
+      this._ticker = new EC.Ticker({
+        useInterval: this.options.forceUpdate
+      });
 
       this.canvas.width = this.width;
       this.canvas.height = this.height;
@@ -1513,6 +1516,7 @@
       return this;
     },
     _initEvents: function () {
+
       var isShowFPS = this.options.showFps;
 
       this._ticker.on("ticker", function () {
