@@ -65,6 +65,10 @@
   var isFunction = EC.isFunction;
   var isNumber = EC.isNumber;
 
+  var _registCallback = function(callback, context){
+    return isFunction(callback) && context ? callback.bind(context) : callback;
+  };
+
   var Tween = function (obj, cfg) {
     var _cfg = cfg || {};
 
@@ -82,10 +86,10 @@
     this._repeatCount = 0;
     this._startCallbackFired = false;
     this._isPlaying = false;
-    this._shouldUpdate = false;
     this._tweenTimeline = [];
     this._shouldTimelineAdd = true;
     this._isFirstTimeline = true;
+    this._waitTime = 0;
     this._id = Tween.nextId();
 
     if (_cfg.reverse === true) {
@@ -182,7 +186,7 @@
     _addTimeline: function(data){
       if(this._shouldTimelineAdd) {
         if(this._isFirstTimeline){
-          this._tweenTimeline.push([EC.extend({}, this._startAttrs), this._duration, this._easingFunction]);
+          this._tweenTimeline.push([EC.copy(this._startAttrs), this._duration, this._easingFunction]);
           this._isFirstTimeline = false;
         }
         this._tweenTimeline.push(data);
@@ -190,6 +194,21 @@
     },
     _clearTimeline: function(){
       this._tweenTimeline = [];
+    },
+    _timeout: function(delayCallback, delay){
+      var self = this;
+      self._startTime = Date.now();
+      self._waitTime = delay;
+      if(!Object.prototype.hasOwnProperty.call(self, '_timeup')) {
+        Object.defineProperty(self, '_timeup', {
+          set: function(reached){
+            if(reached === true){
+              self._waitTime = 0;
+              delayCallback();
+            }
+          }
+        });
+      }
     },
     to: function (attrs, duration, easing) {
       this.queue(this._setProperty.bind(this, attrs, duration, easing));
@@ -207,13 +226,19 @@
     },
     update: function () {
 
-      var percent, _object, value;
+      var percent, _object, value,
+        elapse = Date.now() - this._startTime;
 
-      if(this._shouldUpdate === false) return true;
+      if(this._waitTime > 0) {
+        if(elapse > this._waitTime) {
+          this._timeup = true;
+        }
+        return true;
+      }
 
       this._triggerStart();
 
-      percent = (Date.now() - this._startTime) / this._duration;
+      percent = elapse / this._duration;
       percent = percent >= 1 ? 1 : percent;
       _object = this._tweenObj;
       value = this._easingFunction(percent);
@@ -246,11 +271,11 @@
 
           if (this._repeatCount === -1 || ++this._repeatIndex < this._repeatCount) {
             this._shouldTimelineAdd = false;
-            this._tweenTimeline.reverse().forEach(function(tween){
-              if(isNumber(tween)){
-                this.wait(tween);
+            this._tweenTimeline.reverse().forEach(function(tweenArgs){
+              if(isNumber(tweenArgs)){
+                this.wait(tweenArgs);
               } else {
-                this.to.apply(this, tween);
+                this.to.apply(this, tweenArgs);
               }
             }.bind(this));
 
@@ -268,20 +293,20 @@
 
       return true;
     },
-    onUpdate: function (callback) {
-      this._updateCallback = callback;
+    onStart: function (callback, context) {
+      this._startCallback = _registCallback(callback, context);
       return this;
     },
-    onStart: function (callback) {
-      this._startCallback = callback;
+    onUpdate: function (callback, context) {
+      this._updateCallback = _registCallback(callback, context);
       return this;
     },
-    onStop: function (callback) {
-      this._stopCallback = callback;
+    onStop: function (callback, context) {
+      this._stopCallback = _registCallback(callback, context);
       return this;
     },
     call: function (callback, context) {
-      this._completeCallback = isFunction(callback) ? callback.bind(context) : callback;
+      this._completeCallback = _registCallback(callback, context);
       return this;
     },
     _triggerStart: function () {
@@ -321,7 +346,6 @@
     dequeue: function () {
       var self = this,
         fx = Tween.cache[this._tweenObj[Tween.expando]] || [],
-        delay,
         fn = fx.shift();
 
       if (fn === 'running') {
@@ -331,16 +355,12 @@
       if (fn) {
         fx.unshift('running');
         if (isNumber(fn)) {
-          self._shouldUpdate = false;
-          delay = window.setTimeout(function () {
-            window.clearTimeout(delay);
-            delay = null;
+          self._timeout(function () {
             self.dequeue();
           }, fn);
         }
         else if (isFunction(fn)) {
           fn.call(self);
-          self._shouldUpdate = true;
         }
       }
 

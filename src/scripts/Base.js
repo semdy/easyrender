@@ -138,6 +138,13 @@ var EC = {
       return typeof obj === 'object' && obj !== null;
     },
     isArray: Array.isArray,
+    copy: function(props, depth){
+      if(depth){
+        return JSON.parse(JSON.stringify(props));
+      } else {
+        return Extend({}, props);
+      }
+    },
     camelize: function (key) {
       return key.replace(/\-(\w)/g, function (m, n) {
         return n.toUpperCase();
