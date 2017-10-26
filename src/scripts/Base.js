@@ -45,8 +45,125 @@ var EC = {
     return toString.call(obj) === '[object Array]';
   });
 
-  arrayProto.contains = arrayProto.includes || function (prop) {
-    return this.indexOf(prop) > -1;
+  if (!arrayProto.filter) {
+    arrayProto.filter = function(fun) {
+      if (this === void 0 || this === null)
+        throw new TypeError();
+
+      var t = Object(this);
+      var len = t.length >>> 0;
+      if (typeof fun !== "function")
+        throw new TypeError();
+
+      var res = [];
+      var thisArg = arguments.length >= 2 ? arguments[1] : void 0;
+      for (var i = 0; i < len; i++)
+      {
+        if (i in t)
+        {
+          var val = t[i];
+          if (fun.call(thisArg, val, i, t))
+            res.push(val);
+        }
+      }
+
+      return res;
+    };
+  }
+
+  if (!arrayProto.indexOf) {
+    arrayProto.indexOf = function(searchElement, fromIndex) {
+
+      var k;
+
+      if (this === null) {
+        throw new TypeError('"this" is null or not defined');
+      }
+
+      var O = Object(this);
+
+      var len = O.length >>> 0;
+
+      if (len === 0) {
+        return -1;
+      }
+
+      var n = +fromIndex || 0;
+
+      if (Math.abs(n) === Infinity) {
+        n = 0;
+      }
+
+      if (n >= len) {
+        return -1;
+      }
+
+      k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+      while (k < len) {
+        if (k in O && O[k] === searchElement) {
+          return k;
+        }
+        k++;
+      }
+      return -1;
+    };
+  }
+
+  if (!arrayProto.indexOf) {
+    arrayProto.indexOf = function (prop) {
+      return this.indexOf(prop) > -1;
+    };
+  }
+
+  if (typeof Object.assign !== 'function') {
+    Object.assign = function (source) {
+      var props = slice.call(arguments, 1);
+      var prop, p;
+      for (var i = 0; i < props.length; i++) {
+        for (p in (prop = props[i])) {
+          if (prop.hasOwnProperty(p)) {
+            source[p] = prop[p];
+          }
+        }
+      }
+
+      return source;
+    }
+  }
+
+  if (!Object.keys) {
+    Object.keys = (function () {
+      var hasOwnProperty = Object.prototype.hasOwnProperty,
+        hasDontEnumBug = !({toString: null}).propertyIsEnumerable('toString'),
+        dontEnums = [
+          'toString',
+          'toLocaleString',
+          'valueOf',
+          'hasOwnProperty',
+          'isPrototypeOf',
+          'propertyIsEnumerable',
+          'constructor'
+        ],
+        dontEnumsLength = dontEnums.length;
+
+      return function (obj) {
+        if (typeof obj !== 'object' && typeof obj !== 'function' || obj === null) throw new TypeError('Object.keys called on non-object');
+
+        var result = [];
+
+        for (var prop in obj) {
+          if (hasOwnProperty.call(obj, prop)) result.push(prop);
+        }
+
+        if (hasDontEnumBug) {
+          for (var i=0; i < dontEnumsLength; i++) {
+            if (hasOwnProperty.call(obj, dontEnums[i])) result.push(dontEnums[i]);
+          }
+        }
+        return result;
+      }
+    })()
   };
 
   var inherits = function() {
@@ -99,21 +216,7 @@ var EC = {
   /**
    * Extend
    * **/
-  var Extend = (function(){
-    return Object.assign || function (source) {
-      var props = slice.call(arguments, 1);
-      var prop, p;
-      for (var i = 0; i < props.length; i++) {
-        for (p in (prop = props[i])) {
-          if (prop.hasOwnProperty(p)) {
-            source[p] = prop[p];
-          }
-        }
-      }
-
-      return source;
-    }
-  })();
+  var Extend = Object.assign;
 
   EC.provide = function (props) {
     if (typeof props !== 'object') return;

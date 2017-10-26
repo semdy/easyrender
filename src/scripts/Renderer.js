@@ -379,9 +379,13 @@
       }, this);
     },
 
-    addChild: function (object, index) {
+    addChildAt: function (object, index) {
       if (!EC.isObject(object)) {
-        throw new TypeError(String(object) + "is not a instance of EC");
+        throw new TypeError(String(object) + "is not a instance of EC.displayObject");
+      }
+
+      if (object.parent) {
+        object.parent.removeChild(object);
       }
 
       object.parent = this;
@@ -399,10 +403,36 @@
       return this;
     },
 
+    addChild: function(object){
+      return this.addChildAt(object);
+    },
+
     removeChild: function (object) {
       this.getChilds().splice(this.getChildIndex(object), 1);
       this._stopTweens(object);
       this._triggerRemove(object);
+
+      return this;
+    },
+
+    removeChildAt : function (i) {
+      var c = this.children;
+      if (c.length <= i) {
+        return this;
+      }
+
+      var _object = c.splice(i, 1)[0];
+      if(_object) {
+        delete _object.parent;
+      }
+
+      return this;
+    },
+
+    remove: function(){
+      if(this.parent){
+        this.parent.removeChild(this);
+      }
 
       return this;
     },
@@ -438,12 +468,24 @@
 
     removeAllChildren: function () {
       this._stopAllTweens();
-      this.children = [];
+      this.children.length = 0;
+      this.width = 0;
+      this.height = 0;
+
       return this;
     },
 
     getChilds: function () {
       return this.children;
+    },
+
+    getChildAt : function (i) {
+      var c = this.children;
+      if (c.length === 0 || c.length <= i) {
+        return null;
+      }
+
+      return c[i];
     },
 
     each: function (iterator) {
@@ -491,17 +533,18 @@
       return new Bounds(this);
     },
 
-    getChildIndex: function (childObj) {
-      return this.getChilds().indexOf(childObj);
+    getChildIndex: function (child) {
+      return this.getChilds().indexOf(child);
     },
 
     size: function () {
       return this.children.length;
     },
 
-    setChildIndex: function (childObj, index) {
-      this.removeChild(childObj);
-      this.children.splice(index, 0, childObj);
+    setChildIndex: function (child, index) {
+      this.children.splice(this.getChildIndex(child), 1);
+      this.children.splice(index, 0, child);
+
       return this;
     },
 
@@ -595,7 +638,7 @@
             }
           }
           if (!this._isHeightDefined) {
-            this.$height = (this.size + this.lineSpacing) * this.numLines - this.lineSpacing;
+            this.$height = (this.size + 2 + this.lineSpacing) * this.numLines - this.lineSpacing;
           }
         },
         enumerable: true
@@ -1385,31 +1428,34 @@
 
       this.canvas = canvas;
       this.renderContext = this.canvas.getContext('2d');
-      this.compositeOperation = "source-over";
-      this.options = EC.extend({}, {
+
+      var opts = this.options = EC.extend({}, {
         showFps: false,
         scaleMode: 'showAll',
         forceUpdate: false,
         width: window.innerWidth,
-        height: window.innerHeight
+        height: window.innerHeight,
+        blendMode: "source-over"
       }, options || {});
-      this.width = parseFloat(this.canvas.getAttribute("width")) || this.options.width;
-      this.height = parseFloat(this.canvas.getAttribute("height")) || this.options.height;
+
+      this.blendMode = opts.blendMode;
+      this.width = parseFloat(this.canvas.getAttribute("width")) || opts.width;
+      this.height = parseFloat(this.canvas.getAttribute("height")) || opts.height;
       this.scaleRatio = 1;
       this.cursor = "";
       this._isRendering = false;
       this._ticker = new EC.Ticker({
-        useInterval: this.options.forceUpdate
+        useInterval: opts.forceUpdate
       });
 
       this.canvas.width = this.width;
       this.canvas.height = this.height;
 
-      if (this.options.scaleMode !== "noScale") {
+      if (opts.scaleMode !== "noScale") {
         this.setAdapter();
       }
 
-      if (this.options.showFps) {
+      if (opts.showFps) {
         this.createFps();
         this.showFps();
       }
@@ -1441,7 +1487,7 @@
         }
       };
 
-      ctx.globalCompositeOperation = this.compositeOperation;
+      ctx.globalCompositeOperation = this.blendMode;
       _render(this);
 
       return this;
@@ -1517,7 +1563,8 @@
     },
     _initEvents: function () {
 
-      var isShowFPS = this.options.showFps;
+      var opts = this.options;
+      var isShowFPS = opts.showFps;
 
       this._ticker.on("ticker", function () {
         isShowFPS && this.FPS.begin();
@@ -1528,7 +1575,7 @@
         isShowFPS && this.FPS.end();
       }, this);
 
-      if (this.options.scaleMode !== 'noScale') {
+      if (opts.scaleMode !== 'noScale') {
         window.addEventListener(EC.EVENTS.RESIZE, function () {
           this.setAdapter();
         }.bind(this), false);

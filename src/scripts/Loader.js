@@ -148,9 +148,11 @@
     success: EC.noop,
     error: EC.noop,
     complete: EC.noop,
+    progress: EC.noop,
     timeout: 0,
     context: null,
     dataType: "text",
+    responseType: null,
     callbackName: "?",
     contentType: 'application/x-www-form-urlencoded;charset=UTF-8',
     xhr: function () {
@@ -236,8 +238,16 @@
       if (timeout) {
         clearTimeout(timeout);
       }
-      mixFn(ajaxSettings.success, args.success, args.global).call(args.context, dataType === 'jsonp' ? res : (dataType === 'xml' ? xhr.responseXML :
-        (dataType === 'json' ? JSON.parse(xhr.responseText) : xhr.responseText)), xhr);
+
+      var data;
+      if(/^(?:arraybuffer|blob|json)$/.test(args.responseType)){
+        data = xhr.response;
+      } else {
+        data = dataType === 'jsonp' ? res : (dataType === 'xml' ? xhr.responseXML :
+          (dataType === 'json' ? JSON.parse(xhr.responseText) : xhr.responseText));
+      }
+
+      mixFn(ajaxSettings.success, args.success, args.global).call(args.context, data, xhr);
       mixFn(ajaxSettings.complete, args.complete, args.global).call(args.context, xhr, xhr.status, xhr.statusText);
     }
 
@@ -247,6 +257,10 @@
       }
       mixFn(ajaxSettings.error, args.error, args.global).call(args.context, xhr, xhr.status, xhr.statusText);
       mixFn(ajaxSettings.complete, args.complete, args.global).call(args.context, xhr, xhr.status, xhr.statusText);
+    }
+
+    function handleProgress() {
+      mixFn(ajaxSettings.progress, args.progress, args.global).call(args.context, xhr, xhr.status, xhr.statusText);
     }
 
     if (mixFn(ajaxSettings.beforeSend, args.beforeSend, args.global).call(args.context, xhr) === false) {
@@ -275,16 +289,20 @@
       return xhr;
     }
 
-    if (xhr.onload) {
-      xhr.onload = function () {
-        xhr.onload = new Function;
-        handleSuccess();
-      };
-      xhr.onerror = function () {
-        xhr.onerror = new Function;
+    if ('onload' in xhr) {
+      xhr.addEventListener('load', function ajaxOnLoad() {
+        xhr.removeEventListener('load', ajaxOnLoad, false);
+        if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
+          handleSuccess();
+        }
+      }, false);
+
+      xhr.addEventListener('error', function ajaxOnError() {
+        xhr.removeEventListener('error', ajaxOnError, false);
         handleError();
-      };
-    } else {
+      }, false);
+    }
+    else {
       xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
           if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
@@ -295,6 +313,17 @@
           }
         }
       };
+    }
+
+    if('progress' in xhr) {
+      xhr.addEventListener('progress', function () {
+        if (xhr.status === 404) {
+          handleError();
+        }
+        else if (xhr.status === 200) {
+          handleProgress();
+        }
+      }, false);
     }
 
     xhr.open(type, url, args.async);
