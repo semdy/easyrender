@@ -638,7 +638,7 @@
             }
           }
           if (!this._isHeightDefined) {
-            this.$height = (this.size + 4 + this.lineSpacing) * this.numLines - this.lineSpacing;
+            this.$height = (this.size + 3 + this.lineSpacing) * this.numLines - this.lineSpacing;
           }
         },
         enumerable: true
