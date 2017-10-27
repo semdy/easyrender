@@ -62,15 +62,12 @@
             bitMapText.letterSpacing = 5;
             stage.addChild(bitMapText);
 
-            var timer = new EC.Timer(1000);
-            var a = Date.now();
-            timer.on("timer", function () {
-              console.log(Date.now() - a);
-              a = Date.now();
-                bitMapText.text = Math.floor(100 + Math.random()*100000).toString();
-               // console.log(bitMapText.text);
-            });
-            timer.start();
+          var timer = new EC.Timer(400);
+          timer.on("timer", function () {
+            bitMapText.text = Math.floor(100 + Math.random()*100000).toString();
+            console.log(bitMapText.text);
+          });
+          timer.start();
 
         }
 
