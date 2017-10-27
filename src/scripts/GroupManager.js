@@ -24,6 +24,10 @@
       delete this._items[item.getId()];
     },
 
+    get: function(id){
+      return this._items[id];
+    },
+
     update: function (keeping) {
       var item;
       var _items = this._items;
@@ -49,8 +53,14 @@
 
       return true;
 
+    },
+
+    nextId: function () {
+      return GroupManager._nextId++;
     }
   };
+
+  GroupManager._nextId = 0;
 
   EC.provide({
     groupManager: new GroupManager()

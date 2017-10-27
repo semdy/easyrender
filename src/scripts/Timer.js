@@ -15,7 +15,7 @@
       this._waitTime = 0;
       this._isTimeoutSet = false;
       this._isPlaying = false;
-      this._id = Timer.nextId();
+      this._id = EC.groupManager.nextId();
       this.delay = delay;
     },
 
@@ -128,11 +128,6 @@
       }
     }
   });
-
-  Timer._nextId = 0;
-  Timer.nextId = function () {
-    return Timer._nextId++;
-  };
 
   EC.provide({
     Timer: Timer

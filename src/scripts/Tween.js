@@ -36,7 +36,7 @@
     this._shouldTimelineAdd = true;
     this._isFirstTimeline = true;
     this._waitTime = 0;
-    this._id = Tween.nextId();
+    this._id = EC.groupManager.nextId();
 
     if (_cfg.reverse === true) {
       this._repeatCount = 2;
@@ -58,11 +58,6 @@
   Tween.expando = '@Tween-' + +new Date;
   Tween.get = function (obj, cfg) {
     return new Tween(obj, cfg);
-  };
-
-  Tween._nextId = 0;
-  Tween.nextId = function () {
-    return Tween._nextId++;
   };
 
   Tween.removeTweens = function (target) {
@@ -87,13 +82,26 @@
       return this._id;
     },
     start: function () {
+      if(this._isPlaying || this._tweenObj._tweenId !== undefined) {
+        return this;
+      }
+
       EC.groupManager.add(this);
+      this._tweenObj._tweenId = this.getId();
       this._isPlaying = true;
       this._startCallbackFired = false;
 
       return this;
     },
-    stop: function () {
+    stop: function(){
+      var tweenInstance = EC.groupManager.get(this._tweenObj._tweenId);
+      if(tweenInstance) {
+        tweenInstance._stopTween();
+      }
+
+      return this;
+    },
+    _stopTween: function () {
       if (!this._isPlaying) {
         return this;
       }
@@ -101,6 +109,7 @@
       EC.groupManager.remove(this);
       this._clearTimeline();
       delete Tween.cache[this._tweenObj[Tween.expando]];
+      delete this._tweenObj._tweenId;
       this._isPlaying = false;
       this._shouldTimelineAdd = true;
       this._isFirstTimeline = true;

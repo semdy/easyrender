@@ -164,7 +164,7 @@ var EC = {
         return result;
       }
     })()
-  };
+  }
 
   var inherits = function() {
 

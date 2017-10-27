@@ -32,6 +32,10 @@
       delete this._tweens[tween.getId()];
     },
 
+    get: function(id){
+      return this._tweens[id];
+    },
+
     update: function (keeping) {
       var tween;
       var _tweens = this._tweens;
@@ -144,13 +148,26 @@
       return this._id;
     },
     start: function () {
+      if(this._isPlaying || this._tweenObj._tweenId !== undefined) {
+        return this;
+      }
+
       group.add(this);
+      this._tweenObj._tweenId = this.getId();
       this._isPlaying = true;
       this._startCallbackFired = false;
 
       return this;
     },
-    stop: function () {
+    stop: function(){
+      var tweenInstance = group.get(this._tweenObj._tweenId);
+      if(tweenInstance) {
+        tweenInstance._stopTween();
+      }
+
+      return this;
+    },
+    _stopTween: function () {
       if (!this._isPlaying) {
         return this;
       }
@@ -158,6 +175,7 @@
       group.remove(this);
       this._clearTimeline();
       delete Tween.cache[this._tweenObj[Tween.expando]];
+      delete this._tweenObj._tweenId;
       this._isPlaying = false;
       this._shouldTimelineAdd = true;
       this._isFirstTimeline = true;
