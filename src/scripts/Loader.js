@@ -396,6 +396,13 @@
 
       return this;
     },
+    catch: function (onRejected) {
+      if (onRejected) {
+        this.on("error", onRejected);
+      }
+
+      return this;
+    },
     always: function (onAlways) {
       if (onAlways) {
         this.on("complete", onAlways);
