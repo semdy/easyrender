@@ -1,12 +1,66 @@
 /**
  * Created by semdy on 2016/9/6.
  */
-(function (EC) {
+(function (EC, undefined) {
   "use strict";
 
   /**
    * Tween 动画类
    * **/
+
+  var Group = function () {
+    this._tweens = {};
+  };
+
+  Group.prototype = {
+    getAll: function () {
+      return Object.keys(this._tweens).map(function (tweenId) {
+        return this._tweens[tweenId];
+      }.bind(this));
+
+    },
+
+    removeAll: function () {
+      this._tweens = {};
+    },
+
+    add: function (tween) {
+      this._tweens[tween.getId()] = tween;
+    },
+
+    remove: function (tween) {
+      delete this._tweens[tween.getId()];
+    },
+
+    update: function (keeping) {
+      var tween;
+      var _tweens = this._tweens;
+      var tweenIds = Object.keys(this._tweens);
+
+      if (tweenIds.length === 0) {
+        return false;
+      }
+
+      while (tweenIds.length > 0) {
+        tweenIds.forEach(function (tweenId) {
+          tween = _tweens[tweenId];
+          if (tween && tween.update() === false) {
+            tween._isPlaying = false;
+            if (!keeping) {
+              delete _tweens[tweenId];
+            }
+          }
+        });
+
+        tweenIds = [];
+      }
+
+      return true;
+
+    }
+  };
+
+  var group = new Group();
 
   var isFunction = EC.isFunction;
   var isNumber = EC.isNumber;
@@ -36,6 +90,7 @@
     this._shouldTimelineAdd = true;
     this._isFirstTimeline = true;
     this._waitTime = 0;
+    this._id = Tween.nextId();
 
     if (_cfg.reverse === true) {
       this._repeatCount = 2;
@@ -49,19 +104,26 @@
       this._repeatCount = -1;
     }
 
-    setTimeout(this.start.bind(this),0);
+    this.start();
   };
 
   Tween.cache = {};
-  Tween.timerCache = {};
   Tween.uuid = 0;
   Tween.expando = '@Tween-' + +new Date;
   Tween.get = function (obj, cfg) {
     return new Tween(obj, cfg);
   };
 
+  Tween.group = group;
+  Tween.Group = Group;
+
+  Tween._nextId = 0;
+  Tween.nextId = function () {
+    return Tween._nextId++;
+  };
+
   Tween.removeTweens = function (target) {
-    if (target && target[Tween.expando] && Tween.timerCache[target[Tween.expando]]) {
+    if (EC.isObject(target) && target[Tween.expando]) {
       Tween.get(target).stop();
     }
 
@@ -70,7 +132,7 @@
 
   Tween.removeAllTweens = function (container) {
     if(!(container instanceof EC.DisplayObjectContainer)) return this;
-    container.getChilds().forEach(function (target) {
+    container.children.forEach(function (target) {
       Tween.removeTweens(target);
     });
 
@@ -78,22 +140,13 @@
   };
 
   Tween.prototype = {
+    getId: function () {
+      return this._id;
+    },
     start: function () {
-      var self = this;
-      var _object = this._tweenObj;
-      var timer = Tween.timerCache[_object[Tween.expando]];
+      group.add(this);
       this._isPlaying = true;
       this._startCallbackFired = false;
-
-      if (timer) {
-        return this;
-      }
-
-      +function callUpdate(){
-        timer = requestAnimationFrame(callUpdate);
-        Tween.timerCache[_object[Tween.expando]] = timer;
-        self.update();
-      }();
 
       return this;
     },
@@ -102,14 +155,12 @@
         return this;
       }
 
-      var expando = this._tweenObj[Tween.expando];
-      cancelAnimationFrame(Tween.timerCache[expando]);
+      group.remove(this);
       this._clearTimeline();
+      delete Tween.cache[this._tweenObj[Tween.expando]];
+      this._isPlaying = false;
       this._shouldTimelineAdd = true;
       this._isFirstTimeline = true;
-      this._isPlaying = false;
-      delete Tween.timerCache[expando];
-      delete Tween.cache[expando];
       this._triggerStop();
 
       return this;
@@ -131,7 +182,33 @@
         this._startAttrs[attr] = Number(this._tweenObj[attr]);
       }
 
-      return this;
+    },
+    _addTimeline: function(data){
+      if(this._shouldTimelineAdd) {
+        if(this._isFirstTimeline){
+          this._tweenTimeline.push([EC.copy(this._startAttrs), this._duration, this._easingFunction]);
+          this._isFirstTimeline = false;
+        }
+        this._tweenTimeline.push(data);
+      }
+    },
+    _clearTimeline: function(){
+      this._tweenTimeline = [];
+    },
+    _timeout: function(delayCallback, delay){
+      var self = this;
+      self._startTime = Date.now();
+      self._waitTime = delay;
+      if(!Object.prototype.hasOwnProperty.call(self, '_timeup')) {
+        Object.defineProperty(self, '_timeup', {
+          set: function(reached){
+            if(reached === true){
+              self._waitTime = 0;
+              delayCallback();
+            }
+          }
+        });
+      }
     },
     to: function (attrs, duration, easing) {
       this.queue(this._setProperty.bind(this, attrs, duration, easing));
@@ -156,7 +233,7 @@
         if(elapse >= this._waitTime) {
           this._timeup = true;
         }
-        return;
+        return true;
       }
 
       this._triggerStart();
@@ -194,48 +271,27 @@
 
           if (this._repeatCount === -1 || ++this._repeatIndex < this._repeatCount) {
             this._shouldTimelineAdd = false;
-            this._tweenTimeline.reverse().forEach(function(tween){
-              if(isNumber(tween)){
-                this.wait(tween);
+            this._tweenTimeline.reverse().forEach(function(tweenArgs){
+              if(isNumber(tweenArgs)){
+                this.wait(tweenArgs);
               } else {
-                this.to.apply(this, tween);
+                this.to.apply(this, tweenArgs);
               }
             }.bind(this));
 
-          } else {
+            return true;
+          }
+          else {
             this.stop();
+            return false;
           }
 
+        } else {
+          return true;
         }
       }
 
-    },
-    _addTimeline: function(data){
-      if(this._shouldTimelineAdd) {
-        if(this._isFirstTimeline){
-          this._tweenTimeline.push([EC.copy(this._startAttrs), this._duration, this._easingFunction]);
-          this._isFirstTimeline = false;
-        }
-        this._tweenTimeline.push(data);
-      }
-    },
-    _clearTimeline: function(){
-      this._tweenTimeline = [];
-    },
-    _timeout: function(delayCallback, delay){
-      var self = this;
-      self._startTime = Date.now();
-      self._waitTime = delay;
-      if(!Object.prototype.hasOwnProperty.call(self, '_timeup')) {
-        Object.defineProperty(self, '_timeup', {
-          set: function(reached){
-            if(reached === true){
-              self._waitTime = 0;
-              delayCallback();
-            }
-          }
-        });
-      }
+      return true;
     },
     onStart: function (callback, context) {
       this._startCallback = _registCallback(callback, context);

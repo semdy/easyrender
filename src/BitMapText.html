@@ -27,6 +27,7 @@
 <script src="scripts/RequestAnimationFrame.js"></script>
 <script src="scripts/Utils.js"></script>
 <script src="scripts/Event.js"></script>
+<script src="scripts/GroupManager.js"></script>
 <script src="scripts/Loader.js"></script>
 <script src="scripts/Ticker.js"></script>
 <script src="scripts/Timer.js"></script>
@@ -76,10 +77,13 @@
             bitMapText.letterSpacing = 5;
             stage.addChild(bitMapText);
 
-            var timer = new EC.Timer(400);
+            var timer = new EC.Timer(1000);
+            var a = Date.now();
             timer.on("timer", function () {
+              console.log(Date.now() - a);
+              a = Date.now();
                 bitMapText.text = Math.floor(100 + Math.random()*100000).toString();
-                console.log(bitMapText.text);
+               // console.log(bitMapText.text);
             });
             timer.start();
 

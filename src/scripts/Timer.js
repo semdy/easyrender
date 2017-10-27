@@ -6,45 +6,54 @@
   "use strict";
 
   var Timer = EC.Event.extend({
-    initialize: function (delay, repeatCount, opts) {
+    initialize: function (delay, repeatCount) {
       Timer.superclass.initialize.call(this);
 
-      opts = opts || {};
-
       this._currentCount = 0;
-      this._lastTime = 0;
+      this._startTime = 0;
       this._repeatCount = repeatCount;
       this._waitTime = 0;
-      this._ticker = new EC.Ticker({
-        useInterval: opts.useInterval || false
-      });
+      this._isTimeoutSet = false;
+      this._isPlaying = false;
+      this._id = Timer.nextId();
       this.delay = delay;
+    },
 
-      this._initEvents();
+    getId: function () {
+      return this._id;
     },
 
     start: function () {
-      this._lastTime = Date.now();
-      this._ticker.start();
+      EC.groupManager.add(this);
+      this._startTime = Date.now();
+      this._isPlaying = true;
+      this.dispatch('start');
 
       return this;
     },
-    stop: function () {
-      if (this._ticker) {
-        this._ticker.stop();
 
-        if (this._waitTime > 0) {
-          var self = this;
-          setTimeout(function () {
-            self.dispatch('complete');
-            self.reset();
-          }, this._waitTime);
-        }
-        else {
+    isPlaying: function () {
+      return this._isPlaying;
+    },
+
+    stop: function () {
+      if (!this._isPlaying) {
+        return this;
+      }
+
+      if (this._waitTime > 0) {
+        this._timeout(function () {
+          this._isPlaying = false;
+          EC.groupManager.remove(this);
           this.dispatch('complete');
           this.reset();
-        }
-
+        }, this._waitTime);
+      }
+      else {
+        this._isPlaying = false;
+        EC.groupManager.remove(this);
+        this.dispatch('complete');
+        this.reset();
       }
 
       return this;
@@ -54,15 +63,12 @@
       return this;
     },
     pause: function (dur) {
-      if (this._ticker) {
-        this._ticker.stop();
-        this.dispatch('pause');
-      }
+      this._isPlaying = false;
+      this.dispatch('pause');
 
       if (typeof dur === 'number' && dur > 0) {
-        var self = this;
-        setTimeout(function () {
-          self._ticker.start();
+        this._timeout(function () {
+          this._isPlaying = true;
         }, dur);
       }
       return this;
@@ -71,29 +77,62 @@
       this._repeatCount = repeatCount;
       return this;
     },
-    _timerHandle: function () {
+    update: function () {
       var now = Date.now();
+      var elapse = now - this._startTime;
 
-      if (now - this._lastTime >= this.delay) {
+      if(this._waitTime > 0) {
+        if(elapse >= this._waitTime) {
+          this._timeup = true;
+        }
+        return true;
+      }
+
+      if(!this._isPlaying) return true;
+
+      if (elapse >= this.delay) {
         if (this._repeatCount && (++this._currentCount === this._repeatCount)) {
           this.stop();
-          return;
+          return false;
         }
 
-        this._lastTime = now;
+        this._startTime = now;
         this.dispatch('timer', now);
       }
-    },
-    _initEvents: function () {
-      this._ticker.on("ticker", this._timerHandle, this);
+
+      return true;
     },
     reset: function () {
       this._currentCount = 0;
-      this._ticker = null;
       return this;
-    }
+    },
+    _timeout: function(delayCallback, delay){
+      var self = this;
 
+      if(self._isTimeoutSet) return;
+
+      self._startTime = Date.now();
+      self._waitTime = delay;
+      self._isTimeoutSet = true;
+
+      if(!Object.prototype.hasOwnProperty.call(self, '_timeup')) {
+        Object.defineProperty(self, '_timeup', {
+          set: function(reached){
+            if(reached === true){
+              self._waitTime = 0;
+              self._isTimeoutSet = false;
+              delayCallback.call(self);
+            }
+          }
+        });
+      }
+    }
   });
+
+  Timer._nextId = 0;
+  Timer.nextId = function () {
+    return Timer._nextId++;
+  };
 
   EC.provide({
     Timer: Timer

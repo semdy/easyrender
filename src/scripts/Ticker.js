@@ -17,6 +17,7 @@
       var self = this;
 
       if(this.useInterval){
+        self.dispatch('ticker');
         self._ticker = setInterval(function(){
           self.dispatch('ticker');
         }, 1000 / 60);

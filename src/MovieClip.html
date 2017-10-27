@@ -34,6 +34,7 @@
 <script src="scripts/RequestAnimationFrame.js"></script>
 <script src="scripts/Utils.js"></script>
 <script src="scripts/Event.js"></script>
+<script src="scripts/GroupManager.js"></script>
 <script src="scripts/Loader.js"></script>
 <script src="scripts/Ticker.js"></script>
 <script src="scripts/Timer.js"></script>
@@ -119,7 +120,7 @@
         mcRabbit1.gotoAndPlay(1, -1, 20);
         mcRabbit1.touchEnabled = true;
         mcRabbit1.on("touch", function () {
-            if( mcRabbit1.isPlaying ){
+            if( mcRabbit1.isPlaying() ){
               mcRabbit1.pause();
             } else {
               mcRabbit1.play();

@@ -10,11 +10,9 @@
       MovieClip.superclass.initialize.call(this);
 
       this._startFrame = 0;
-      this._startTime = 0;
       this._playTimes = -1;
       this._resKey = resKey;
       this.currentFrame = 0;
-      this.isPlaying = false;
 
       this.setRES(resUrl, res);
       this._clip = new EC.BitMap(this.RESUrl);
@@ -103,27 +101,26 @@
     },
 
     play: function () {
-      if (this.isPlaying) {
+      if (this.isPlaying()) {
         return this;
       }
 
-      this._startTime = Date.now();
       this._timer.start();
-      this.isPlaying = true;
 
       return this;
     },
 
+    isPlaying: function(){
+      return this._timer.isPlaying();
+    },
+
     stop: function () {
       this._timer.stop();
-      this.isPlaying = false;
       return this;
     },
 
     pause: function (dur) {
       this._timer.pause(dur);
-      this._startTime += dur;
-      this.isPlaying = false;
       return this;
     },
 

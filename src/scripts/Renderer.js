@@ -1570,7 +1570,7 @@
         isShowFPS && this.FPS.begin();
         this.clear();
         this.render();
-        EC.Tween.group.update();
+        EC.groupManager.update();
         this._triggerEnterFrame();
         isShowFPS && this.FPS.end();
       }, this);

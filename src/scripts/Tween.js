@@ -8,60 +8,6 @@
    * Tween 动画类
    * **/
 
-  var Group = function () {
-    this._tweens = {};
-  };
-
-  Group.prototype = {
-    getAll: function () {
-      return Object.keys(this._tweens).map(function (tweenId) {
-        return this._tweens[tweenId];
-      }.bind(this));
-
-    },
-
-    removeAll: function () {
-      this._tweens = {};
-    },
-
-    add: function (tween) {
-      this._tweens[tween.getId()] = tween;
-    },
-
-    remove: function (tween) {
-      delete this._tweens[tween.getId()];
-    },
-
-    update: function (keeping) {
-      var tween;
-      var _tweens = this._tweens;
-      var tweenIds = Object.keys(this._tweens);
-
-      if (tweenIds.length === 0) {
-        return false;
-      }
-
-      while (tweenIds.length > 0) {
-        tweenIds.forEach(function (tweenId) {
-          tween = _tweens[tweenId];
-          if (tween && tween.update() === false) {
-            tween._isPlaying = false;
-            if (!keeping) {
-              delete _tweens[tweenId];
-            }
-          }
-        });
-
-        tweenIds = [];
-      }
-
-      return true;
-
-    }
-  };
-
-  var group = new Group();
-
   var isFunction = EC.isFunction;
   var isNumber = EC.isNumber;
 
@@ -114,9 +60,6 @@
     return new Tween(obj, cfg);
   };
 
-  Tween.group = group;
-  Tween.Group = Group;
-
   Tween._nextId = 0;
   Tween.nextId = function () {
     return Tween._nextId++;
@@ -144,7 +87,7 @@
       return this._id;
     },
     start: function () {
-      group.add(this);
+      EC.groupManager.add(this);
       this._isPlaying = true;
       this._startCallbackFired = false;
 
@@ -155,7 +98,7 @@
         return this;
       }
 
-      group.remove(this);
+      EC.groupManager.remove(this);
       this._clearTimeline();
       delete Tween.cache[this._tweenObj[Tween.expando]];
       this._isPlaying = false;
@@ -230,7 +173,7 @@
         elapse = Date.now() - this._startTime;
 
       if(this._waitTime > 0) {
-        if(elapse > this._waitTime) {
+        if(elapse >= this._waitTime) {
           this._timeup = true;
         }
         return true;
