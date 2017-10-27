@@ -105,7 +105,7 @@
         mcRabbit1.gotoAndPlay(1, -1, 20);
         mcRabbit1.touchEnabled = true;
         mcRabbit1.on("touch", function () {
-            if( mcRabbit1.isPlaying ){
+            if( mcRabbit1.isPlaying() ){
               mcRabbit1.pause();
             } else {
               mcRabbit1.play();
