@@ -1879,6 +1879,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 - [遮罩](https://semdy.github.io/easyrender/dist/Mask.html)
 - [文本输入框](https://semdy.github.io/easyrender/dist/TextInput.html)
 - [文本排版](https://semdy.github.io/easyrender/dist/Text.html)
+- [ScrollView](https://semdy.github.io/easyrender/dist/scrollview.html)
 - [BitMapText](https://semdy.github.io/easyrender/dist/BitMapText.html)
 - [Button](https://semdy.github.io/easyrender/dist/Button.html)
 - [TouchEvent](https://semdy.github.io/easyrender/dist/TouchEvent.html)
