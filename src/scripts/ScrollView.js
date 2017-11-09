@@ -11,19 +11,20 @@
       this.adjustValue = 0;
       this.$layout = null;
       this.touchScroll = null;
-      this.scroller = new EC.Sprite();
 
       this.on("addToStage", function() {
         this.mask = new EC.Masker();
         this.mask.rect(0, 0, this.width, this.height);
-        this.touchScroll = this._createScroll();
-        this.addChild(this.scroller);
+        if (this.layout) {
+          this.touchScroll = this._createScroll();
+          this.addChild(this.layout);
+        }
       }, this);
 
       Object.defineProperty(this, 'layout', {
         set: function(target) {
           self.$layout = target;
-          self.scroller.addChild(target);
+          self.addChild(target);
         },
         get: function() {
           return self.$layout;
@@ -49,11 +50,11 @@
     },
     _createScroll: function () {
       var self = this;
-      var min = this.height - this.scroller.height - this.adjustValue;
+      var min = this.height - this.layout.height - this.adjustValue;
       return new EC.TouchScroll({
         touch: this,
         vertical: this.vertical,
-        target: this.scroller,
+        target: this.layout,
         property: this.vertical ? 'y' : 'x',
         max: 0,
         min: min,

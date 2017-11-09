@@ -381,7 +381,7 @@
 
     addChildAt: function (object, index) {
       if (!EC.isObject(object)) {
-        throw new TypeError(String(object) + "is not a instance of EC.displayObject");
+        throw new TypeError(String(object) + " is not a instance of EC.displayObject");
       }
 
       if (object.parent) {
