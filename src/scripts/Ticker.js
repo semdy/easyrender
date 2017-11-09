@@ -19,13 +19,13 @@
       if(this.useInterval){
         self.dispatch('ticker');
         self._ticker = setInterval(function(){
-          self.dispatch('ticker');
+          self.dispatch('ticker', Date.now());
         }, 1000 / 60);
       }
       else {
         +function runTicker() {
           self._ticker = requestAnimationFrame(runTicker);
-          self.dispatch('ticker');
+          self.dispatch('ticker', Date.now());
         }();
       }
 

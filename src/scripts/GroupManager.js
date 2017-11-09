@@ -1,5 +1,10 @@
-(function (EC) {
+/**
+ * Created by semdy on 2017/9/22.
+ */
+
+;(function (EC) {
   "use strict";
+
   var GroupManager = function () {
     this._items = {};
   };

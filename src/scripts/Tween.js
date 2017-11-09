@@ -176,10 +176,10 @@
 
       return this;
     },
-    update: function () {
+    update: function (time) {
 
       var percent, _object, value,
-        elapse = Date.now() - this._startTime;
+        elapse = (time || Date.now()) - this._startTime;
 
       if(this._waitTime > 0) {
         if(elapse >= this._waitTime) {

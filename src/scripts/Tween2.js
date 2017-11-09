@@ -8,6 +8,37 @@
    * Tween 动画类
    * **/
 
+  var Group = function () {
+    this._tweens = {};
+  };
+
+  Group.prototype = {
+    getAll: function () {
+      return Object.keys(this._tweens).map(function (tweenId) {
+        return this._tweens[tweenId];
+      }.bind(this));
+
+    },
+
+    removeAll: function () {
+      this._tweens = {};
+    },
+
+    add: function (tween) {
+      this._tweens[tween.getId()] = tween;
+    },
+
+    remove: function (tween) {
+      delete this._tweens[tween.getId()];
+    },
+
+    get: function(id){
+      return this._tweens[id];
+    }
+  };
+
+  var group = new Group();
+
   var isFunction = EC.isFunction;
   var isNumber = EC.isNumber;
 
@@ -19,6 +50,7 @@
     var _cfg = cfg || {};
 
     this._tweenObj = obj;
+    this._ticker = null;
     this._startCallback = null;
     this._updateCallback = null;
     this._completeCallback = null;
@@ -36,6 +68,7 @@
     this._shouldTimelineAdd = true;
     this._isFirstTimeline = true;
     this._waitTime = 0;
+    this._id = Tween.nextId();
 
     if (_cfg.reverse === true) {
       this._repeatCount = 2;
@@ -49,19 +82,25 @@
       this._repeatCount = -1;
     }
 
-    setTimeout(this.start.bind(this),0);
+    this.start();
   };
 
   Tween.cache = {};
-  Tween.timerCache = {};
   Tween.uuid = 0;
   Tween.expando = '@Tween-' + +new Date;
   Tween.get = function (obj, cfg) {
     return new Tween(obj, cfg);
   };
 
+  Tween.group = group;
+
+  Tween._nextId = 0;
+  Tween.nextId = function () {
+    return Tween._nextId++;
+  };
+
   Tween.removeTweens = function (target) {
-    if (target && target[Tween.expando] && Tween.timerCache[target[Tween.expando]]) {
+    if (EC.isObject(target) && target[Tween.expando]) {
       Tween.get(target).stop();
     }
 
@@ -70,7 +109,7 @@
 
   Tween.removeAllTweens = function (container) {
     if(!(container instanceof EC.DisplayObjectContainer)) return this;
-    container.getChilds().forEach(function (target) {
+    container.children.forEach(function (target) {
       Tween.removeTweens(target);
     });
 
@@ -78,38 +117,51 @@
   };
 
   Tween.prototype = {
+    getId: function () {
+      return this._id;
+    },
     start: function () {
-      var self = this;
-      var _object = this._tweenObj;
-      var timer = Tween.timerCache[_object[Tween.expando]];
-      this._isPlaying = true;
-      this._startCallbackFired = false;
-
-      if (timer) {
+      if(this._isPlaying || this._tweenObj._tweenId !== undefined) {
         return this;
       }
 
-      +function callUpdate(){
-        timer = requestAnimationFrame(callUpdate);
-        Tween.timerCache[_object[Tween.expando]] = timer;
+      var self = this;
+      group.add(this);
+      this._tweenObj._tweenId = this.getId();
+      this._isPlaying = true;
+      this._startCallbackFired = false;
+
+      function callUpdate(){
+        self._ticker = requestAnimationFrame(callUpdate);
         self.update();
-      }();
+      }
+
+      setTimeout(callUpdate, 0);
 
       return this;
     },
-    stop: function () {
+    stop: function(){
+      var tweenInstance = group.get(this._tweenObj._tweenId);
+      if(tweenInstance) {
+        tweenInstance._stopTween();
+      }
+
+      return this;
+    },
+    _stopTween: function () {
       if (!this._isPlaying) {
         return this;
       }
 
-      var expando = this._tweenObj[Tween.expando];
-      cancelAnimationFrame(Tween.timerCache[expando]);
+      cancelAnimationFrame(this._ticker);
+      group.remove(this);
       this._clearTimeline();
+      delete Tween.cache[this._tweenObj[Tween.expando]];
+      delete this._tweenObj._tweenId;
+      this._isPlaying = false;
+      this._ticker = null;
       this._shouldTimelineAdd = true;
       this._isFirstTimeline = true;
-      this._isPlaying = false;
-      delete Tween.timerCache[expando];
-      delete Tween.cache[expando];
       this._triggerStop();
 
       return this;
@@ -194,11 +246,11 @@
 
           if (this._repeatCount === -1 || ++this._repeatIndex < this._repeatCount) {
             this._shouldTimelineAdd = false;
-            this._tweenTimeline.reverse().forEach(function(tween){
-              if(isNumber(tween)){
-                this.wait(tween);
+            this._tweenTimeline.reverse().forEach(function(tweenArgs){
+              if(isNumber(tweenArgs)){
+                this.wait(tweenArgs);
               } else {
-                this.to.apply(this, tween);
+                this.to.apply(this, tweenArgs);
               }
             }.bind(this));
 

@@ -77,8 +77,8 @@
       this._repeatCount = repeatCount;
       return this;
     },
-    update: function () {
-      var now = Date.now();
+    update: function (time) {
+      var now = time || Date.now();
       var elapse = now - this._startTime;
 
       if(this._waitTime > 0) {

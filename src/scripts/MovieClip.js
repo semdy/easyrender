@@ -182,6 +182,10 @@
         this.addChild(this._clip);
       }, this);
 
+      this.on("remove", function () {
+        this.stop();
+      }, this);
+
       this._timer.on('timer', function () {
         if (++this.currentFrame > this.totalFrames - 1) {
           this.currentFrame = this._startFrame;

@@ -79,7 +79,7 @@
 
       this._touchTimer = setTimeout(function () {
         this._triggerEvent("longtouch", event);
-      }.bind(this), 600);
+      }.bind(this), 350);
     },
     _onTouchMove: function (event) {
       event.preventDefault();
@@ -138,7 +138,8 @@
         var eventObj = EC.extend({
           type: type,
           stageX: this._touchX * ratio,
-          stageY: this._touchY * ratio
+          stageY: this._touchY * ratio,
+          scaleRatio: ratio
         }, this._getOriginalEventProps(event));
 
         event = new Event(event, eventObj);

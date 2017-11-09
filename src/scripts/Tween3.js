@@ -36,7 +36,7 @@
       return this._tweens[id];
     },
 
-    update: function (keeping) {
+    update: function (time, keeping) {
       var tween;
       var _tweens = this._tweens;
       var tweenIds = Object.keys(this._tweens);
@@ -48,7 +48,7 @@
       while (tweenIds.length > 0) {
         tweenIds.forEach(function (tweenId) {
           tween = _tweens[tweenId];
-          if (tween && tween.update() === false) {
+          if (tween && tween.update(time) === false) {
             tween._isPlaying = false;
             if (!keeping) {
               delete _tweens[tweenId];
@@ -242,10 +242,10 @@
 
       return this;
     },
-    update: function () {
+    update: function (time) {
 
       var percent, _object, value,
-        elapse = Date.now() - this._startTime;
+        elapse = (time || Date.now()) - this._startTime;
 
       if(this._waitTime > 0) {
         if(elapse >= this._waitTime) {

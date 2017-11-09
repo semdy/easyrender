@@ -488,12 +488,12 @@
       return c[i];
     },
 
-    each: function (iterator) {
+    each: function (iterator, context) {
       var childs = this.getChilds(),
         i = 0, len = childs.length;
 
       for (; i < len; i++) {
-        if (iterator.call(this, childs[i], i, childs) === false) break;
+        if (iterator.call(context || this, childs[i], i, childs) === false) break;
       }
 
       return this;
@@ -970,43 +970,46 @@
 
       this.x = x || 0;
       this.y = y || 0;
-      this.width = w || 0;
-      this.height = h || 0;
+      this.$width = w || 0;
+      this.$height = h || 0;
+      this.$hasW = false;
+      this.$hasH = false;
+
+      Object.defineProperty(this, 'width', {
+        set: function (newVal) {
+          this.$width = newVal;
+          this.$hasW = true;
+        },
+        get: function () {
+          return this.$width;
+        },
+        enumerable: true
+      });
+
+      Object.defineProperty(this, 'height', {
+        set: function (newVal) {
+          this.$height = newVal;
+          this.$hasH = true;
+        },
+        get: function () {
+          return this.$height;
+        },
+        enumerable: true
+      });
 
     },
     addChild: function (childObj) {
-
       this._addMask();
       Sprite.superclass.addChild.apply(this, arguments);
-
-      var x = childObj.x + childObj.moveX;
-      var y = childObj.y + childObj.moveY;
-      var lineGap = (childObj.lineWidth || 0) / 2;
-      var width = childObj.width + lineGap;
-      var height = childObj.height + lineGap;
-
-      if (this.size() === 1) {
-        if (this.width === 0) {
-          this.width = x + width;
-        } else {
-          this._isWidthDefined = true;
-        }
-        if (this.height === 0) {
-          this.height = y + height;
-        } else {
-          this._isHeightDefined = true;
-        }
-      } else {
-        if (!this._isWidthDefined && (x + width > this.width)) {
-          this.width = x + width;
-        }
-        if (!this._isHeightDefined && (y + height > this.height)) {
-          this.height = y + height;
-        }
-      }
+      this.resize();
 
       return this;
+    },
+    removeChild: function (){
+      Sprite.superclass.removeChild.apply(this, arguments);
+      this.resize();
 
+      return this;
     },
     _addMask: function () {
       if (!this.mask || this._isMaskAdded) return;
@@ -1015,6 +1018,36 @@
         this._isMaskAdded = true;
       } else {
         throw new TypeError("mask must be a instance of EC.Masker");
+      }
+    },
+    _getSize: function (obj){
+      var x = obj.x + obj.moveX;
+      var y = obj.y + obj.moveY;
+      var lineWidth = obj.lineWidth || 0;
+      var width = x + obj.width + lineWidth;
+      var height = y + obj.height + lineWidth;
+
+      return {
+        width: width,
+        height: height
+      }
+    },
+    resize: function () {
+      var widths = [];
+      var heights = [];
+      var size;
+
+      this.each(function(obj){
+        size = this._getSize(obj);
+        widths.push(size.width);
+        heights.push(size.height);
+      }, this);
+
+      if (!this.$hasW) {
+        this.$width = getMax(widths);
+      }
+      if (!this.$hasH) {
+        this.$height = getMax(heights);
       }
     }
   });
@@ -1528,9 +1561,9 @@
       this._isRendering = false;
       return this;
     },
-    _triggerEnterFrame: function () {
+    _triggerEnterFrame: function (time) {
       var _runEnterFrame = function (obj) {
-        obj.dispatch("enterframe", obj);
+        obj.dispatch("enterframe", time);
         if (obj.$type === 'Sprite') {
           obj.each(_runEnterFrame);
         }
@@ -1566,12 +1599,12 @@
       var opts = this.options;
       var isShowFPS = opts.showFps;
 
-      this._ticker.on("ticker", function () {
+      this._ticker.on("ticker", function (time) {
         isShowFPS && this.FPS.begin();
         this.clear();
         this.render();
-        EC.groupManager.update();
-        this._triggerEnterFrame();
+        EC.groupManager.update(time);
+        this._triggerEnterFrame(time);
         isShowFPS && this.FPS.end();
       }, this);
 

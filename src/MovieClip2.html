@@ -40,9 +40,11 @@
 <script src="scripts/Timer.js"></script>
 <script src="scripts/Easing.js"></script>
 <script src="scripts/Tween.js"></script>
+<script src="scripts/TouchEvent.js"></script>
+<script src="scripts/TouchScroll.js"></script>
 <script src="scripts/Renderer.js"></script>
 <script src="scripts/MovieClip.js"></script>
-<script src="scripts/TouchEvent.js"></script>
+<script src="scripts/ScrollView.js"></script>
 <script src="scripts/Stats.js"></script>
 <!-- endbuild -->
 
@@ -79,7 +81,7 @@
             mc.anchorY = 0.5;
             mc.gotoAndPlay(1, -1);
 
-            EC.Tween.get(mc, {loop: true})
+            var a = EC.Tween.get(mc, {loop: true})
             .to({scaleX: 0.5, scaleY: 0.5}, 600, EC.Easing.Circular.Out)
             .wait(600)
             .to({scaleX: 1, scaleY: 1}, 600, EC.Easing.Circular.In)

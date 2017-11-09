@@ -634,7 +634,7 @@
 
   ['get', 'post', 'getJSON'].forEach(function (type, index) {
     RES.request[type] = function (url, params) {
-      type = type.replace(/JSON?$/, "");
+      type = type.replace(/(JSON)?$/, "");
       return new Request({url: url, type: type, data: params, dataType: index === 2 ? 'json' : 'text'});
     };
   });
