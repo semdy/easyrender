@@ -1506,7 +1506,7 @@
 
       return this;
     },
-    render: function () {
+    render: function (time) {
       var self = this;
       var ctx = this.renderContext;
       var _render = function (obj) {
@@ -1514,12 +1514,12 @@
           if (obj.$type === 'Sprite') {
             ctx.save();
             drawContext(ctx, obj);
-            obj.each(function (item) {
+            obj.children.forEach(function (item) {
               _render(item);
             });
             ctx.restore();
           } else {
-            self._renderItem(obj, ctx);
+            self._renderItem(ctx, obj, time);
           }
         }
       };
@@ -1529,7 +1529,7 @@
 
       return this;
     },
-    _renderItem: function (obj, ctx) {
+    _renderItem: function (ctx, obj, time) {
       obj.isMasker || ctx.save();
       drawContext(ctx, obj);
       switch (obj.$type) {
@@ -1547,6 +1547,7 @@
           break;
       }
       obj.isMasker || ctx.restore();
+      obj.dispatch("enterframe", time);
     },
     clear: function () {
       this.renderContext.clearRect(0, 0, this.width, this.height);
@@ -1564,15 +1565,6 @@
       this.dispatch("stop");
       this._isRendering = false;
       return this;
-    },
-    _triggerEnterFrame: function (time) {
-      var _runEnterFrame = function (obj) {
-        obj.dispatch("enterframe", time);
-        if (obj.$type === 'Sprite') {
-          obj.each(_runEnterFrame);
-        }
-      };
-      _runEnterFrame(this);
     },
     setAdapter: function () {
       var parent = this.canvas.parentNode;
@@ -1606,9 +1598,8 @@
       this._ticker.on("ticker", function (time) {
         isShowFPS && this.FPS.begin();
         this.clear();
-        this.render();
+        this.render(time);
         EC.groupManager.update(time);
-        this._triggerEnterFrame(time);
         isShowFPS && this.FPS.end();
       }, this);
 
