@@ -70,9 +70,16 @@
 
   Tween.removeAllTweens = function (container) {
     if(!(container instanceof EC.DisplayObjectContainer)) return this;
-    container.children.forEach(function (target) {
-      Tween.removeTweens(target);
-    });
+    var removeTweens = function (container) {
+      container.children.forEach(function (target) {
+        Tween.removeTweens(target);
+        if (target.children.length > 0) {
+          removeTweens(target);
+        }
+      });
+    };
+
+    removeTweens(container);
 
     return this;
   };

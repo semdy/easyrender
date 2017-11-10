@@ -22,7 +22,6 @@
     this.target = this._getValue(option.target, this.element);
     this.vertical = this._getValue(option.vertical, true);
     this.property = option.property;
-    this.tickID = 0;
 
     this.initialValue = this._getValue(option.initialValue, this.target[this.property]);
     this.target[this.property] = this.initialValue;
@@ -39,6 +38,7 @@
     this.maxSpeed = option.maxSpeed;
     this.hasMaxSpeed = !(this.maxSpeed === undefined);
     this.lockDirection = this._getValue(option.lockDirection, true);
+    this.scaleRatio = 1;
 
     this.scroll = option.scroll || noop;
     this.touchEnd = option.touchEnd || noop;
@@ -74,17 +74,18 @@
       return obj === undefined ? defaultValue : obj;
     },
     stop: function () {
-      cancelAnimationFrame(this.tickID);
+      this._stopTweens();
       this._calculateIndex();
     },
     _start: function (evt) {
       this.isTouchStart = true;
       this.touchStart.call(this, evt, this.target[this.property]);
-      cancelAnimationFrame(this.tickID);
+      this._stopTweens();
       this._calculateIndex();
       this.startTime = Date.now();
-      this.x1 = this.preX = evt.stageX / evt.scaleRatio;
-      this.y1 = this.preY = evt.stageY / evt.scaleRatio;
+      this.scaleRatio = evt.scaleRatio;
+      this.x1 = this.preX = evt.stageX;
+      this.y1 = this.preY = evt.stageY;
       this.start = this.vertical ? this.preY : this.preX;
       this._firstTouchMove = true;
       this._preventMove = false;
@@ -92,8 +93,8 @@
     _move: function (evt) {
       if (this.isTouchStart) {
         var touches = getEvent(evt),
-          currentX = touches.pageX,
-          currentY = touches.pageY;
+          currentX = touches.pageX * this.scaleRatio,
+          currentY = touches.pageY * this.scaleRatio;
 
         if (this._firstTouchMove && this.lockDirection) {
           var dDis = Math.abs(currentX - this.x1) - Math.abs(currentY - this.y1);
@@ -162,7 +163,9 @@
         var self = this,
           current = this.target[this.property],
           touches = getEvent(evt),
-          triggerTap = (Math.abs(touches.pageX - this.x1) < 30 && Math.abs(touches.pageY - this.y1) < 30);
+          pageX = touches.pageX * this.scaleRatio,
+          pageY = touches.pageY * this.scaleRatio,
+          triggerTap = (Math.abs(pageX - this.x1) < 30 && Math.abs(pageY - this.y1) < 30);
         if (triggerTap) {
           this.tap.call(this, evt, current);
         }
@@ -180,7 +183,7 @@
         } else if (this.inertia && !triggerTap && !this._preventMove) {
           var dt = Date.now() - this.startTime;
           if (dt < 300) {
-            var distance = ((this.vertical ? touches.pageY : touches.pageX) - this.start) * this.sensitivity,
+            var distance = ((this.vertical ? pageY : pageX) - this.start) * this.sensitivity,
               speed = Math.abs(distance) / dt,
               speed2 = this.factor * speed;
             if (this.hasMaxSpeed && speed2 > this.maxSpeed) {
@@ -212,12 +215,12 @@
             self._to(Math.round(destination), duration, ease, self.scroll, function (value) {
               if (self.hasMax && self.target[self.property] > self.max) {
 
-                cancelAnimationFrame(self.tickID);
+                self._stopTweens();
                 self._to(self.max, 600, ease, self.scroll, self.animationEnd);
 
               } else if (self.hasMin && self.target[self.property] < self.min) {
 
-                cancelAnimationFrame(self.tickID);
+                self._stopTweens();
                 self._to(self.min, 600, ease, self.scroll, self.animationEnd);
 
               } else {
@@ -246,26 +249,20 @@
     _to: function (value, time, ease, onChange, onEnd) {
       if (this.fixed) return;
 
-      var el = this.target;
-      var property = this.property;
-      var current = el[property];
-      var dv = value - current;
-      var beginTime = new Date();
       var self = this;
-      var toTick = function () {
-
-        var dt = new Date() - beginTime;
-        if (dt >= time) {
-          el[property] = value;
-          onChange && onChange.call(self, value);
+      var property = this.property;
+      var toProps = {};
+      toProps[property] = value;
+      setTimeout(function() {
+        EC.Tween.get(self.target).to(toProps, time, ease).onUpdate(function(obj){
+          onChange && onChange.call(self, obj[property]);
+        }).call(function() {
           onEnd && onEnd.call(self, value);
-          return;
-        }
-        el[property] = dv * ease(dt / time) + current;
-        self.tickID = requestAnimationFrame(toTick);
-        onChange && onChange.call(self, el[property]);
-      };
-      toTick();
+        });
+      }, 0);
+    },
+    _stopTweens: function () {
+      EC.Tween.removeTweens(this.target);
     },
     _correction: function () {
       if (this.step === undefined) return;

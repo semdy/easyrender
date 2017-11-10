@@ -31,12 +31,11 @@
     var texture = obj.fontTexture;
     var startX = 0;
     var lastWidth = 0;
-    var objWidth = obj.width;
-    var objX = obj.x;
     var item;
     var bitMapText;
-    obj.children = [];
-    obj.width = obj.height = 0;
+    var textwrap = obj.$textwrap;
+
+    textwrap.children.length = 0;
     obj.$textArr.forEach(function (n) {
       item = data[n];
       bitMapText = new BitMap().setParams({
@@ -51,26 +50,29 @@
       });
 
       lastWidth = item.w;
-      obj.addChild(bitMapText);
+      textwrap.addChild(bitMapText);
 
     });
 
     if (obj.textAlign === 'center') {
-      obj.x = objX + (objWidth - obj.width) / 2;
+      textwrap.x = (obj.width - textwrap.width) / 2;
     }
     else if (obj.textAlign === 'right') {
-      obj.x = objX + objWidth - obj.width;
+      textwrap.x = obj.width - textwrap.width;
     }
   }
 
   function drawBitMapText(ctx, obj) {
     fillBitMapText(obj);
-    obj.each(function (childObj) {
+    ctx.save();
+    drawContext(ctx, obj.$textwrap);
+    obj.$textwrap.each(function (childObj) {
       ctx.save();
       drawContext(ctx, childObj);
       drawImg(ctx, childObj);
       ctx.restore();
     });
+    ctx.restore();
   }
 
   function drawText(ctx, obj) {
@@ -469,8 +471,8 @@
     removeAllChildren: function () {
       this._stopAllTweens();
       this.children.length = 0;
-      this.width = 0;
-      this.height = 0;
+      this.$width = 0;
+      this.$height = 0;
 
       return this;
     },
@@ -638,7 +640,7 @@
             }
           }
           if (!this._isHeightDefined) {
-            this.$height = (this.size + 3 + this.lineSpacing) * this.numLines - this.lineSpacing;
+            this.$height = (this.size + 4 + this.lineSpacing) * this.numLines - this.lineSpacing;
           }
         },
         enumerable: true
@@ -1204,6 +1206,7 @@
       this.letterSpacing = 0;
       this.$type = "BitMapText";
       this.$textArr = [];
+      this.$textwrap = new Sprite();
 
       Object.defineProperty(this, 'text', {
         set: function (newVal) {
@@ -1218,6 +1221,7 @@
 
       this.on("addToStage", function () {
         this._create();
+        this.addChild(this.$textwrap);
       }, this);
     },
     _create: function () {
@@ -1373,6 +1377,8 @@
     set: function (x, y) {
       this.x = x;
       this.y = y;
+
+      return this;
     },
     clone: function() {
       return new Point(this.x, this.y);
@@ -1385,19 +1391,17 @@
     },
     copyFrom: function(t) {
       this.set(t.x, t.y);
+
+      return this;
     },
     equals: function(t) {
       return this.x === t.x && this.y === t.y;
     },
-    normalize: function(t) {
-      var self = this,
-        o = self / e.distance();
-      self.x *= o;
-      self.y *= o;
-    },
     offset: function(t, e) {
       this.x += t;
       this.y += e;
+
+      return this;
     },
     subtract: function(e) {
       return new Point(this.x - e.x, this.y - e.y);

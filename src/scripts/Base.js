@@ -241,11 +241,15 @@ var EC = {
       return typeof obj === 'object' && obj !== null;
     },
     isArray: Array.isArray,
-    copy: function(props, depth){
+    copy: function(target, depth){
       if(depth){
-        return JSON.parse(JSON.stringify(props));
+        return JSON.parse(JSON.stringify(target));
       } else {
-        return Extend({}, props);
+        if(Array.isArray(target)) {
+          return target.slice();
+        } else {
+          return Extend({}, target);
+        }
       }
     },
     camelize: function (key) {

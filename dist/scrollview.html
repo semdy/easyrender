@@ -28,8 +28,8 @@
   var canvas = document.getElementById('canvas-shape');
   var stage = new EC.Stage(canvas, {
     scaleMode: EC.isTouch ? 'fixedWidth' : 'noScale',
-    width: 375,
-    height: 667,
+    width: 750,
+    height: 1200,
     showFps: true
   });
 
@@ -43,6 +43,7 @@
   scrollview.width = stage.width;
   scrollview.height = stage.height*0.8;
   scrollview.adjustValue = 20;
+  scrollview.step = 80;
 
   var rows = new EC.Sprite();
   for(var i=1;i<101;i++) {

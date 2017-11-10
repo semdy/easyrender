@@ -94,6 +94,12 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>Boolean</td>
 	</tr>
 	<tr>
+		<td>isFunction</td>
+		<td>Object: obj</td>
+		<td>obj是否为Function类型</td>
+		<td>Boolean</td>
+	</tr>
+	<tr>
 		<td>isObject</td>
 		<td>Object: obj</td>
 		<td>obj是否为Object</td>
@@ -104,8 +110,16 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>Object: obj</td>
 		<td>obj是否为数组</td>
 		<td>Boolean</td>
-
-<tr>
+	</tr>
+	<tr>
+		<td>copy</td>
+		<td>Object: obj <br/>
+			Boolean: depth 是否深度拷贝
+		</td>
+		<td>复制Object或者Array</td>
+		<td>Object/Array</td>
+	</tr>
+	<tr>
 		<td>camelize</td>
 		<td>String: key</td>
 		<td>将"a-b-c"转换成"aBC"的写法</td>
@@ -403,6 +417,11 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>请求成功或失败时执行的回调</td>
 	</tr>
 <tr>
+		<td>progress</td>
+		<td>noop</td>
+		<td>请求过程进度返回的回调</td>
+	</tr>
+<tr>
 		<td>timeout</td>
 		<td>0</td>
 		<td>设置超时上限, 为0时则不设上限</td>
@@ -416,6 +435,11 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>dataType</td>
 		<td>text</td>
 		<td>设置返回的数据类型,可选值有：text, html, xml, json, jsonp, script</td>
+	</tr>
+<tr>
+		<td>responseType</td>
+		<td>null</td>
+		<td>设置返回的数据类型,可选值有：blob,xml,json,...</td>
 	</tr>
 <tr>
 		<td>callbackName</td>
@@ -581,6 +605,15 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>停止动画</td>
 		<td>EC.Tween类</td>
 	</tr>
+<tr>
+		<td>onStart</td>
+		<td>
+			Function: callback -> 当前tween开始执行的回调<br>
+			Object: context -> 设定上下文
+		</td>
+		<td>当前tween开始执行</td>
+		<td>EC.Tween类</td>
+	</tr>
 	<tr>
 		<td>onUpdate</td>
 		<td>
@@ -588,6 +621,15 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 			Object: context -> 设定上下文
 		</td>
 		<td>当前状态更新时间执行</td>
+		<td>EC.Tween类</td>
+	</tr>
+<tr>
+		<td>onStop</td>
+		<td>
+			Function: callback -> 当前tween停止的回调<br>
+			Object: context -> 设定上下文
+		</td>
+		<td>当前tween停止时执行</td>
 		<td>EC.Tween类</td>
 	</tr>
 	<tr>
@@ -806,9 +848,15 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>return</td>
 	</tr>
 	<tr>
-		<td>addChild</td>
+		<td>addChildAt</td>
 		<td>Object: childObject -> 子集对象<br>
 			Number: index -> 子集的添加位置</td>
+		<td>向容器添加子集</td>
+		<td>EC.DisplayObjectContainer</td>
+	</tr>
+	<tr>
+		<td>addChild</td>
+		<td>Object: childObject -> 子集对象</td>
 		<td>向容器添加子集</td>
 		<td>EC.DisplayObjectContainer</td>
 	</tr>
@@ -816,6 +864,18 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>removeChild</td>
 		<td>Object: childObject -> 子集对象</td>
 		<td>容器中移除一个子集</td>
+		<td>EC.DisplayObjectContainer</td>
+	</tr>
+	<tr>
+		<td>removeChildAt</td>
+		<td>Number: index -> 子集对象索引值</td>
+		<td>从容器中指定位置移除一个子集</td>
+		<td>EC.DisplayObjectContainer</td>
+	</tr>
+	<tr>
+		<td>remove</td>
+		<td>--</td>
+		<td>从父容器中移除自己</td>
 		<td>EC.DisplayObjectContainer</td>
 	</tr>
 	<tr>
@@ -828,6 +888,20 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>getChilds</td>
 		<td>--</td>
 		<td>获取当前容器所有子集对象</td>
+		<td>EC.DisplayObjectContainer集合</td>
+	</tr>
+<tr>
+		<td>getChildAt</td>
+		<td>Number: index -> 子集对象索引值</td>
+		<td>获取指定位置的子集</td>
+		<td>EC.DisplayObjectContainer</td>
+	</tr>
+<tr>
+		<td>each</td>
+		<td>Function: iterator -> 子集迭代器<br/>
+			Object: context -> 指定上下文
+</td>
+		<td>子集迭代</td>
 		<td>EC.DisplayObjectContainer</td>
 	</tr>
 <tr>
@@ -862,13 +936,6 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>获取容器子集的个数</td>
 		<td>Number</td>
 	</tr>
-<tr>
-        <td>each</td>
-        <td>Function: iterator -> 迭代器
-        </td>
-        <td>子节点迭代器，当返回false时，中止迭代</td>
-        <td>EC.DisplayObjectContainer</td>
-    </tr>
 <tr>
         <td>broadcast</td>
         <td>String: name -> 事件名称<br>
@@ -1295,7 +1362,8 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 	</tr>
 	<tr>
 		<td>lineTo</td>
-		<td>Array&lt;x, y&gt;
+		<td>x: x坐标 <br>
+			y: y坐标<br>
 		</td>
 		<td>从笔触位置到该指定位置画线条</td>
 		<td>EC.Shape</td>
@@ -1623,6 +1691,123 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
     		<td>拷贝一份Point</td>
     		<td>EC.Point</td>
     	</tr>
+<tr>
+    		<td>toString</td>
+    		<td></td>
+    		<td>Point类字符串化</td>
+    		<td>EC.Point</td>
+    	</tr>
+<tr>
+    		<td>add</td>
+    		<td>Object: Point实例</td>
+    		<td>Point类与自身坐标累加，并返回一个新Point实例</td>
+    		<td>EC.Point</td>
+    	</tr>
+<tr>
+    		<td>distance</td>
+    		<td></td>
+    		<td>计算本身坐标与0,0之间的距离</td>
+    		<td>Number</td>
+    	</tr>
+<tr>
+    		<td>copyFrom</td>
+    		<td>Object: Point</td>
+    		<td>将Point类的坐标覆盖本身坐标</td>
+    		<td>EC.Point</td>
+    	</tr>
+<tr>
+    		<td>equals</td>
+    		<td>Object: Point</td>
+    		<td>判断Point与本身坐标是否相等</td>
+    		<td>Boolean</td>
+    	</tr>
+<tr>
+    		<td>offset</td>
+    		<td>Number: x<br/>
+				Nubmer: y</td>
+    		<td>本身坐标累加</td>
+    		<td>EC.Point</td>
+    	</tr>
+<tr>
+    		<td>subtract</td>
+    		<td>Object: Point</td>
+    		<td>计算Point与本身坐标差值，并返回新的Point实例</td>
+    		<td>EC.Point</td>
+    	</tr>
+<tr>
+    		<td>getAngle</td>
+    		<td>Object: Point</td>
+    		<td>计算本身坐标与0,0之间的角度</td>
+    		<td>Number</td>
+    	</tr>
+</table>
+
+### EC.Point 静态methods ###
+<table>
+	<tr>
+		<td>methods</td>
+		<td>parameter</td>
+		<td>描述</td>
+		<td>return</td>
+	</tr>
+<tr>
+    		<td>calcDistance</td>
+    		<td>Number: x1<br>
+				Number: y1<br>
+				Number: x2<br>
+				Number: y2<br>
+			</td>
+    		<td>计算两点之前的距离</td>
+    		<td>Number</td>
+    	</tr>
+<tr>
+    		<td>distance</td>
+    		<td>Object: Point<br>
+				Object: Point<br>
+			</td>
+    		<td>计算两个Point类之间的距离</td>
+    		<td>Number</td>
+    	</tr>
+<tr>
+    		<td>getAngle</td>
+    		<td>Number: x1<br>
+				Number: y1<br>
+				Number: x2<br>
+				Number: y2<br>
+			</td>
+    		<td>计算两点之前的角度</td>
+    		<td>Number</td>
+    	</tr>
+</table>
+
+## EC.MovieClip properties ##
+`extends EC.Sprite`
+<table>
+	<tr>
+		<td>properties</td>
+		<td>类型</td>
+		<td>默认</td>
+		<td>描述</td>
+	</tr>
+	<tr>
+		<td>currentFrame</td>
+		<td>Number</td>
+		<td>0</td>
+		<td>当前动画所在帧数</td>
+	</tr>
+	<tr>
+		<td>totalFrames</td>
+		<td>Number</td>
+		<td>--</td>
+		<td>当前动画帧数的长度</td>
+	</tr>
+<tr>
+		<td>frameRate</td>
+		<td>Number</td>
+		<td>1000/24</td>
+		<td>帧的播放速度</td>
+	</tr>
+<tr>
 </table>
 
 ## EC.MovieClip ##
@@ -1698,6 +1883,12 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>暂停动画</td>
 		<td>MovieClip</td>
 	</tr>
+<tr>
+		<td>isPlaying</td>
+		<td>--</td>
+		<td>判断当前动画是否在播放</td>
+		<td>Boolean</td>
+	</tr>
 </table>
 
 ### EC.MovieClip events ###
@@ -1717,6 +1908,101 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 <tr>
 		<td>pause</td>
 		<td>当动画暂停时执行的回调</td>
+	</tr>
+</table>
+
+### EC.ScrollView properties ###
+`extends EC.Sprite`
+<table>
+	<tr>
+		<td>properties</td>
+		<td>类型</td>
+		<td>默认</td>
+		<td>描述</td>
+	</tr>
+	<tr>
+		<td>vertical</td>
+		<td>Boolean</td>
+		<td>true</td>
+		<td>是否垂直滚动</td>
+	</tr>
+	<tr>
+		<td>initialValue</td>
+		<td>Number</td>
+		<td>0</td>
+		<td>初始滚动位置</td>
+	</tr>
+<tr>
+		<td>disabled</td>
+		<td>Boolean</td>
+		<td>false</td>
+		<td>是否可滚动</td>
+	</tr>
+<tr>
+		<td>layout</td>
+		<td>Object: EC.Sprite</td>
+		<td>null</td>
+		<td>滚动容器</td>
+	</tr>
+<tr>
+		<td>step</td>
+		<td>Number</td>
+		<td>undefined</td>
+		<td>滚动snap</td>
+	</tr>
+</table>
+
+### EC.ScrollView ###
+`extends EC.Sprite`
+<table>
+	<tr>
+		<td>method</td>
+		<td>parameter</td>
+		<td>描述</td>
+		<td>return</td>
+	</tr>
+	<tr>
+		<td>scrollTo</td>
+		<td>Number: value -> 滚动值<br>
+			Number: duration -> 滚动速度<br>
+			Function: ease -> 滚动easing
+	</td>
+		<td>滚动到指定位置</td>
+		<td>EC.ScrollView</td>
+	</tr>
+	<tr>
+		<td>stop</td>
+		<td>--</td>
+		<td>立即停止滚动</td>
+		<td>EC.ScrollView</td>
+	</tr>
+</table>
+
+### EC.ScrollView events ###
+<table>
+	<tr>
+		<td>name</td>
+		<td>描述</td>
+	</tr>
+	<tr>
+		<td>scroll</td>
+		<td>滚动时执行的回调</td>
+	</tr>
+<tr>
+		<td>totop</td>
+		<td>当滚动到顶部时执行的回调</td>
+	</tr>
+<tr>
+		<td>tobottom</td>
+		<td>当滚动到底部时执行的回调</td>
+	</tr>
+<tr>
+		<td>scrollstop</td>
+		<td>当滚动停止时执行的回调</td>
+	</tr>
+<tr>
+		<td>rebound</td>
+		<td>当重新回弹至顶部或底部时执行的回调</td>
 	</tr>
 </table>
 
@@ -1742,7 +2028,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>canvas 2d对象</td>
 	</tr>
 	<tr>
-		<td>compositeOperation</td>
+		<td>blendMode</td>
 		<td>String</td>
 		<td>source-over</td>
 		<td>新图像的绘制方式</td>
@@ -1800,6 +2086,18 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>画布高度</td>
 	</tr>
 <tr>
+		<td>blendMode</td>
+		<td>String</td>
+		<td>source-over</td>
+		<td>图像叠加模式</td>
+	</tr>
+<tr>
+		<td>forceUpdate</td>
+		<td>Boolean</td>
+		<td>false</td>
+		<td>为true时将使用setInterval代替requestAnimationFrame</td>
+	</tr>
+<tr>
 </table>
 
 ### EC.Stage methods ###
@@ -1826,10 +2124,28 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>设置性能监测表显示的位置</td>
 		<td>EC.Stage</td>
 	</tr>
+<tr>
+		<td>start</td>
+		<td>--</td>
+		<td>开始渲染</td>
+		<td>EC.Stage</td>
+	</tr>
 	<tr>
 		<td>stop</td>
 		<td>--</td>
 		<td>停止渲染</td>
+		<td>EC.Stage</td>
+	</tr>
+<tr>
+		<td>clear</td>
+		<td>--</td>
+		<td>清除画布</td>
+		<td>EC.Stage</td>
+	</tr>
+<tr>
+		<td>render</td>
+		<td>--</td>
+		<td>渲染画布</td>
 		<td>EC.Stage</td>
 	</tr>
 </table>

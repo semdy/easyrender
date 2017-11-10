@@ -9,6 +9,8 @@
       this.cursor = '';
       this.vertical = true;
       this.adjustValue = 0;
+      this.initialValue = 0;
+      this.disabled = false;
       this.$layout = null;
       this.touchScroll = null;
 
@@ -50,7 +52,7 @@
     },
     _createScroll: function () {
       var self = this;
-      var min = this.height - this.layout.height - this.adjustValue;
+      var min = (this.vertical ? (this.height - this.layout.height) : (this.width - this.layout.width)) - this.adjustValue;
       return new EC.TouchScroll({
         touch: this,
         vertical: this.vertical,
@@ -58,6 +60,9 @@
         property: this.vertical ? 'y' : 'x',
         max: 0,
         min: min,
+        step: this.step,
+        fixed: this.disabled,
+        initialValue: this.initialValue,
         scroll: function (value) {
           if(value === 0) {
             self.dispatch('totop', value);
