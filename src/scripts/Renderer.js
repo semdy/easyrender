@@ -1519,8 +1519,9 @@
             });
             ctx.restore();
           } else {
-            self._renderItem(ctx, obj, time);
+            self._renderItem(ctx, obj);
           }
+          obj.dispatch("enterframe", time);
         }
       };
 
@@ -1529,7 +1530,7 @@
 
       return this;
     },
-    _renderItem: function (ctx, obj, time) {
+    _renderItem: function (ctx, obj) {
       obj.isMasker || ctx.save();
       drawContext(ctx, obj);
       switch (obj.$type) {
@@ -1547,7 +1548,6 @@
           break;
       }
       obj.isMasker || ctx.restore();
-      obj.dispatch("enterframe", time);
     },
     clear: function () {
       this.renderContext.clearRect(0, 0, this.width, this.height);
