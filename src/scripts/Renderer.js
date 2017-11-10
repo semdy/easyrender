@@ -1625,6 +1625,7 @@
       this.FPS = new Stats();
     },
     showFps: function (position) {
+      if(!this.options.showFps) return;
       if (EC.isObject(position)) {
         this.FPS.dom.style.left = EC.isDefined(position.left) ? (EC.isNumber(position.left) ? position.left + "px" : position.left) : "";
         this.FPS.dom.style.right = EC.isDefined(position.right) ? (EC.isNumber(position.right) ? position.right + "px" : position.right) : "";
