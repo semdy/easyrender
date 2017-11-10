@@ -1933,6 +1933,12 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>初始滚动位置</td>
 	</tr>
 <tr>
+		<td>adjustValue</td>
+		<td>Number</td>
+		<td>0</td>
+		<td>滚动容器的高度或宽度调节</td>
+	</tr>
+<tr>
 		<td>disabled</td>
 		<td>Boolean</td>
 		<td>false</td>
