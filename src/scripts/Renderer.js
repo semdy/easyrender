@@ -65,10 +65,10 @@
   function drawBitMapText(ctx, obj) {
     fillBitMapText(obj);
     ctx.save();
-    drawContext(ctx, obj.$textwrap);
+    ctx.translate(obj.$textwrap.x, obj.$textwrap.y);
     obj.$textwrap.each(function (childObj) {
       ctx.save();
-      drawContext(ctx, childObj);
+      ctx.translate(childObj.x, childObj.y);
       drawImg(ctx, childObj);
       ctx.restore();
     });
@@ -1470,6 +1470,7 @@
         showFps: false,
         scaleMode: 'showAll',
         forceUpdate: false,
+        frameRate: 60,
         width: window.innerWidth,
         height: window.innerHeight,
         blendMode: "source-over"
@@ -1482,7 +1483,8 @@
       this.cursor = "";
       this._isRendering = false;
       this._ticker = new EC.Ticker({
-        useInterval: opts.forceUpdate
+        useInterval: opts.forceUpdate,
+        frameRate: opts.frameRate
       });
 
       this.canvas.width = this.width;
@@ -1511,6 +1513,7 @@
       var ctx = this.renderContext;
       var _render = function (obj) {
         if (obj.visible) {
+          obj.dispatch("enterframe", time);
           if (obj.$type === 'Sprite') {
             ctx.save();
             drawContext(ctx, obj);
@@ -1521,7 +1524,6 @@
           } else {
             self._renderItem(ctx, obj);
           }
-          obj.dispatch("enterframe", time);
         }
       };
 

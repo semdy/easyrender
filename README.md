@@ -2092,6 +2092,12 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>画布高度</td>
 	</tr>
 <tr>
+		<td>frameRate</td>
+		<td>Number</td>
+		<td>60</td>
+		<td>图像每秒渲染的帧数</td>
+	</tr>
+<tr>
 		<td>blendMode</td>
 		<td>String</td>
 		<td>source-over</td>

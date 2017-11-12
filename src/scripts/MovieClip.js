@@ -196,7 +196,6 @@
       }, this);
 
       this._timer.on('complete', function () {
-        this.off('enterframe');
         this.dispatch('complete');
       }, this);
 

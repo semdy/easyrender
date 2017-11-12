@@ -11,16 +11,21 @@
       options = options || {};
       this.useInterval = options.useInterval || false;
       this._ticker = null;
+      this._frameRate = options.frameRate || 60;
+
+      if (this._frameRate < 60) {
+        this.useInterval = true;
+      }
     },
 
     start: function () {
       var self = this;
 
-      if(this.useInterval){
+      if (this.useInterval) {
         self.dispatch('ticker');
-        self._ticker = setInterval(function(){
+        self._ticker = setInterval(function() {
           self.dispatch('ticker', Date.now());
-        }, 1000 / 60);
+        }, 1000 / self._frameRate);
       }
       else {
         +function runTicker() {
