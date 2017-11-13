@@ -105,9 +105,6 @@
 
     function Tick(){
       world.step(1/60);
-    /*  ground.x = gbody.position[0] * factor;
-      ground.y = sh - gbody.position[1] * factor;*/
-      //ground.rotation = 360 - gbody.angle * 180 / Math.PI;
 
       var len = world.bodies.length;
       for(var i=0; i<len; i++){

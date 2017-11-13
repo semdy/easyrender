@@ -362,6 +362,7 @@
       this.visible = true;
       this.touchEnabled = false;
       this._stageAdded = false;
+      this._stageAddFired = false;
 
       this.cursor = 'pointer';
       this.$type = 'Sprite';
@@ -379,6 +380,7 @@
         this.renderContext = e.renderContext;
         this.stage = e.stage;
         this._stageAdded = true;
+        this._stageAddFired = true;
       }, this);
     },
 
@@ -445,13 +447,17 @@
         return {target: obj, renderContext: context.renderContext, stage: context};
       };
       var _runAddToStage = function (obj) {
-        obj.dispatch("addToStage", setParams(obj));
-        if (obj.$type === 'Sprite') {
-          obj.each(_runAddToStage);
+        if(!obj._stageAddFired){
+          obj.dispatch("addToStage", setParams(obj));
+          if (obj.$type === 'Sprite') {
+            obj.each(_runAddToStage);
+          }
         }
       };
-      childObj.dispatch("addToStage", setParams(childObj));
-      childObj.each(_runAddToStage);
+      if(!childObj._stageAddFired) {
+        childObj.dispatch("addToStage", setParams(childObj));
+        childObj.each(_runAddToStage);
+      }
     },
 
     _triggerRemove: function (childObj) {
