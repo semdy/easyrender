@@ -11,6 +11,7 @@
   var tmpCtx = document.createElement("canvas").getContext("2d");
 
   function drawImg(ctx, obj) {
+    if (!obj.texture) return;
     if (obj.sx !== undefined) {
       var
         _width = ctx.canvas.width,
@@ -335,12 +336,12 @@
 
 
   /**
-   * ObjectContainer 操作基类
+   * DisplayObject 操作基类
    * **/
-  var ObjectContainer = EC.Event.extend({
+  var DisplayObject = EC.Event.extend({
 
     initialize: function () {
-      ObjectContainer.superclass.initialize.call(this);
+      DisplayObject.superclass.initialize.call(this);
 
       this.x = 0;
       this.y = 0;
@@ -595,7 +596,7 @@
   /**
    * TextField 文字类
    * **/
-  var TextField = ObjectContainer.extend({
+  var TextField = DisplayObject.extend({
     initialize: function (text, size, x, y, color, align, family, width, height) {
       TextField.superclass.initialize.call(this);
 
@@ -621,8 +622,8 @@
 
       this.$type = "TextField";
 
-      this._isWidthDefined = false;
-      this._isHeightDefined = false;
+      this.$hasW = false;
+      this.$hasH = false;
 
       Object.defineProperty(this, 'text', {
         get: function () {
@@ -635,11 +636,11 @@
           }
           else {
             this.$textArr = newVal.split(/\n/);
-            if (!this._isWidthDefined) {
+            if (!this.$hasW) {
               this.$width = getTextWidth(this, getMaxLenText(this.$textArr));
             }
           }
-          if (!this._isHeightDefined) {
+          if (!this.$hasH) {
             this.$height = (this.size + 4 + this.lineSpacing) * this.numLines - this.lineSpacing;
           }
         },
@@ -656,7 +657,7 @@
       Object.defineProperty(this, 'width', {
         set: function (newVal) {
           this.$width = newVal;
-          this._isWidthDefined = true;
+          this.$hasW = true;
         },
         get: function () {
           return this.$width;
@@ -667,7 +668,7 @@
       Object.defineProperty(this, 'height', {
         set: function (newVal) {
           this.$height = newVal;
-          this._isHeightDefined = true;
+          this.$hasH = true;
         },
         get: function () {
           return this.$height;
@@ -685,12 +686,14 @@
   /**
    * BitMap 位图类
    * **/
-  var BitMap = ObjectContainer.extend({
+  var BitMap = DisplayObject.extend({
     initialize: function (key, x, y, width, height, sx, sy, swidth, sheight) {
       BitMap.superclass.initialize.call(this);
 
       this.x = x || 0;
       this.y = y || 0;
+
+      this.texture = null;
 
       if (EC.isDefined(sx)) {
         this.sx = sx;
@@ -708,11 +711,7 @@
       this.$type = "BitMap";
 
       if (EC.isDefined(key)) {
-        EC.extend(this, EC.isObject(key) ? (key.nodeName === "IMG" ? {
-          texture: key,
-          width: key.width,
-          height: key.height
-        } : key) : RES.getRes(key));
+        this.setTexture(key);
       }
 
       if (EC.isDefined(width)) {
@@ -724,13 +723,21 @@
       }
 
     },
-    setTexture: function (dataObject) {
-      if (!EC.isObject(dataObject))
-        throw new TypeError(String(dataObject) + "is a invalid texture");
-      if ('nodeType' in dataObject) {
-        this.texture = dataObject;
+    setTexture: function (data) {
+      if (EC.isString(data)) {
+        this.setTexture(RES.getRes(data));
+      } else if (EC.isObject(data)) {
+        if (data.nodeName === "IMG") {
+          this.setParams({
+            texture: data,
+            width: data.width,
+            height: data.height
+          })
+        } else {
+          this.setParams(data);
+        }
       } else {
-        EC.extend(this, dataObject);
+        throw new TypeError(String(data) + "is a invalid texture");
       }
 
       return this;
@@ -740,7 +747,7 @@
   /**
    * Shape 图形界面
    * **/
-  var Shape = ObjectContainer.extend({
+  var Shape = DisplayObject.extend({
     initialize: function (x, y, w, h) {
       Shape.superclass.initialize.call(this);
 
@@ -966,7 +973,7 @@
   /**
    * Sprite 雪碧图类
    * **/
-  var Sprite = ObjectContainer.extend({
+  var Sprite = DisplayObject.extend({
     initialize: function (x, y, w, h) {
       Sprite.superclass.initialize.call(this);
 
@@ -1459,7 +1466,7 @@
   /**
    * Stage 渲染器
    * **/
-  var Stage = ObjectContainer.extend({
+  var Stage = DisplayObject.extend({
     initialize: function (canvas, options) {
       Stage.superclass.initialize.call(this);
 
@@ -1654,7 +1661,7 @@
     Shape: Shape,
     TextInput: TextInput,
     Masker: Masker,
-    DisplayObjectContainer: ObjectContainer,
+    DisplayObjectContainer: DisplayObject,
     Sprite: Sprite,
     Button: Button,
     Point: Point,
