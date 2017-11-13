@@ -737,7 +737,7 @@
           this.setParams(data);
         }
       } else {
-        throw new TypeError(String(data) + "is a invalid texture");
+        throw new TypeError(String(data) + " is a invalid texture");
       }
 
       return this;
