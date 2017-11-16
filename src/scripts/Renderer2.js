@@ -334,6 +334,7 @@
     }
   };
 
+
   /**
    * DisplayObject 操作基类
    * **/
@@ -364,9 +365,16 @@
       this._stageAddFired = false;
 
       this.cursor = 'pointer';
-      this.$type = 'DisplayObject';
+      this.$type = 'Sprite';
 
       this.children = [];
+
+      Object.defineProperty(this, 'numChildren', {
+        get: function () {
+          return this.size();
+        },
+        enumerable: true
+      });
 
       this.once("addToStage", function (e) {
         this.renderContext = e.renderContext;
@@ -374,6 +382,58 @@
         this._stageAdded = true;
         this._stageAddFired = true;
       }, this);
+    },
+
+    addChildAt: function (object, index) {
+      if (!EC.isObject(object)) {
+        throw new TypeError(String(object) + " is not a instance of EC.displayObject");
+      }
+
+      if (object.parent) {
+        object.parent.removeChild(object);
+      }
+
+      object.parent = this;
+
+      if (!EC.isNumber(index)) {
+        this.children.push(object);
+      } else {
+        this.children.splice(index, 0, object);
+      }
+
+      if(this._stageAdded){
+        this._triggerAddToStage(object, this.stage);
+      }
+
+      return this;
+    },
+
+    addChild: function(object){
+      return this.addChildAt(object);
+    },
+
+    removeChild: function (object) {
+      this.getChilds().splice(this.getChildIndex(object), 1);
+      this._stopTweens(object);
+      this._triggerRemove(object);
+
+      return this;
+    },
+
+    removeChildAt : function (i) {
+      var c = this.children;
+      if (c.length <= i) {
+        return this;
+      }
+
+      var object = c.splice(i, 1)[0];
+      if(object) {
+        delete object.parent;
+        this._stopTweens(object);
+        this._triggerRemove(object);
+      }
+
+      return this;
     },
 
     remove: function(){
@@ -384,8 +444,33 @@
       return this;
     },
 
+    removeAllChildren: function () {
+      this._stopAllTweens();
+      this.each(function(child) {
+        this._triggerRemove(child);
+      }, this);
+      this.children.length = 0;
+      this.$width = 0;
+      this.$height = 0;
+
+      return this;
+    },
+
+    getChilds: function () {
+      return this.children;
+    },
+
+    getChildAt : function (i) {
+      var c = this.children;
+      if (c.length === 0 || c.length <= i) {
+        return null;
+      }
+
+      return c[i];
+    },
+
     each: function (iterator, context) {
-      var childs = this.children,
+      var childs = this.getChilds(),
         i = 0, len = childs.length;
 
       for (; i < len; i++) {
@@ -427,6 +512,21 @@
 
     getBounds: function () {
       return new Bounds(this);
+    },
+
+    getChildIndex: function (child) {
+      return this.getChilds().indexOf(child);
+    },
+
+    size: function () {
+      return this.children.length;
+    },
+
+    setChildIndex: function (child, index) {
+      this.children.splice(this.getChildIndex(child), 1);
+      this.children.splice(index, 0, child);
+
+      return this;
     },
 
     setParams: function (params) {
@@ -493,117 +593,6 @@
 
       childObj.dispatch("remove", childObj);
       childObj.each(_runRemove);
-    }
-  });
-
-
-  /**
-   * DisplayObjectContainer 操作基类
-   * **/
-  var DisplayObjectContainer = DisplayObject.extend({
-    initialize: function () {
-      DisplayObjectContainer.superclass.initialize.call(this);
-
-      this.$type = 'Sprite';
-
-      Object.defineProperty(this, 'numChildren', {
-        get: function () {
-          return this.size();
-        },
-        enumerable: true
-      });
-    },
-
-    addChildAt: function (object, index) {
-      if (!EC.isObject(object)) {
-        throw new TypeError(String(object) + " is not a instance of EC.displayObject");
-      }
-
-      if (object.parent) {
-        object.parent.removeChild(object);
-      }
-
-      object.parent = this;
-
-      if (!EC.isNumber(index)) {
-        this.children.push(object);
-      } else {
-        this.children.splice(index, 0, object);
-      }
-
-      if(this._stageAdded){
-        this._triggerAddToStage(object, this.stage);
-      }
-
-      return this;
-    },
-
-    addChild: function(object){
-      return this.addChildAt(object);
-    },
-
-    removeChild: function (object) {
-      this.getChilds().splice(this.getChildIndex(object), 1);
-      this._stopTweens(object);
-      this._triggerRemove(object);
-
-      return this;
-    },
-
-    removeChildAt : function (i) {
-      var c = this.children;
-      if (c.length <= i) {
-        return this;
-      }
-
-      var object = c.splice(i, 1)[0];
-      if(object) {
-        delete object.parent;
-        this._stopTweens(object);
-        this._triggerRemove(object);
-      }
-
-      return this;
-    },
-
-    removeAllChildren: function () {
-      this._stopAllTweens();
-      this.each(function(child) {
-        this._triggerRemove(child);
-      }, this);
-      this.children.length = 0;
-      this.$width = 0;
-      this.$height = 0;
-
-      return this;
-    },
-
-    getChilds: function () {
-      return this.children;
-    },
-
-    getChildAt : function (i) {
-      var c = this.children;
-      if (c.length === 0 || c.length <= i) {
-        return null;
-      }
-
-      return c[i];
-    },
-
-    getChildIndex: function (child) {
-      return this.getChilds().indexOf(child);
-    },
-
-    size: function () {
-      return this.children.length;
-    },
-
-    setChildIndex: function (child, index) {
-      this.children.splice(this.getChildIndex(child), 1);
-      this.children.splice(index, 0, child);
-
-      return this;
     },
 
     _stopTweens: function (target) {
@@ -1007,7 +996,7 @@
   /**
    * Sprite 雪碧图类
    * **/
-  var Sprite = DisplayObjectContainer.extend({
+  var Sprite = DisplayObject.extend({
     initialize: function (x, y, w, h) {
       Sprite.superclass.initialize.call(this);
 
@@ -1500,7 +1489,7 @@
   /**
    * Stage 渲染器
    * **/
-  var Stage = DisplayObjectContainer.extend({
+  var Stage = DisplayObject.extend({
     initialize: function (canvas, options) {
       Stage.superclass.initialize.call(this);
 
@@ -1696,8 +1685,7 @@
     Rectangle: Rectangle,
     TextInput: TextInput,
     Masker: Masker,
-    DisplayObject: DisplayObject,
-    DisplayObjectContainer : DisplayObjectContainer,
+    DisplayObjectContainer: DisplayObject,
     Sprite: Sprite,
     Button: Button,
     Point: Point,

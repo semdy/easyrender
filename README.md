@@ -1438,6 +1438,41 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 ## EC.Masker ##
 `extends EC.Shape`
 
+## EC.Rectangle(x, y, width, height) ##
+`extends EC.Shape`
+<table>
+	<tr>
+		<td>properties</td>
+		<td>类型</td>
+		<td>默认</td>
+		<td>描述</td>
+	</tr>
+	<tr>
+		<td>x</td>
+		<td>Number</td>
+		<td>0</td>
+		<td>矩形x坐标</td>
+	</tr>
+	<tr>
+		<td>y</td>
+		<td>Number</td>
+		<td>0</td>
+		<td>矩形y坐标</td>
+	</tr>
+	<tr>
+		<td>width</td>
+		<td>Number</td>
+		<td>0</td>
+		<td>矩形宽度</td>
+	</tr>
+	<tr>
+		<td>height</td>
+		<td>Number</td>
+		<td>0</td>
+		<td>矩形高度</td>
+	</tr>
+</table>
+
 ## EC.TextInput ##
 `extends EC.Sprite`
 <table>
