@@ -60,41 +60,41 @@
     roundRect.stroke("#ff0000", 1); //color, alpha
     roundRect.fill('#06c', 1); //color, alpha
     roundRect.lineWidth = 2;
-    roundRect.roundRect(10, 20, 400, 200, 20); //x, y, width, height, radius
+    roundRect.drawRoundRect(10, 20, 400, 200, 20); //x, y, width, height, radius
     stage.addChild(roundRect);
 
     var line = new EC.Shape();
     line.stroke("#000");
     line.lineWidth = 2;
-    line.line(10, 240, 410, 240); //x, y, endX, endY
+    line.drawLine(10, 240, 410, 240); //x, y, endX, endY
     stage.addChild(line);
 
     var dashedLine = new EC.Shape();
     dashedLine.stroke("#000");
     dashedLine.lineWidth = 2;
-    dashedLine.dashedLine(10, 260, 400, 260, 5); //x, y, endX, endY, dashedLength
+    dashedLine.drawDashedLine(10, 260, 400, 260, 5); //x, y, endX, endY, dashedLength
     stage.addChild(dashedLine);
 
     var ellipse = new EC.Shape();
     ellipse.stroke("#f90");
     ellipse.lineWidth = 2;
-    ellipse.ellipse(10, 300, 300, 150); //x, y, width, height
+    ellipse.drawEllipse(10, 300, 300, 150); //x, y, width, height
     stage.addChild(ellipse);
 
-    var arc = new EC.Shape();
-    arc.stroke("#cc0000");
-    arc.arc(10, 470, 80, 0, 2, true); //x, y, radius, startAngle, endAngle, counterclockwise
-    stage.addChild(arc);
+    var circle = new EC.Shape();
+    circle.stroke("#cc0000");
+    circle.drawCircle(10, 470, 80); //x, y, radius, startAngle, endAngle, counterclockwise
+    stage.addChild(circle);
 
     var dashArc = new EC.Shape();
     dashArc.dashLength = 5;
     dashArc.stroke("green");
-    dashArc.arc(200, 470, 80, 0, 2, true); //x, y, radius, startAngle, endAngle, counterclockwise
+    dashArc.drawArc(200, 470, 80, 0, 2, true); //x, y, radius, startAngle, endAngle, counterclockwise
     stage.addChild(dashArc);
 
     var sector = new EC.Shape();
     sector.stroke("#387894");
-    sector.sector(400, 470, 80, 0, 1.5, false); //x, y, radius, startAngle, endAngle, counterclockwise
+    sector.drawSector(400, 470, 80, 0, 1.5, false); //x, y, radius, startAngle, endAngle, counterclockwise
     sector.close();
     stage.addChild(sector);
 
@@ -133,7 +133,7 @@
 
     var rect = new EC.Shape();
     rect.stroke("#f90");
-    rect.rect(10, 650, 200, 100); //x, y, width, height
+    rect.drawRect(10, 650, 200, 100); //x, y, width, height
     stage.addChild(rect);
 </script>
 </body>

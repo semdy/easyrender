@@ -41,17 +41,17 @@
 
     var rect = new EC.Shape();
     rect.stroke("#f90");
-    rect.rect(200, 50, 200, 100);
+    rect.drawRect(200, 50, 200, 100);
     stage.addChild(rect);
 
     var rect2 = new EC.Shape();
     rect2.stroke("#cc0000");
-    rect2.rect(120, 120, 100, 100);
+    rect2.drawRect(120, 120, 100, 100);
     stage.addChild(rect2);
 
     var rect3 = new EC.Shape();
     rect3.stroke("#000");
-    rect3.rect(150, 250, 150, 100);
+    rect3.drawRect(150, 250, 150, 100);
     stage.addChild(rect3);
 
     console.log(EC.Util.hitTest(rect, rect2));

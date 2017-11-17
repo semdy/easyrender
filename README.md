@@ -1309,7 +1309,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>EC.Shape</td>
 	</tr>
 	<tr>
-		<td>rect</td>
+		<td>drawRect</td>
 		<td>x: x坐标 <br>
 			y: y坐标<br>
 			width: 宽度<br>
@@ -1319,13 +1319,22 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>EC.Shape</td>
 	</tr>
 	<tr>
-		<td>arc</td>
+		<td>drawArc</td>
 		<td>x: x坐标 <br>
 			y: y坐标<br>
 			radius: 半径<br>
 			startAngle: 起始弧度<br>
 			endAngle: 结束弧度<br>
 			counterclockwise: 方向
+		</td>
+		<td>画圆</td>
+		<td>EC.Shape</td>
+	</tr>
+	<tr>
+		<td>drawCircle</td>
+		<td>x: x坐标 <br>
+			y: y坐标<br>
+			radius: 半径
 		</td>
 		<td>画圆</td>
 		<td>EC.Shape</td>
@@ -1342,7 +1351,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>EC.Shape</td>
 	</tr>
 	<tr>
-		<td>roundRect</td>
+		<td>drawRoundRect</td>
 		<td>x: x坐标 <br>
 			y: y坐标<br>
 			width: 宽度<br>
@@ -1369,7 +1378,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>EC.Shape</td>
 	</tr>
 	<tr>
-		<td>line</td>
+		<td>drawLine</td>
 		<td>x: x起始位置 <br>
 			y: y起始位置<br>
 			endX: x结束位置<br>
@@ -1379,7 +1388,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>EC.Shape</td>
 	</tr>
 	<tr>
-		<td>dashedLine</td>
+		<td>drawDashedLine</td>
 		<td>x: x起始位置 <br>
 			y: y起始位置<br>
 			endX: x结束位置<br>
@@ -1390,7 +1399,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>EC.Shape</td>
 	</tr>
 	<tr>
-		<td>ellipse</td>
+		<td>drawEllipse</td>
 		<td>x: x起始位置 <br>
 			y: y起始位置<br>
 			width: 宽度<br>

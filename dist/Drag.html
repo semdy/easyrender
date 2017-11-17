@@ -47,7 +47,7 @@
 
   var rect = new EC.Shape();
   rect.fill("#f90");
-  rect.rect(100, 50, 200, 100);
+  rect.drawRect(100, 50, 200, 100);
   rect.cursor = "move";
   stage.addChild(rect);
 
@@ -64,7 +64,7 @@
   var roundRect = new EC.Shape();
   roundRect.cursor = "move";
   roundRect.stroke("#06c");
-  roundRect.roundRect(100, 250, 200, 100, 12);
+  roundRect.drawRoundRect(100, 250, 200, 100, 12);
   stage.addChild(roundRect);
 
   roundRect.touchEnabled = true;
@@ -80,7 +80,7 @@
   var arc = new EC.Shape();
   arc.cursor = "move";
   arc.stroke("#cc0000");
-  arc.arc(100, 450, 100, 0, 2, true);
+  arc.drawCircle(100, 450, 100);
   stage.addChild(arc);
 
   arc.touchEnabled = true;

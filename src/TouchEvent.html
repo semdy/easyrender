@@ -63,7 +63,7 @@
 
     var rect = new EC.Shape();
     rect.stroke("#f90");
-    rect.rect(100, 50, 200, 100);
+    rect.drawRect(100, 50, 200, 100);
     sprite.addChild(rect);
 
     rect.touchEnabled = true;
@@ -73,7 +73,7 @@
 
     var roundRect = new EC.Shape();
     roundRect.stroke("#06c");
-    roundRect.roundRect(100, 250, 200, 100, 12);
+    roundRect.drawRoundRect(100, 250, 200, 100, 12);
     sprite.addChild(roundRect);
 
     roundRect.touchEnabled = true;
@@ -83,7 +83,7 @@
 
     var arc = new EC.Shape();
     arc.stroke("#cc0000");
-    arc.arc(200, 450, 80, 0, 2, true);
+    arc.drawCircle(200, 450, 80);
     stage.addChild(arc);
 
     arc.touchEnabled = true;

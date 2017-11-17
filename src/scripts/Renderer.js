@@ -822,7 +822,7 @@
   });
 
   EC.extend(Shape.prototype, {
-    rect: function (x, y, width, height) {
+    drawRect: function (x, y, width, height) {
       this.moveX = x;
       this.moveY = y;
       this.width = width;
@@ -830,7 +830,7 @@
       this.drawType = 'rect';
       return this;
     },
-    arc: function (x, y, radius, startAngle, endAngle, counterclockwise) {
+    drawArc: function (x, y, radius, startAngle, endAngle, counterclockwise) {
       this.moveX = x;
       this.moveY = y;
       this.radius = radius;
@@ -842,8 +842,12 @@
       this.drawType = 'arc';
       return this;
     },
-    sector: function () {
-      this.arc.apply(this, arguments);
+    drawCircle: function (x, y, radius) {
+      this.drawArc(x, y, radius, 0, 2, true);
+      return this;
+    },
+    drawSector: function () {
+      this.drawArc.apply(this, arguments);
       this.drawType = 'sector';
       return this;
     },
@@ -858,7 +862,7 @@
       this.drawType = 'arcTo';
       return this;
     },
-    roundRect: function (x, y, width, height, radius) {
+    drawRoundRect: function (x, y, width, height, radius) {
       this.moveX = x;
       this.moveY = y;
       this.width = width;
@@ -880,7 +884,7 @@
       this.drawType = 'lineTo';
       return this;
     },
-    line: function (x, y, endX, endY) {
+    drawLine: function (x, y, endX, endY) {
       this.moveX = x;
       this.moveY = y;
       this.endX = endX;
@@ -890,7 +894,7 @@
       this.drawType = 'line';
       return this;
     },
-    dashedLine: function (x, y, endX, endY, dashLength, dashGap) {
+    drawDashedLine: function (x, y, endX, endY, dashLength, dashGap) {
       this.moveX = x;
       this.moveY = y;
       this.endX = endX;
@@ -902,7 +906,7 @@
       this.drawType = 'dashedLine';
       return this;
     },
-    ellipse: function (x, y, width, height) {
+    drawEllipse: function (x, y, width, height) {
       this.moveX = x;
       this.moveY = y;
       this.width = width;
@@ -983,9 +987,7 @@
   var Rectangle = Shape.extend({
     initialize: function (x, y, width, height) {
       Rectangle.superclass.initialize.call(this);
-      this.x = x;
-      this.y = y ;
-      this.rect(0, 0, width, height);
+      this.drawRect(x, y, width, height);
     }
   });
 
@@ -1156,9 +1158,9 @@
       }
 
       if (this.borderRadius > 0) {
-        this.input.roundRect(0, 0, this.width, this.height, this.borderRadius);
+        this.input.drawRoundRect(0, 0, this.width, this.height, this.borderRadius);
       } else {
-        this.input.rect(0, 0, this.width, this.height);
+        this.input.drawRect(0, 0, this.width, this.height);
       }
 
       if (this.inputType !== "textarea") {
@@ -1180,7 +1182,7 @@
       this.textField.y = this.inputType === "textarea" ? this.padding[0] : (this.height - this.textField.height + this.borderWidth) / 2;
 
       this.mask = new Masker();
-      this.mask.rect(0, 0, this.width + this.borderWidth, this.height + this.borderWidth);
+      this.mask.drawRect(0, 0, this.width + this.borderWidth, this.height + this.borderWidth);
 
       this.addChild(this.input);
       this.addChild(this.textField);
@@ -1348,9 +1350,9 @@
       if (_config.fillStyle || _config.strokeStyle) {
         EC.extend(this.shape, _config);
         if (_config.radius && _config.radius > 0) {
-          this.shape.roundRect(0, 0, _config.width, _config.height, _config.radius);
+          this.shape.drawRoundRect(0, 0, _config.width, _config.height, _config.radius);
         } else {
-          this.shape.rect(0, 0, _config.width, _config.height);
+          this.shape.drawRect(0, 0, _config.width, _config.height);
         }
 
         if (_config.fillStyle) {
