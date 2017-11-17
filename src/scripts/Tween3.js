@@ -38,25 +38,16 @@
 
     update: function (time, keeping) {
       var tween;
-      var _tweens = this._tweens;
-      var tweenIds = Object.keys(this._tweens);
+      var tweens = this._tweens;
 
-      if (tweenIds.length === 0) {
-        return false;
-      }
-
-      while (tweenIds.length > 0) {
-        tweenIds.forEach(function (tweenId) {
-          tween = _tweens[tweenId];
-          if (tween && tween.update(time) === false) {
-            tween._isPlaying = false;
-            if (!keeping) {
-              delete _tweens[tweenId];
-            }
+      for (var tweenId in tweens) {
+        tween = tweens[tweenId];
+        if (tween && tween.update(time) === false) {
+          tween._isPlaying = false;
+          if (!keeping) {
+            delete tweens[tweenId];
           }
-        });
-
-        tweenIds = [];
+        }
       }
 
       return true;

@@ -35,25 +35,16 @@
 
     update: function (keeping) {
       var item;
-      var _items = this._items;
-      var itemIds = Object.keys(this._items);
+      var items = this._items;
 
-      if (itemIds.length === 0) {
-        return false;
-      }
-
-      while (itemIds.length > 0) {
-        itemIds.forEach(function (itemId) {
-          item = _items[itemId];
-          if (item && item.update() === false) {
-            item._isPlaying = false;
-            if (!keeping) {
-              delete _items[itemId];
-            }
+      for (var itemId in items) {
+        item = items[itemId];
+        if (item && item.update() === false) {
+          item._isPlaying = false;
+          if (!keeping) {
+            delete items[itemId];
           }
-        });
-
-        itemIds = [];
+        }
       }
 
       return true;
