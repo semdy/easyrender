@@ -925,6 +925,12 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>EC.DisplayObjectContainer</td>
 	</tr>
 <tr>
+		<td>contains</td>
+		<td>Object: childObject</td>
+		<td>判断当前显示对象是否已经在父容器中</td>
+		<td>Boolean</td>
+	</tr>
+<tr>
 		<td>setParams</td>
 		<td>Object: params -> 参数集</td>
 		<td>设置当前容器的相关属性</td>
