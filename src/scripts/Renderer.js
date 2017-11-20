@@ -519,6 +519,10 @@
         throw new TypeError(String(object) + " is not a instance of EC.displayObject");
       }
 
+      if (this.contains(object)) {
+        return this;
+      }
+
       if (object.parent) {
         object.parent.removeChild(object);
       }
@@ -593,6 +597,10 @@
 
     getChildIndex: function (child) {
       return this.getChilds().indexOf(child);
+    },
+
+    contains: function (child) {
+      return this.getChildIndex(child) > -1;
     },
 
     size: function () {
