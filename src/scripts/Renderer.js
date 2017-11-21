@@ -396,11 +396,10 @@
     },
 
     broadcast: function () {
-      var self = this;
       var args = slice.call(arguments);
 
       function _triggerEvent(obj) {
-        obj.dispatch.apply(self, args);
+        obj.dispatch.apply(obj, args);
         obj.each(function (obj) {
           _triggerEvent(obj);
         });
@@ -412,13 +411,12 @@
     },
 
     emit: function () {
-      var self = this;
       var args = slice.call(arguments);
       var parent = this.parent;
 
-      this.dispatch.apply(self, args);
+      this.dispatch.apply(this, args);
       while (parent) {
-        parent.dispatch.apply(self, args);
+        parent.dispatch.apply(parent, args);
         parent = parent.parent;
       }
 
