@@ -59,7 +59,7 @@
     this._startAttrs = {};
     this._endAttrs = {};
     this._startTime = null;
-    this._easingFunction = null;
+    this._easingFunction = EC.Easing.Linear.None;
     this._repeatIndex = 0;
     this._repeatCount = 0;
     this._startCallbackFired = false;
