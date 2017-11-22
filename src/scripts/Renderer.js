@@ -399,10 +399,12 @@
       var args = slice.call(arguments);
 
       function _triggerEvent(obj) {
-        obj.dispatch.apply(obj, args);
-        obj.each(function (obj) {
-          _triggerEvent(obj);
-        });
+        if (obj.visible) {
+          obj.dispatch.apply(obj, args);
+          obj.each(function (obj) {
+            _triggerEvent(obj);
+          });
+        }
       }
 
       _triggerEvent(this);
