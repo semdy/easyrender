@@ -885,7 +885,11 @@
       return this;
     },
     lineTo: function (x, y) {
-      this.coords.push([x,y]);
+      if(Array.isArray(x)) {
+        [].push.apply(this.coords, x);
+      } else {
+        this.coords.push([x, y]);
+      }
       var lineSize = getLineSize(this.coords, this.moveX, this.moveY);
       this.width = lineSize.width;
       this.height = lineSize.height;
