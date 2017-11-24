@@ -519,10 +519,6 @@
         throw new TypeError(String(object) + " is not a instance of EC.DisplayObject");
       }
 
-      if (this.contains(object)) {
-        return this;
-      }
-
       if (object.parent) {
         object.parent.removeChild(object);
       }
