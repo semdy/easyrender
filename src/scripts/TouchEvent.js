@@ -66,7 +66,7 @@
       this.element.addEventListener("mouseout", this._onMouseOut.bind(this), false);
     },
     _onTouchStart: function (event) {
-      //event.preventDefault();
+      event.preventDefault();
       event = isTouch ? event.targetTouches[0] : event;
 
       this._startTime = Date.now();

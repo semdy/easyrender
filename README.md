@@ -197,14 +197,22 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>发起一个事件监听，且仅一次有效</td>
 	</tr>
 	<tr>
+		<td>has</td>
+		<td>name: 事件名<br>
+			callback?: 事件监听listener</td>
+		<td>判断当前事件池中是否有指定的事件监听</td>
+	</tr>
+	<tr>
 		<td>off</td>
 		<td>name: 事件名<br>
-			callback: 事件监听listener</td>
+			callback?: 事件监听listener</td>
 		<td>取消一个事件监听</td>
 	</tr>
 	<tr>
 		<td>dispatch</td>
-		<td>name: 事件名</td>
+		<td>name: 事件名<br>
+			...args: 传递的参数
+		</td>
 		<td>触发一个事件</td>
 	</tr>
 	<tr>
@@ -1817,6 +1825,14 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 			</td>
     		<td>计算两个Point类之间的距离</td>
     		<td>Number</td>
+    	</tr>
+<tr>
+    		<td>fromValues</td>
+    		<td>Number: x<br>
+				Number: y<br>
+			</td>
+    		<td>将x,y转换成[x, y]</td>
+    		<td>Array</td>
     	</tr>
 <tr>
     		<td>getAngle</td>

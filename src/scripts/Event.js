@@ -41,6 +41,23 @@
       return this.on(name, listener, ctx);
     },
 
+    has: function (name, callback) {
+      var evts = this._eventPool[name];
+      if (evts !== undefined) {
+        if(callback) {
+          for (var i = 0; i < evts.length; i++) {
+            if (evts[i].fn === callback && evts[i].fn._ === callback) {
+              return true;
+            }
+          }
+        } else {
+          return true;
+        }
+      }
+
+      return false;
+    },
+
     off: function (name, callback) {
       var e = this._eventPool;
       var evts = e[name];

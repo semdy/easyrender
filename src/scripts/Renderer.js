@@ -1471,6 +1471,12 @@
     distance: function(e, o) {
       return this.calcDistance(e.x, e.y, o.x, o.y);
     },
+    fromValues: function(x, y) {
+      var out = new Array(2);
+      out[0] = x;
+      out[1] = y;
+      return out;
+    },
     getAngle: function(px, py, mx, my){
       var x = Math.abs(px-mx);
       var y = Math.abs(py-my);
