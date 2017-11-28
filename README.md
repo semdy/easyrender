@@ -740,7 +740,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 	</tr>
 </table>
 
-## EC.DisplayObjectContainer ##
+## EC.DisplayObject ##
 `extends EC.Event`
 <table>
 	<tr>
@@ -834,12 +834,6 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>纵向中心点</td>
 	</tr>
 <tr>
-		<td>numChildren</td>
-		<td>Number</td>
-		<td>0</td>
-		<td>返回当前容器子集的个数</td>
-	</tr>
-<tr>
 		<td>cursor</td>
 		<td>String</td>
 		<td>pointer</td>
@@ -847,7 +841,104 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 	</tr>
 </table>
 
-### EC.DisplayObjectContainer methods ###
+### EC.DisplayObject methods ###
+<table>
+	<tr>
+		<td>method</td>
+		<td>parameter</td>
+		<td>描述</td>
+		<td>return</td>
+	</tr>
+	<tr>
+		<td>remove</td>
+		<td>--</td>
+		<td>从父容器中移除自己</td>
+		<td>EC.DisplayObject</td>
+	</tr>
+<tr>
+		<td>each</td>
+		<td>Function: iterator -> 子集迭代器<br/>
+			Object: context -> 指定上下文
+</td>
+		<td>子集迭代</td>
+		<td>EC.DisplayObject</td>
+	</tr>
+<tr>
+		<td>getBounds</td>
+		<td>--</td>
+		<td>获取当前容器的边界</td>
+		<td>new Bounds()</td>
+	</tr>
+<tr>
+		<td>setParams</td>
+		<td>Object: params -> 参数集</td>
+		<td>设置当前容器的相关属性</td>
+		<td>EC.DisplayObject</td>
+	</tr>
+<tr>
+        <td>broadcast</td>
+        <td>String: name -> 事件名称<br>
+            [...args]  -> 事件传值
+        </td>
+        <td>向子节点(包括自己)广播事件</td>
+        <td>EC.DisplayObject</td>
+    </tr>
+<tr>
+        <td>emit</td>
+        <td>String: name -> 事件名称<br>
+            [...args]  -> 事件传值
+        </td>
+        <td>向父节点(包括自己)广播事件</td>
+        <td>EC.DisplayObject</td>
+    </tr>
+<tr>
+        <td>observe</td>
+        <td>String: property -> 被定义的属性<br>
+            Object: descriptor  -> 被定义属性的描述
+        </td>
+        <td>定义新属性或修改原有的属性</td>
+        <td>EC.DisplayObject</td>
+    </tr>
+</table>
+
+## EC.DisplayObject events ##
+<table>
+	<tr>
+		<td>name</td>
+		<td>描述</td>
+	</tr>
+	<tr>
+		<td>addToStage</td>
+		<td>当前容器添加到舞台时执行的回调</td>
+	</tr>
+<tr>
+		<td>remove</td>
+		<td>在被从父容器中移除时执行的回调</td>
+	</tr>
+<tr>
+		<td>enterframe</td>
+		<td>舞台实时渲染时执行的回调</td>
+	</tr>
+</table>
+
+## EC.DisplayObjectContainer ##
+`extends EC.DisplayObject`
+<table>
+	<tr>
+		<td>properties</td>
+		<td>类型</td>
+		<td>默认</td>
+		<td>描述</td>
+	</tr>
+<tr>
+		<td>numChildren</td>
+		<td>Number</td>
+		<td>0</td>
+		<td>返回当前容器子集的个数</td>
+	</tr>
+</table>
+
+## EC.DisplayObjectContainer methods ##
 <table>
 	<tr>
 		<td>method</td>
@@ -881,12 +972,6 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>EC.DisplayObjectContainer</td>
 	</tr>
 	<tr>
-		<td>remove</td>
-		<td>--</td>
-		<td>从父容器中移除自己</td>
-		<td>EC.DisplayObjectContainer</td>
-	</tr>
-	<tr>
 		<td>removeAllChildren</td>
 		<td>--</td>
 		<td>清除子集</td>
@@ -903,20 +988,6 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>Number: index -> 子集对象索引值</td>
 		<td>获取指定位置的子集</td>
 		<td>EC.DisplayObjectContainer</td>
-	</tr>
-<tr>
-		<td>each</td>
-		<td>Function: iterator -> 子集迭代器<br/>
-			Object: context -> 指定上下文
-</td>
-		<td>子集迭代</td>
-		<td>EC.DisplayObjectContainer</td>
-	</tr>
-<tr>
-		<td>getBounds</td>
-		<td>--</td>
-		<td>获取当前容器的边界</td>
-		<td>new Bounds()</td>
 	</tr>
 <tr>
 		<td>getChildIndex</td>
@@ -939,54 +1010,15 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>Boolean</td>
 	</tr>
 <tr>
-		<td>setParams</td>
-		<td>Object: params -> 参数集</td>
-		<td>设置当前容器的相关属性</td>
-		<td>EC.DisplayObjectContainer</td>
-	</tr>
-<tr>
 		<td>size</td>
 		<td>--</td>
 		<td>获取容器子集的个数</td>
 		<td>Number</td>
 	</tr>
-<tr>
-        <td>broadcast</td>
-        <td>String: name -> 事件名称<br>
-            [...args]  -> 事件传值
-        </td>
-        <td>向子节点(包括自己)广播事件</td>
-        <td>EC.DisplayObjectContainer</td>
-    </tr>
-<tr>
-        <td>emit</td>
-        <td>String: name -> 事件名称<br>
-            [...args]  -> 事件传值
-        </td>
-        <td>向父节点(包括自己)广播事件</td>
-        <td>EC.DisplayObjectContainer</td>
-    </tr>
 </table>
 
-### EC.DisplayObjectContainer events ###
-<table>
-	<tr>
-		<td>name</td>
-		<td>描述</td>
-	</tr>
-	<tr>
-		<td>addToStage</td>
-		<td>当前容器添加到舞台时执行的回调</td>
-	</tr>
-<tr>
-		<td>remove</td>
-		<td>在被从父容器中移除时执行的回调</td>
-	</tr>
-<tr>
-		<td>enterframe</td>
-		<td>舞台实时渲染时执行的回调</td>
-	</tr>
-</table>
+## EC.DisplayObjectContainer events ##
+`extend EC.DisplayObject events`
 
 ## Bounds ##
 <table>

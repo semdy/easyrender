@@ -462,6 +462,11 @@
       return this;
     },
 
+    observe: function (property, descriptor) {
+      Object.defineProperty(this, property, descriptor);
+      return this;
+    },
+
     _triggerAddToStage: function (childObj, context) {
       var setParams = function(obj){
         return {target: obj, renderContext: context.renderContext, stage: context};
@@ -506,7 +511,7 @@
 
       this.$type = 'Sprite';
 
-      Object.defineProperty(this, 'numChildren', {
+      this.observe('numChildren', {
         get: function () {
           return this.size();
         },
@@ -651,7 +656,7 @@
       this.$hasW = false;
       this.$hasH = false;
 
-      Object.defineProperty(this, 'text', {
+      this.observe('text', {
         get: function () {
           return this.$text;
         },
@@ -673,14 +678,14 @@
         enumerable: true
       });
 
-      Object.defineProperty(this, 'numLines', {
+      this.observe('numLines', {
         get: function () {
           return this.$textArr.length;
         },
         enumerable: true
       });
 
-      Object.defineProperty(this, 'width', {
+      this.observe('width', {
         set: function (newVal) {
           this.$width = newVal;
           this.$hasW = true;
@@ -691,7 +696,7 @@
         enumerable: true
       });
 
-      Object.defineProperty(this, 'height', {
+      this.observe('height', {
         set: function (newVal) {
           this.$height = newVal;
           this.$hasH = true;
@@ -1028,7 +1033,7 @@
       this.$hasW = false;
       this.$hasH = false;
 
-      Object.defineProperty(this, 'width', {
+      this.observe('width', {
         set: function (newVal) {
           this.$width = newVal;
           this.$hasW = true;
@@ -1039,7 +1044,7 @@
         enumerable: true
       });
 
-      Object.defineProperty(this, 'height', {
+      this.observe('height', {
         set: function (newVal) {
           this.$height = newVal;
           this.$hasH = true;
@@ -1259,7 +1264,7 @@
       this.$textArr = [];
       this.$textwrap = new Sprite();
 
-      Object.defineProperty(this, 'text', {
+      this.observe('text', {
         set: function (newVal) {
           this.$text = newVal;
           this.$textArr = newVal.split("");
