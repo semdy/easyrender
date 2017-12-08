@@ -1535,7 +1535,8 @@
         frameRate: 60,
         width: window.innerWidth,
         height: window.innerHeight,
-        blendMode: "source-over"
+        blendMode: "source-over",
+        autoRender: true
       }, options || {});
 
       this.blendMode = opts.blendMode;
@@ -1562,7 +1563,10 @@
       }
 
       this._initEvents();
-      this.start();
+
+      if (opts.autoRender) {
+        this.startRender();
+      }
     },
     addChild: function (childObj) {
       Stage.superclass.addChild.apply(this, arguments);
@@ -1617,16 +1621,15 @@
       this.renderContext.clearRect(0, 0, this.width, this.height);
       return this;
     },
-    start: function () {
+    startRender: function () {
       if (this._isRendering) return;
       this._isRendering = true;
       this._ticker.start();
 
       return this;
     },
-    stop: function () {
+    stopRender: function () {
       this._ticker.stop();
-      this.dispatch("stop");
       this._isRendering = false;
       return this;
     },

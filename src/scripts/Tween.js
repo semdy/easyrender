@@ -8,8 +8,35 @@
    * Tween 动画类
    * **/
 
+  var QueueManager = function () {
+    this._queues = {};
+  };
+
+  QueueManager.prototype = {
+    add: function (item, data) {
+      var _id = item.getId();
+      if (this._queues[_id] === undefined ) {
+        this._queues[_id] = [];
+      }
+      this._queues[_id].push(data);
+    },
+
+    get: function(item) {
+      return this._queues[item.getId()] || [];
+    },
+
+    remove: function (item) {
+      delete this._queues[item.getId()];
+    },
+
+    removeAll: function () {
+      this._queues = {};
+    }
+  };
+
   var isFunction = EC.isFunction;
   var isNumber = EC.isNumber;
+  var queueManager = new QueueManager();
 
   var _registCallback = function(callback, context){
     return isFunction(callback) && context ? callback.bind(context) : callback;
@@ -53,15 +80,12 @@
     this.start();
   };
 
-  Tween.cache = {};
-  Tween.uuid = 0;
-  Tween.expando = '@Tween-' + +new Date;
   Tween.get = function (obj, cfg) {
     return new Tween(obj, cfg);
   };
 
   Tween.removeTweens = function (target) {
-    if (EC.isObject(target) && target[Tween.expando]) {
+    if (EC.isObject(target) && target._tweenId !== undefined) {
       Tween.get(target).stop();
     }
 
@@ -114,8 +138,8 @@
       }
 
       EC.groupManager.remove(this);
+      queueManager.remove(this);
       this._clearTimeline();
-      delete Tween.cache[this._tweenObj[Tween.expando]];
       delete this._tweenObj._tweenId;
       this._isPlaying = false;
       this._shouldTimelineAdd = true;
@@ -223,7 +247,7 @@
       if (percent === 1) {
         this.dequeue();
 
-        var fx = Tween.cache[_object[Tween.expando]] || [];
+        var fx = queueManager.get(this);
         if (!fx.length) {
 
           this._triggerComplete();
@@ -284,17 +308,11 @@
       isFunction(this._stopCallback) && this._stopCallback(this._tweenObj);
     },
     queue: function (data) {
-      if (!this._tweenObj[Tween.expando])
-        this._tweenObj[Tween.expando] = ++Tween.uuid;
-
-      var fx = Tween.cache[Tween.uuid];
-      if (fx === undefined) {
-        fx = Tween.cache[Tween.uuid] = [];
-      }
       if (data) {
-        fx.push(data);
+        queueManager.add(this, data);
       }
 
+      var fx = queueManager.get(this);
       if (fx[0] !== 'running') {
         this.dequeue();
       }
@@ -304,7 +322,7 @@
 
     dequeue: function () {
       var self = this,
-        fx = Tween.cache[this._tweenObj[Tween.expando]] || [],
+        fx = queueManager.get(this),
         fn = fx.shift();
 
       if (fn === 'running') {

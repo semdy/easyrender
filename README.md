@@ -2208,6 +2208,11 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>为true时将使用setInterval代替requestAnimationFrame</td>
 	</tr>
 <tr>
+		<td>autoRender</td>
+		<td>Boolean</td>
+		<td>true</td>
+		<td>是否自动开始渲染</td>
+	</tr>
 </table>
 
 ### EC.Stage methods ###
@@ -2235,13 +2240,13 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>EC.Stage</td>
 	</tr>
 <tr>
-		<td>start</td>
+		<td>startRender</td>
 		<td>--</td>
 		<td>开始渲染</td>
 		<td>EC.Stage</td>
 	</tr>
 	<tr>
-		<td>stop</td>
+		<td>stopRender</td>
 		<td>--</td>
 		<td>停止渲染</td>
 		<td>EC.Stage</td>

@@ -17,20 +17,20 @@
 
     },
 
-    removeAll: function () {
-      this._items = {};
-    },
-
     add: function (item) {
       this._items[item.getId()] = item;
+    },
+
+    get: function(id){
+      return this._items[id];
     },
 
     remove: function (item) {
       delete this._items[item.getId()];
     },
 
-    get: function(id){
-      return this._items[id];
+    removeAll: function () {
+      this._items = {};
     },
 
     update: function (keeping) {
