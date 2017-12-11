@@ -94,6 +94,7 @@
     this._tweenTimeline = [];
     this._shouldTimelineAdd = true;
     this._isFirstTimeline = true;
+    this._isReverse = false;
     this._waitTime = 0;
     this._id = Tween.nextId();
 
@@ -276,15 +277,33 @@
           this._triggerComplete();
 
           if (this._repeatCount === -1 || ++this._repeatIndex < this._repeatCount) {
+            var lastArgs;
             this._shouldTimelineAdd = false;
-            this._tweenTimeline.reverse().forEach(function(tweenArgs){
-              if(isNumber(tweenArgs)){
-                this.wait(tweenArgs);
+            this._isReverse = !this._isReverse;
+            this._tweenTimeline.reverse().forEach(function(tweenArgs, i, self) {
+              if(this._isReverse) {
+                lastArgs = self[i + 1];
+                if(lastArgs === undefined) return false;
               } else {
-                this.to.apply(this, tweenArgs);
+                if(i === 0) return false;
+                lastArgs = tweenArgs;
+              }
+              if(isNumber(lastArgs)){
+                this.wait(lastArgs);
+              } else {
+                var _speed;
+                var _easing;
+                if(isNumber(tweenArgs)) {
+                  if(i === 0) return false;
+                  _speed = self[i-1][1];
+                  _easing = self[i-1][2];
+                } else {
+                  _speed = tweenArgs[1];
+                  _easing = tweenArgs[2];
+                }
+                this.to(lastArgs[0], _speed, _easing);
               }
             }.bind(this));
-
           } else {
             this.stop();
           }
