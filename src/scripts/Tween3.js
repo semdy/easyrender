@@ -300,7 +300,7 @@
         }
       }
 
-      this._triggerUpdate();
+      this._triggerUpdate(percent);
 
       if (percent === 1) {
         this.dequeue();
@@ -375,8 +375,8 @@
         this._startCallbackFired = true;
       }
     },
-    _triggerUpdate: function () {
-      isFunction(this._updateCallback) && this._updateCallback(this._tweenObj);
+    _triggerUpdate: function (elapse) {
+      isFunction(this._updateCallback) && this._updateCallback(this._tweenObj, elapse);
     },
     _triggerComplete: function () {
       isFunction(this._completeCallback) && this._completeCallback(this._tweenObj);
