@@ -1,34 +1,64 @@
-var gulp        = require('gulp'),
-    cssmin      = require('gulp-minify-css'),
-    uglify      = require('gulp-uglify'),
-    useref      = require('gulp-useref'),
-    gulpif      = require('gulp-if'),
-    stylish     = require('jshint-stylish'),
-    jshint      = require('gulp-jshint'),
-    clean       = require('gulp-clean'),
-    runSequence = require('gulp-run-sequence');
+var gulp        = require('gulp');
+var htmlreplace = require('gulp-html-replace');
+var plugins     = require('gulp-load-plugins')();
 
-gulp.task('useref', function() {
-    return gulp.src('src/*.html')
-        .pipe(useref())
-        .pipe(gulpif('*.js', uglify()))
-        .pipe(gulpif('*.css', cssmin()))
-        .pipe(gulp.dest('dist'));
+gulp.task('makefile', function() {
+    return gulp.src([
+      "src/scripts/Base.js",
+      "src/scripts/RequestAnimationFrame.js",
+      "src/scripts/Utils.js",
+      "src/scripts/Event.js",
+      "src/scripts/GroupManager.js",
+      "src/scripts/Loader.js",
+      "src/scripts/Ticker.js",
+      "src/scripts/Timer.js",
+      "src/scripts/Easing.js",
+      "src/scripts/Tween.js",
+      "src/scripts/TouchEvent.js",
+      "src/scripts/TouchScroll.js",
+      "src/scripts/Renderer.js",
+      "src/scripts/MovieClip.js",
+      "src/scripts/ScrollView.js",
+      "src/scripts/Stats.js"
+    ])
+    .pipe(plugins.concat('easyrender.js'))
+    .pipe(gulp.dest('dist/scripts/libs'));
+});
+
+gulp.task('makefile-min', function() {
+  return gulp.src('dist/scripts/libs/easyrender.js')
+    .pipe(plugins.uglify())
+    .pipe(plugins.rename('easyrender.min.js'))
+    .pipe(gulp.dest('dist/scripts/libs'));
 });
 
 gulp.task('jshint', function(){
-    return gulp.src(['src/scripts/*.js', '!src/scripts/jquery.min.js'])
-        .pipe(jshint({
-            "undef": false,
-            "unused": false
-        }))
-        .pipe(jshint.reporter(stylish))
-        .pipe(jshint.reporter('fail'));
+    return gulp.src([
+      'src/scripts/*.js',
+      '!src/scripts/jquery.min.js',
+      '!src/scripts/p2.js',
+      '!src/scripts/p2.min.js',
+      '!src/scripts/ES6-promise.pollyfill.js'
+    ])
+    .pipe(plugins.jshint({
+        "undef": false,
+        "unused": false
+    }))
+    .pipe(plugins.jshint.reporter(plugins.stylish))
+    .pipe(plugins.jshint.reporter('fail'));
+});
+
+gulp.task('htmlreplace', function() {
+  gulp.src('src/*.html')
+    .pipe(htmlreplace({
+      'js': 'scripts/libs/easyrender.min.js'
+    }))
+    .pipe(gulp.dest('dist/'));
 });
 
 gulp.task('clean', function () {
     return gulp.src('dist', {read: false})
-        .pipe(clean({force: true}));
+        .pipe(plugins.clean({force: true}));
 });
 
 gulp.task('copyjs', function(){
@@ -42,6 +72,6 @@ gulp.task('copyfiles', function(){
 });
 
 gulp.task('default', function(done) {
-    runSequence(/*'jshint',*/ 'clean', 'useref', ['copyjs', 'copyfiles'], done);
+  plugins.runSequence('clean', 'makefile', 'makefile-min', 'htmlreplace', ['copyjs', 'copyfiles'], done);
 });
 

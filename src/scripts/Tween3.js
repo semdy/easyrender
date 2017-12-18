@@ -127,7 +127,7 @@
       this._repeatCount = -1;
     }
 
-    this.start();
+    setTimeout(this.start.bind(this));
   };
 
   Tween.get = function (obj, cfg) {

@@ -215,12 +215,10 @@
             self._to(Math.round(destination), duration, ease, self.scroll, function (value) {
               if (self.hasMax && self.target[self.property] > self.max) {
 
-                self._stopTweens();
                 self._to(self.max, 600, ease, self.scroll, self.animationEnd);
 
               } else if (self.hasMin && self.target[self.property] < self.min) {
 
-                self._stopTweens();
                 self._to(self.min, 600, ease, self.scroll, self.animationEnd);
 
               } else {
@@ -253,13 +251,13 @@
       var property = this.property;
       var toProps = {};
       toProps[property] = value;
-      setTimeout(function() {
-        EC.Tween.get(self.target).to(toProps, time, ease).onUpdate(function(obj){
-          onChange && onChange.call(self, obj[property]);
-        }).call(function() {
-          onEnd && onEnd.call(self, value);
-        });
-      }, 0);
+
+      EC.Tween.get(self.target).to(toProps, time, ease).onUpdate(function(obj){
+        onChange && onChange.call(self, obj[property]);
+      }).call(function() {
+        onEnd && onEnd.call(self, value);
+      });
+
     },
     _stopTweens: function () {
       EC.Tween.removeTweens(this.target);
