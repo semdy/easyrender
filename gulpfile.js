@@ -66,12 +66,17 @@ gulp.task('copyjs', function(){
         .pipe(gulp.dest('dist/scripts'));
 });
 
-gulp.task('copyfiles', function(){
+gulp.task('copycss', function(){
+  return gulp.src('src/styles/**/*.css')
+    .pipe(gulp.dest('dist/styles'));
+});
+
+gulp.task('copysource', function(){
     return gulp.src('src/images/**/*.{png,jpg,jpeg,gif,json,fnt}')
         .pipe(gulp.dest('dist/images'));
 });
 
 gulp.task('default', function(done) {
-  plugins.runSequence('clean', 'makefile', 'makefile-min', 'htmlreplace', ['copyjs', 'copyfiles'], done);
+  plugins.runSequence('clean', 'makefile', 'makefile-min', 'htmlreplace', ['copyjs', 'copycss', 'copysource'], done);
 });
 
