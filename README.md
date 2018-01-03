@@ -787,8 +787,8 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 	</tr>
 	<tr>
 		<td>alpha</td>
-		<td>Number/undefined</td>
-		<td>undefined</td>
+		<td>Number</td>
+		<td>1</td>
 		<td>透明度</td>
 	</tr>
 	<tr>

@@ -148,7 +148,7 @@
     success: EC.noop,
     error: EC.noop,
     complete: EC.noop,
-    progress: EC.noop,
+    progress: null,
     timeout: 0,
     context: null,
     dataType: "text",
@@ -259,8 +259,8 @@
       mixFn(ajaxSettings.complete, args.complete, args.global).call(args.context, xhr, xhr.status, xhr.statusText);
     }
 
-    function handleProgress() {
-      mixFn(ajaxSettings.progress, args.progress, args.global).call(args.context, xhr, xhr.status, xhr.statusText);
+    function handleProgress(event) {
+      mixFn(ajaxSettings.progress, args.progress, args.global).call(args.context, event, xhr, xhr.status, xhr.statusText);
     }
 
     if (mixFn(ajaxSettings.beforeSend, args.beforeSend, args.global).call(args.context, xhr) === false) {
@@ -316,14 +316,21 @@
     }
 
     if('progress' in xhr) {
-      xhr.addEventListener('progress', function () {
-        if (xhr.status === 404) {
-          handleError();
-        }
-        else if (xhr.status === 200) {
-          handleProgress();
-        }
-      }, false);
+      if (ajaxSettings.progress || args.progress) {
+
+        var loadEndHandler = function() {
+          xhr.removeEventListener('progress', handleProgress, false);
+          xhr.upload.removeEventListener('progress', handleProgress, false);
+          xhr.removeEventListener('loadend', loadEndHandler, false);
+          xhr.upload.removeEventListener('loadend', loadEndHandler, false);
+        };
+
+        xhr.addEventListener('progress', handleProgress, false);
+        xhr.upload.addEventListener('progress', handleProgress, false);
+        xhr.addEventListener('loadend', loadEndHandler, false);
+        xhr.upload.addEventListener('loadend', loadEndHandler, false);
+
+      }
     }
 
     xhr.open(type, url, args.async);

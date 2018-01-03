@@ -3,7 +3,7 @@
  */
 
 var EC = {
-  version: '1.1.0'
+  version: '1.1.1'
 };
 
 (function (EC) {
@@ -746,7 +746,7 @@ var cancelAnimationFrame =
     success: EC.noop,
     error: EC.noop,
     complete: EC.noop,
-    progress: EC.noop,
+    progress: null,
     timeout: 0,
     context: null,
     dataType: "text",
@@ -857,8 +857,8 @@ var cancelAnimationFrame =
       mixFn(ajaxSettings.complete, args.complete, args.global).call(args.context, xhr, xhr.status, xhr.statusText);
     }
 
-    function handleProgress() {
-      mixFn(ajaxSettings.progress, args.progress, args.global).call(args.context, xhr, xhr.status, xhr.statusText);
+    function handleProgress(event) {
+      mixFn(ajaxSettings.progress, args.progress, args.global).call(args.context, event, xhr, xhr.status, xhr.statusText);
     }
 
     if (mixFn(ajaxSettings.beforeSend, args.beforeSend, args.global).call(args.context, xhr) === false) {
@@ -914,14 +914,21 @@ var cancelAnimationFrame =
     }
 
     if('progress' in xhr) {
-      xhr.addEventListener('progress', function () {
-        if (xhr.status === 404) {
-          handleError();
-        }
-        else if (xhr.status === 200) {
-          handleProgress();
-        }
-      }, false);
+      if (ajaxSettings.progress || args.progress) {
+
+        var loadEndHandler = function() {
+          xhr.removeEventListener('progress', handleProgress, false);
+          xhr.upload.removeEventListener('progress', handleProgress, false);
+          xhr.removeEventListener('loadend', loadEndHandler, false);
+          xhr.upload.removeEventListener('loadend', loadEndHandler, false);
+        };
+
+        xhr.addEventListener('progress', handleProgress, false);
+        xhr.upload.addEventListener('progress', handleProgress, false);
+        xhr.addEventListener('loadend', loadEndHandler, false);
+        xhr.upload.addEventListener('loadend', loadEndHandler, false);
+
+      }
     }
 
     xhr.open(type, url, args.async);
@@ -2848,12 +2855,16 @@ var cancelAnimationFrame =
       textY = 0;
 
     if (!obj.strokeOnly) {
-      ctx.fillStyle = obj.textColor;
+      if (obj.textColor) {
+        ctx.fillStyle = obj.textColor;
+      }
       drawMultiText(ctx, "fillText", obj, textX, textY);
     }
 
     if (obj.stroke || obj.strokeOnly) {
-      ctx.strokeStyle = obj.strokeColor;
+      if (obj.strokeColor) {
+        ctx.strokeStyle = obj.strokeColor;
+      }
       drawMultiText(ctx, "strokeText", obj, textX, textY);
     }
   }
@@ -2912,38 +2923,64 @@ var cancelAnimationFrame =
     var moveY = obj.moveY * (obj.anchorY > 0 ? 1 : 0);
     var anchorW = obj.anchorX * obj.width;
     var anchorH = obj.anchorY * obj.height;
-    obj = obj || {};
-    if (EC.isNumber(obj.alpha)) {
+    var x = obj.x + moveX + anchorW - ( obj.isMasker ? 0 : (parent.mask ? parent.mask.x : 0 ));
+    var y = obj.y + moveY + anchorH - ( obj.isMasker ? 0 : (parent.mask ? parent.mask.y : 0 ));
+
+    if (obj.alpha < 1) {
       ctx.globalAlpha = obj.alpha;
     }
-    ctx.transform(
-      obj.scaleX, //水平缩放绘图
-      obj.skewX, //水平倾斜绘图
-      obj.skewY, //垂直倾斜绘图
-      obj.scaleY, //垂直缩放绘图
-      obj.x + moveX + anchorW - ( obj.isMasker ? 0 : (parent.mask ? parent.mask.x : 0 )), //水平移动绘图
-      obj.y + moveY + anchorH - ( obj.isMasker ? 0 : (parent.mask ? parent.mask.y : 0 )) //垂直移动绘图
-    );
-    ctx.rotate(obj.rotation * CONST_ANGLE);
-    ctx.translate(-moveX - anchorW, -moveY - anchorH);
+    if (x !== 0 || y !== 0) {
+      ctx.translate(x, y);
+    }
+    if (obj.scaleX !== 1 || obj.scaleY !== 1) {
+      ctx.scale(obj.scaleX, obj.scaleY);
+    }
+    if (obj.skewX !== 0 || obj.skewY !== 0) {
+      ctx.transform(1, obj.skewX, obj.skewY, 1, 0, 0);
+    }
+    if (obj.rotation !== 0) {
+      ctx.rotate(obj.rotation * CONST_ANGLE);
+    }
+    if (obj.anchorX > 0 || obj.anchorY > 0) {
+      ctx.translate(-moveX - anchorW, -moveY - anchorH);
+    }
   }
 
   function drawShapeContext(ctx, obj) {
-    ctx.fillStyle = obj.fillStyle;
-    ctx.strokeStyle = obj.strokeStyle;
-    ctx.shadowColor = obj.shadowColor;
-    ctx.shadowBlur = obj.shadowBlur || 0;
-    ctx.shadowOffsetX = obj.shadowOffsetX || 0;
-    ctx.shadowOffsetY = obj.shadowOffsetY || 0;
-    ctx.lineCap = obj.lineCap;
-    ctx.lineJoin = obj.lineJoin;
-    ctx.lineWidth = obj.lineWidth || 0;
-    ctx.miterLimit = obj.miterLimit;
+    if (obj.fillStyle) {
+      ctx.fillStyle = obj.fillStyle;
+    }
+    if (obj.strokeStyle) {
+      ctx.strokeStyle = obj.strokeStyle;
+    }
+    if (obj.shadowColor) {
+      ctx.shadowColor = obj.shadowColor;
+    }
+    if (obj.shadowBlur > 0) {
+      ctx.shadowBlur = obj.shadowBlur;
+    }
+    if (obj.shadowOffsetX > 0) {
+      ctx.shadowOffsetX = obj.shadowOffsetX;
+    }
+    if (obj.shadowOffsetY > 0) {
+      ctx.shadowOffsetY = obj.shadowOffsetY;
+    }
+    if (obj.lineCap) {
+      ctx.lineCap = obj.lineCap;
+    }
+    if (obj.lineJoin) {
+      ctx.lineJoin = obj.lineJoin;
+    }
+    if (obj.lineWidth > 0) {
+      ctx.lineWidth = obj.lineWidth;
+    }
+    if (obj.miterLimit) {
+      ctx.miterLimit = obj.miterLimit;
+    }
     if (obj.dashLength > 0) {
       try {
         ctx.setLineDash([obj.dashLength, obj.dashGap || obj.dashLength]);
-      } catch (e) {
-      }
+      } catch (e) {}
     }
   }
 
@@ -3110,7 +3147,7 @@ var cancelAnimationFrame =
       this.width = 0;
       this.height = 0;
 
-      this.alpha = undefined;
+      this.alpha = 1;
       this.scaleX = 1;
       this.scaleY = 1;
       this.rotation = 0;
@@ -3552,10 +3589,16 @@ var cancelAnimationFrame =
       this.radius = 0;
       this.dashLength = 0;
       this.dashGap = 0;
-      this.shadowColor = "#000";
+      this.lineWidth = 0;
+      this.fillStyle = null;
+      this.strokeStyle = null;
+      this.shadowColor = null;
       this.shadowBlur = 0;
       this.shadowOffsetX = 0;
       this.shadowOffsetY = 0;
+      this.lineCap = null;
+      this.lineJoin = null;
+      this.miterLimit = null;
       this.coords = [];
       this._fill = false;
       this._stroke = false;
