@@ -4334,6 +4334,7 @@ var cancelAnimationFrame =
       this.canvas = canvas;
       this.renderContext = this.canvas.getContext('2d');
 
+      var self = this;
       var opts = this.options = EC.extend({}, {
         showFps: false,
         scaleMode: 'showAll',
@@ -4341,11 +4342,10 @@ var cancelAnimationFrame =
         frameRate: 60,
         width: window.innerWidth,
         height: window.innerHeight,
-        blendMode: "source-over",
+        blendMode: null,
         autoRender: true
       }, options || {});
 
-      this.blendMode = opts.blendMode;
       this.width = parseFloat(this.canvas.getAttribute("width")) || opts.width;
       this.height = parseFloat(this.canvas.getAttribute("height")) || opts.height;
       this.scaleRatio = 1;
@@ -4358,6 +4358,17 @@ var cancelAnimationFrame =
 
       this.canvas.width = this.width;
       this.canvas.height = this.height;
+
+      this.observe('blendMode', {
+        set: function (value) {
+          self.renderContext.globalCompositeOperation = value;
+        },
+        enumerable: true
+      });
+
+      if (opts.blendMode) {
+        this.blendMode = opts.blendMode;
+      }
 
       if (opts.scaleMode !== "noScale") {
         this.setAdapter();
@@ -4399,7 +4410,6 @@ var cancelAnimationFrame =
         }
       };
 
-      ctx.globalCompositeOperation = this.blendMode;
       _render(this);
 
       return this;
