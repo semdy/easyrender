@@ -262,7 +262,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>get</td>
 		<td>url: 请求地址 <br>
 			params: ajax配置参数</td>
-		<td>request({type: 'GET'})的简易调用
+		<td>request({method: 'GET'})的简易调用
 		</td>
 		<td>Event</td>
 	</tr>
@@ -270,7 +270,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>post</td>
 		<td>url: 请求地址 <br>
 			params: ajax配置参数</td>
-		<td>request({type: 'POST'})的简易调用
+		<td>request({method: 'POST'})的简易调用
 		</td>
 		<td>Event</td>
 	</tr>
@@ -278,7 +278,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>getJSON</td>
 		<td>url: 请求地址 <br>
 			params: ajax配置参数</td>
-		<td>request({type: 'GET', dataType: 'json'})的简易调用, 自动将获取到的数据转json
+		<td>request({method: 'GET', dataType: 'json'})的简易调用, 自动将获取到的数据转json
 		</td>
 		<td>Event</td>
 	</tr>
@@ -360,9 +360,9 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>请求地址</td>
 	</tr>
 <tr>
-		<td>type</td>
+		<td>method</td>
 		<td>GET</td>
-		<td>请求类型</td>
+		<td>请求方式</td>
 	</tr>
 <tr>
 		<td>async</td>
@@ -862,6 +862,12 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 </td>
 		<td>子集迭代</td>
 		<td>EC.DisplayObject</td>
+	</tr>
+<tr>
+		<td>collideWith</td>
+		<td>DisplayObject</td>
+		<td>检测两个显示对象是否碰撞</td>
+		<td>Boolean</td>
 	</tr>
 <tr>
 		<td>getBounds</td>
@@ -1452,6 +1458,14 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 			height: 高度<br>
 		</td>
 		<td>画椭圆</td>
+		<td>EC.Shape</td>
+	</tr>
+	<tr>
+		<td>drawCurve</td>
+		<td>Array&lt;x,y&gt; points <br/>
+			例如： [[0, 10], [20, 50], [30, 100]]
+		</td>
+		<td>画平滑曲线</td>
 		<td>EC.Shape</td>
 	</tr>
 	<tr>

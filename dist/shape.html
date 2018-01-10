@@ -119,6 +119,15 @@
     rect.stroke("#f90");
     rect.drawRect(10, 650, 200, 100); //x, y, width, height
     stage.addChild(rect);
+
+    var points = [[0, 380],[100, 430], [200, 280], [300, 160],
+      [400, 340], [500, 100], [600, 300], [700, 240]];
+
+    var curve = new EC.Shape();
+    curve.stroke("#f90");
+    curve.drawCurve(points);
+    curve.y = 850;
+    stage.addChild(curve);
 </script>
 </body>
 </html>

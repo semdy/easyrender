@@ -135,7 +135,7 @@
 
   var ajaxSettings = {
     url: "",
-    type: 'GET',
+    method: 'GET',
     async: true,
     data: {},
     headers: {},
@@ -223,7 +223,7 @@
     if (!xhr) return;
 
     var dataType = args.dataType.toLowerCase(),
-      type = args.type.toUpperCase(),
+      method = args.method.toUpperCase(),
       url = args.url,
       data = getUrlModule(args.data, args.cache),
       timeout;
@@ -278,7 +278,7 @@
       }, args.timeout);
     }
 
-    if (type === 'GET' && data) {
+    if (method === 'GET' && data) {
       url += url.indexOf("?") > -1 ? ("&" + data) : ("?" + data);
       data = null;
     }
@@ -333,7 +333,7 @@
       }
     }
 
-    xhr.open(type, url, args.async);
+    xhr.open(method, url, args.async);
 
     if (args.cors) {
       args.xhrFields.withCredentials = true;
@@ -639,10 +639,10 @@
     baseUrl: 'images/'
   });
 
-  ['get', 'post', 'getJSON'].forEach(function (type, index) {
-    RES.request[type] = function (url, params) {
-      type = type.replace(/(JSON)?$/, "");
-      return new Request({url: url, type: type, data: params, dataType: index === 2 ? 'json' : 'text'});
+  ['get', 'post', 'getJSON'].forEach(function (method, index) {
+    RES.request[method] = function (url, params) {
+      method = method.replace(/(JSON)?$/, "");
+      return new Request({url: url, method: method, data: params, dataType: index === 2 ? 'json' : 'text'});
     };
   });
 

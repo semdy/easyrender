@@ -79,12 +79,43 @@
     return object.getBounds().intersects(target.getBounds());
   }
 
+  function getCtrlPoint(ps, i, a, b){
+    if (!a||!b) {
+      a = 0.25;
+      b = 0.25;
+    }
+
+    var pAx, pAy, pBx, pBy, last;
+
+    //处理两种极端情形
+    if (i < 1) {
+      pAx = ps[0][0] + (ps[1][0]-ps[0][0])*a;
+      pAy = ps[0][1] + (ps[1][1]-ps[0][1])*a;
+    } else {
+      pAx = ps[i][0] + (ps[i+1][0]-ps[i-1][0])*a;
+      pAy = ps[i][1] + (ps[i+1][1]-ps[i-1][1])*a;
+    }
+    if (i > ps.length - 3) {
+      last = ps.length - 1;
+      pBx = ps[last][0] - (ps[last][0]-ps[last-1][0])*b;
+      pBy = ps[last][1] - (ps[last][1]-ps[last-1][1])*b;
+    } else {
+      pBx = ps[i+1][0] - (ps[i+2][0]-ps[i][0])*b;
+      pBy = ps[i+1][1] - (ps[i+2][1]-ps[i][1])*b;
+    }
+    return {
+      a:{x:pAx,y:pAy},
+      b:{x:pBx,y:pBy}
+    }
+  }
+
   EC.Util = EC.Util || {};
 
   EC.extend(EC.Util, {
     color: colorTransfer,
     getParameter: getParameter,
-    hitTest: hitTest
+    hitTest: hitTest,
+    getCtrlPoint: getCtrlPoint
   });
 
 })(window.EC);

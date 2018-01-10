@@ -237,13 +237,26 @@
   }
 
   function getQuadraticLineSize(coords, moveX, moveY) {
-    var widths = [moveX], heights = [moveY];
+    var widths = [moveX||0], heights = [moveY||0];
     coords.forEach(function (coord, i) {
       if (i % 2 === 0) {
         widths.push(coord);
       } else {
         heights.push(coord);
       }
+    });
+
+    return {
+      width: getMax(widths) - getMin(widths),
+      height: getMax(heights) - getMin(heights)
+    }
+  }
+
+  function getBezierCurveLineSize(coords) {
+    var widths = [], heights = [];
+    coords.forEach(function (coord) {
+      widths.push(coord[0]);
+      heights.push(coord[1]);
     });
 
     return {
@@ -347,6 +360,10 @@
 
     ellipse: function (ctx, obj) {
       ctx.ellipse(obj.width / 2 + obj.moveX, obj.height / 2 + obj.moveY, obj.width, obj.height);
+    },
+
+    curve: function (ctx, obj) {
+      ctx.curve(obj.coords);
     },
 
     clip: function (ctx) {
@@ -457,6 +474,10 @@
 
     getBounds: function () {
       return new Bounds(this);
+    },
+
+    collideWith: function (displayObject) {
+      return EC.Util.hitTest(this, displayObject);
     },
 
     setParams: function (params) {
@@ -963,6 +984,14 @@
       this.drawType = 'ellipse';
       return this;
     },
+    drawCurve: function (coords) {
+      this.coords = coords || [];
+      var lineSize = getBezierCurveLineSize(this.coords);
+      this.width = lineSize.width;
+      this.height = lineSize.height;
+      this.drawType = 'curve';
+      return this;
+    },
     clip: function () {
       this.drawType = 'clip';
       return this;
@@ -1027,6 +1056,17 @@
       this.bezierCurveTo(x - k, y + h, x - k, y - h, x, y - h);
       this.closePath();
       return this;
+    },
+    curve: function (points) {
+      var i = 0, len = points.length, ctrlP;
+      for (; i < len; i++) {
+        if (i === 0 ) {
+          this.moveTo(points[0][0], points[0][1]);
+        } else {
+          ctrlP = EC.Util.getCtrlPoint(points, i - 1);
+          this.bezierCurveTo(ctrlP.a.x, ctrlP.a.y, ctrlP.b.x, ctrlP.b.y, points[i][0], points[i][1]);
+        }
+      }
     }
   });
 
