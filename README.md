@@ -390,6 +390,11 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>是否通过withCredentials跨域请求</td>
 	</tr>
 <tr>
+        <td>processData</td>
+        <td>true</td>
+        <td>是否将请求的数据转化成a=1&b=2的标准formData格式，否则直接将数据序列化</td>
+    </tr>
+<tr>
         <td>crossDomain</td>
         <td>false</td>
         <td>是否允许跨域请求</td>

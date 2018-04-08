@@ -772,6 +772,7 @@ var cancelAnimationFrame =
     cache: true,
     cors: false,
     global: true,
+    processData: true,
     crossDomain: false,
     beforeSend: EC.noop,
     success: EC.noop,
@@ -812,20 +813,25 @@ var cancelAnimationFrame =
     EC.extend(ajaxSettings, settings || {});
   }
 
-  function getUrlModule(params, cache) {
+  function getUrlModule(params, cache, processData) {
     var data = null;
     if (!cache) {
       var rnd = Date.now() + Math.random() * 1e18;
     }
     if (typeof params === 'object') {
-      data = [];
-      if (!cache) {
-        params._ = rnd;
+      if (!processData) {
+        data = JSON.stringify(params);
       }
-      for (var i in params) {
-        data.push(i + "=" + params[i]);
+      else {
+        data = [];
+        if (!cache) {
+          params._ = rnd;
+        }
+        for (var i in params) {
+          data.push(i + "=" + params[i]);
+        }
+        data = data.join("&");
       }
-      data = data.join("&");
     }
     else if (typeof params === 'string') {
       data = params;
@@ -854,7 +860,7 @@ var cancelAnimationFrame =
     var dataType = args.dataType.toLowerCase(),
       method = args.method.toUpperCase(),
       url = args.url,
-      data = getUrlModule(args.data, args.cache),
+      data = getUrlModule(args.data, args.cache, args.processData),
       timeout;
 
     if (!args.crossDomain) {
