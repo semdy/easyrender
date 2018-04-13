@@ -3501,7 +3501,7 @@ var cancelAnimationFrame =
       this.lineSpacing = 2;
       this.stroke = false;
       this.strokeOnly = false;
-      this.multiple = false;
+      this.multiline = false;
 
       this.x = x || 0;
       this.y = y || 0;
@@ -3518,12 +3518,12 @@ var cancelAnimationFrame =
           return this.$text;
         },
         set: function (newVal) {
-          this.$text = newVal;
-          if (this.multiple) {
-            this.$textArr = calcTextArr(this, newVal).split(/\n/);
+          this.$text = String(newVal);
+          if (this.multiline) {
+            this.$textArr = calcTextArr(this, this.$text).split(/\n/);
           }
           else {
-            this.$textArr = newVal.split(/\n/);
+            this.$textArr = this.$text.split(/\n/);
             if (!this.$hasW) {
               this.$width = getTextWidth(this, getMaxLenText(this.$textArr));
             }
@@ -4069,7 +4069,7 @@ var cancelAnimationFrame =
       }
 
       this.textField.width = this.width - this.padding[1] - this.padding[3];
-      this.textField.multiple = true;
+      this.textField.multiline = true;
       this.textField.lineSpacing = this.inputType !== "textarea" ? this.height : this.lineSpacing;
       this.textField.size = this.fontSize;
       this.textField.fontFamily = this.fontFamily || this.textField.fontFamily;
@@ -4956,6 +4956,7 @@ var cancelAnimationFrame =
       Object.defineProperty(this, 'layout', {
         set: function(target) {
           self.$layout = target;
+          self.touchScroll = self._createScroll();
           self.addChild(target);
         },
         get: function() {

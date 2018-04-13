@@ -1178,7 +1178,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>是否只描边</td>
 	</tr>
 	<tr>
-		<td>multiple</td>
+		<td>multiline</td>
 		<td>Boolean</td>
 		<td>false</td>
 		<td>是否开启文本自动换行</td>

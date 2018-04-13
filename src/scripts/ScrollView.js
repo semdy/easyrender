@@ -26,6 +26,7 @@
       Object.defineProperty(this, 'layout', {
         set: function(target) {
           self.$layout = target;
+          self.touchScroll = self._createScroll();
           self.addChild(target);
         },
         get: function() {
