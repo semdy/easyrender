@@ -275,14 +275,6 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>Event</td>
 	</tr>
 	<tr>
-		<td>getJSON</td>
-		<td>url: 请求地址 <br>
-			params: ajax配置参数</td>
-		<td>request({method: 'GET', dataType: 'json'})的简易调用, 自动将获取到的数据转json
-		</td>
-		<td>Event</td>
-	</tr>
-	<tr>
 		<td>loadJson</td>
 		<td>url: 请求地址</td>
 		<td>request({url: url, dataType: "json"})的简易调用, 自动将获取到的数据转json
@@ -446,7 +438,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 	</tr>
 <tr>
 		<td>dataType</td>
-		<td>text</td>
+		<td>json</td>
 		<td>设置返回的数据类型,可选值有：text, html, xml, json, jsonp, script</td>
 	</tr>
 <tr>

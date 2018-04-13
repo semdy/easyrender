@@ -781,7 +781,7 @@ var cancelAnimationFrame =
     progress: null,
     timeout: 0,
     context: null,
-    dataType: "text",
+    dataType: "json",
     responseType: null,
     callbackName: "?",
     contentType: 'application/x-www-form-urlencoded;charset=UTF-8',
@@ -1274,10 +1274,9 @@ var cancelAnimationFrame =
     baseUrl: 'images/'
   });
 
-  ['get', 'post', 'getJSON'].forEach(function (method, index) {
-    RES.request[method] = function (url, params) {
-      method = method.replace(/(JSON)?$/, "");
-      return new Request({url: url, method: method, data: params, dataType: index === 2 ? 'json' : 'text'});
+  ['get', 'post'].forEach(function (method) {
+    RES.request[method] = function (url, params, cfg) {
+      return new Request(EC.extend({url: url, method: method, data: params}, cfg || {}));
     };
   });
 
