@@ -3586,6 +3586,34 @@ var cancelAnimationFrame =
         enumerable: true
       });
 
+      this.observe('bold', {
+        set: function (newVal) {
+          if (newVal === true) {
+            this.textWeight = 'bold';
+          } else {
+            this.textWeight = 'normal';
+          }
+        },
+        get: function () {
+          return this.textWeight === 'bold';
+        },
+        enumerable: true
+      });
+
+      this.observe('italic', {
+        set: function (newVal) {
+          if (newVal === true) {
+            this.textStyle = 'italic';
+          } else {
+            this.textStyle = 'normal';
+          }
+        },
+        get: function () {
+          return this.textStyle === 'italic';
+        },
+        enumerable: true
+      });
+
       if(this.$text) {
         this.text = this.$text;
       }

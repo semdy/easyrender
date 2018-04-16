@@ -1149,11 +1149,23 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>文本样式</td>
 	</tr>
 	<tr>
+        <td>italic</td>
+        <td>Boolean</td>
+        <td>false</td>
+        <td>字体是否倾斜</td>
+    </tr>
+	<tr>
 		<td>textWeight</td>
 		<td>String</td>
 		<td>normal</td>
 		<td>字体加粗</td>
 	</tr>
+	<tr>
+    		<td>bold</td>
+    		<td>Boolean</td>
+    		<td>false</td>
+    		<td>字体是否加粗</td>
+    	</tr>
 	<tr>
 		<td>lineSpacing</td>
 		<td>Number</td>
