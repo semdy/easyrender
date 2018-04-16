@@ -92,9 +92,10 @@
     },
     _move: function (evt) {
       if (this.isTouchStart) {
-        var touches = getEvent(evt),
-          currentX = touches.pageX * this.scaleRatio,
-          currentY = touches.pageY * this.scaleRatio;
+        evt = getEvent(evt);
+        var bound = EC.Util.getBounding(this.element.stage.canvas, evt),
+        currentX = bound.x * this.scaleRatio,
+        currentY = bound.y * this.scaleRatio;
 
         if (this._firstTouchMove && this.lockDirection) {
           var dDis = Math.abs(currentX - this.x1) - Math.abs(currentY - this.y1);
@@ -129,17 +130,17 @@
           this.touchMove.call(this, evt, this.target[this.property]);
         }
 
-        if (touches.length === 1) {
-          if (this.x2 !== null) {
-            evt.deltaX = currentX - this.x2;
-            evt.deltaY = currentY - this.y2;
 
-          } else {
-            evt.deltaX = 0;
-            evt.deltaY = 0;
-          }
-          this.pressMove.call(this, evt, this.target[this.property]);
+        if (this.x2 !== null) {
+          evt.deltaX = currentX - this.x2;
+          evt.deltaY = currentY - this.y2;
+
+        } else {
+          evt.deltaX = 0;
+          evt.deltaY = 0;
         }
+
+        this.pressMove.call(this, evt, this.target[this.property]);
         this.x2 = currentX;
         this.y2 = currentY;
       }
@@ -160,11 +161,12 @@
     _end: function (evt) {
       if (this.isTouchStart) {
         this.isTouchStart = false;
+        evt = getEvent(evt);
         var self = this,
           current = this.target[this.property],
-          touches = getEvent(evt),
-          pageX = touches.pageX * this.scaleRatio,
-          pageY = touches.pageY * this.scaleRatio,
+          bound = EC.Util.getBounding(this.element.stage.canvas, evt),
+          pageX = bound.x * this.scaleRatio,
+          pageY = bound.y * this.scaleRatio,
           triggerTap = (Math.abs(pageX - this.x1) < 30 && Math.abs(pageY - this.y1) < 30);
         if (triggerTap) {
           this.tap.call(this, evt, current);

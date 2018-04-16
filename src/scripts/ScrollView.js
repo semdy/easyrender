@@ -18,7 +18,7 @@
         this.mask = new EC.Masker();
         this.mask.drawRect(0, 0, this.width, this.height);
         if (this.layout) {
-          this.touchScroll = this._createScroll();
+          this._createScroll();
           this.addChild(this.layout);
         }
       }, this);
@@ -26,7 +26,11 @@
       Object.defineProperty(this, 'layout', {
         set: function(target) {
           self.$layout = target;
-          self.touchScroll = self._createScroll();
+          if (self.touchScroll) {
+            self.refresh();
+          } else {
+            self._createScroll();
+          }
           self.addChild(target);
         },
         get: function() {
@@ -51,23 +55,34 @@
 
       return this;
     },
+    setContent: function (sprContent) {
+      this.layout = sprContent;
+      return this;
+    },
+    clearContent: function () {
+      this.removeAllChildren();
+      return this;
+    },
+    refresh: function () {
+      this.touchScroll.min = (this.vertical ? (this.height - this.layout.height) : (this.width - this.layout.width)) - this.adjustValue;
+      return this;
+    },
     _createScroll: function () {
       var self = this;
-      var min = (this.vertical ? (this.height - this.layout.height) : (this.width - this.layout.width)) - this.adjustValue;
-      return new EC.TouchScroll({
+      this.touchScroll = new EC.TouchScroll({
         touch: this,
         vertical: this.vertical,
         target: this.layout,
         property: this.vertical ? 'y' : 'x',
         max: 0,
-        min: min,
+        min: 0,
         step: this.step,
         fixed: this.disabled,
         initialValue: this.initialValue,
         scroll: function (value) {
           if(value === 0) {
             self.dispatch('totop', value);
-          } else if (value === min) {
+          } else if (value === self.touchScroll.min) {
             self.dispatch('tobottom', value);
           } else {
             self.dispatch('scroll', value);
@@ -80,6 +95,7 @@
           self.dispatch('scrollstop', value);
         }
       });
+      this.refresh();
     }
   });
 

@@ -144,7 +144,6 @@
     cors: false,
     global: true,
     processData: true,
-    crossDomain: false,
     beforeSend: EC.noop,
     success: EC.noop,
     error: EC.noop,
@@ -233,12 +232,6 @@
       url = args.url,
       data = getUrlModule(args.data, args.cache, args.processData),
       timeout;
-
-    if (!args.crossDomain) {
-      var urlAnchor = document.createElement('a');
-      urlAnchor.href = args.url;
-      args.crossDomain = (originAnchor.protocol + '//' + originAnchor.host) !== (urlAnchor.protocol + '//' + urlAnchor.host);
-    }
 
     function handleSuccess(res) {
       if (timeout) {
@@ -347,10 +340,6 @@
 
     for (var name in args.xhrFields) {
       xhr[name] = args.xhrFields[name];
-    }
-
-    if (!args.crossDomain || !args.cors) {
-      args.headers["X-Requested-With"] = "XMLHttpRequest";
     }
 
     args.headers['Content-Type'] = args.contentType;

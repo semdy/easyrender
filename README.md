@@ -162,6 +162,12 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>String: rgb</td>
 	</tr>
 	<tr>
+    		<td>number</td>
+    		<td>Float Number: num</td>
+    		<td><code>toInt(rgb)</code> -> 将小数转换为整数</td>
+    		<td>init number</td>
+    	</tr>
+	<tr>
 		<td>getParameter</td>
 		<td>name:参数名</td>
 		<td>获取网页url参数</td>
@@ -385,11 +391,6 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
         <td>processData</td>
         <td>true</td>
         <td>是否将请求的数据转化成a=1&b=2的标准formData格式，否则直接将数据序列化</td>
-    </tr>
-<tr>
-        <td>crossDomain</td>
-        <td>false</td>
-        <td>是否允许跨域请求</td>
     </tr>
 <tr>
         <td>xhrFields</td>
@@ -2085,6 +2086,27 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>滚动到指定位置</td>
 		<td>EC.ScrollView</td>
 	</tr>
+<tr>
+		<td>setContent</td>
+		<td>spr: content
+	</td>
+		<td>设置滚动的内容</td>
+		<td>EC.ScrollView</td>
+	</tr>
+<tr>
+		<td>clearContent</td>
+		<td>
+	</td>
+		<td>清除滚动的内容</td>
+		<td>EC.ScrollView</td>
+	</tr>
+<tr>
+		<td>refresh</td>
+		<td>
+	</td>
+		<td>重新计算scrollview相关参数的值</td>
+		<td>EC.ScrollView</td>
+	</tr>
 	<tr>
 		<td>stop</td>
 		<td>--</td>
@@ -2186,7 +2208,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>scaleMode</td>
 		<td>String</td>
 		<td>showAll</td>
-		<td>画布缩放方式，可选值有:showAll, noScale, fixedWidth</td>
+		<td>画布缩放方式，可选值有:showAll, noScale, fixedWidth, noBorder</td>
 	</tr>
 	<tr>
 		<td>width</td>

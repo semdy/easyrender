@@ -391,6 +391,51 @@ var cancelAnimationFrame =
     }
   };
 
+
+  var NumberUtils = {};
+
+  NumberUtils.toInt = function(num) {
+    return (0.5 + num) | 0;
+  };
+
+
+  var isFirefox = /Firefox\/([\d.]+)/.test(navigator.userAgent);
+
+  function getBoundingClientRect(el) {
+    // BlackBerry 5, iOS 3 (original iPhone) don't have getBoundingRect
+    try {
+      return el.getBoundingClientRect();
+    }
+    catch (e) {
+      return {
+        left: 0,
+        top: 0
+      };
+    }
+  }
+
+  function getBounding(el, e) {
+    if (isFirefox && e.layerX !== undefined && e.layerX !== e.offsetX) {
+      return {
+        x: e.layerX,
+        y: e.layerY
+      }
+    }
+    else if (e.offsetX !== undefined) {
+      return {
+        x: e.offsetX,
+        y: e.offsetY
+      }
+    }
+    else {
+      var box = getBoundingClientRect(el);
+      return {
+        x: e.clientX - box.left,
+        y: e.clientY - box.top
+      }
+    }
+  }
+
   function getParameter(name) {
     var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
     var r = window.location.search.substr(1).match(reg);
@@ -436,6 +481,8 @@ var cancelAnimationFrame =
 
   EC.extend(EC.Util, {
     color: colorTransfer,
+    number: NumberUtils,
+    getBounding: getBounding,
     getParameter: getParameter,
     hitTest: hitTest,
     getCtrlPoint: getCtrlPoint
@@ -773,7 +820,6 @@ var cancelAnimationFrame =
     cors: false,
     global: true,
     processData: true,
-    crossDomain: false,
     beforeSend: EC.noop,
     success: EC.noop,
     error: EC.noop,
@@ -862,12 +908,6 @@ var cancelAnimationFrame =
       url = args.url,
       data = getUrlModule(args.data, args.cache, args.processData),
       timeout;
-
-    if (!args.crossDomain) {
-      var urlAnchor = document.createElement('a');
-      urlAnchor.href = args.url;
-      args.crossDomain = (originAnchor.protocol + '//' + originAnchor.host) !== (urlAnchor.protocol + '//' + urlAnchor.host);
-    }
 
     function handleSuccess(res) {
       if (timeout) {
@@ -976,10 +1016,6 @@ var cancelAnimationFrame =
 
     for (var name in args.xhrFields) {
       xhr[name] = args.xhrFields[name];
-    }
-
-    if (!args.crossDomain || !args.cors) {
-      args.headers["X-Requested-With"] = "XMLHttpRequest";
     }
 
     args.headers['Content-Type'] = args.contentType;
@@ -1997,6 +2033,7 @@ var cancelAnimationFrame =
           set: function(reached){
             if(reached === true){
               self._waitTime = 0;
+              self._startTime = 0;
               delayCallback();
             }
           }
@@ -2058,6 +2095,7 @@ var cancelAnimationFrame =
         this.dequeue();
 
         var fx = queueManager.get(this);
+
         if (!fx.length) {
 
           this._triggerComplete();
@@ -2187,43 +2225,7 @@ var cancelAnimationFrame =
   "use strict";
 
   var EVENTS = EC.EVENTS,
-    isTouch = EC.isTouch,
-    isFirefox = /Firefox\/([\d.]+)/.test(navigator.userAgent);
-
-  function getBoundingClientRect(el) {
-    // BlackBerry 5, iOS 3 (original iPhone) don't have getBoundingRect
-    try {
-      return el.getBoundingClientRect();
-    }
-    catch (e) {
-      return {
-        left: 0,
-        top: 0
-      };
-    }
-  }
-
-  function getBounding(el, e) {
-    if (isFirefox && e.layerX !== undefined && e.layerX !== e.offsetX) {
-      return {
-        x: e.layerX,
-        y: e.layerY
-      }
-    }
-    else if (e.offsetX !== undefined) {
-      return {
-        x: e.offsetX,
-        y: e.offsetY
-      }
-    }
-    else {
-      var box = getBoundingClientRect(el);
-      return {
-        x: e.clientX - box.left,
-        y: e.clientY - box.top
-      }
-    }
-  }
+    isTouch = EC.isTouch;
 
   var TouchEvent = function () {
     this.enableStack = [];
@@ -2425,7 +2427,7 @@ var cancelAnimationFrame =
       return props;
     },
     _setTouchXY: function (event) {
-      var bound = getBounding(this.element, event);
+      var bound = EC.Util.getBounding(this.element, event);
       this._touchX = bound.x;
       this._touchY = bound.y;
     }
@@ -2605,9 +2607,10 @@ var cancelAnimationFrame =
     },
     _move: function (evt) {
       if (this.isTouchStart) {
-        var touches = getEvent(evt),
-          currentX = touches.pageX * this.scaleRatio,
-          currentY = touches.pageY * this.scaleRatio;
+        evt = getEvent(evt);
+        var bound = EC.Util.getBounding(this.element.stage.canvas, evt),
+        currentX = bound.x * this.scaleRatio,
+        currentY = bound.y * this.scaleRatio;
 
         if (this._firstTouchMove && this.lockDirection) {
           var dDis = Math.abs(currentX - this.x1) - Math.abs(currentY - this.y1);
@@ -2642,17 +2645,17 @@ var cancelAnimationFrame =
           this.touchMove.call(this, evt, this.target[this.property]);
         }
 
-        if (touches.length === 1) {
-          if (this.x2 !== null) {
-            evt.deltaX = currentX - this.x2;
-            evt.deltaY = currentY - this.y2;
 
-          } else {
-            evt.deltaX = 0;
-            evt.deltaY = 0;
-          }
-          this.pressMove.call(this, evt, this.target[this.property]);
+        if (this.x2 !== null) {
+          evt.deltaX = currentX - this.x2;
+          evt.deltaY = currentY - this.y2;
+
+        } else {
+          evt.deltaX = 0;
+          evt.deltaY = 0;
         }
+
+        this.pressMove.call(this, evt, this.target[this.property]);
         this.x2 = currentX;
         this.y2 = currentY;
       }
@@ -2673,11 +2676,12 @@ var cancelAnimationFrame =
     _end: function (evt) {
       if (this.isTouchStart) {
         this.isTouchStart = false;
+        evt = getEvent(evt);
         var self = this,
           current = this.target[this.property],
-          touches = getEvent(evt),
-          pageX = touches.pageX * this.scaleRatio,
-          pageY = touches.pageY * this.scaleRatio,
+          bound = EC.Util.getBounding(this.element.stage.canvas, evt),
+          pageX = bound.x * this.scaleRatio,
+          pageY = bound.y * this.scaleRatio,
           triggerTap = (Math.abs(pageX - this.x1) < 30 && Math.abs(pageY - this.y1) < 30);
         if (triggerTap) {
           this.tap.call(this, evt, current);
@@ -3197,19 +3201,20 @@ var cancelAnimationFrame =
 
       this.x = 0;
       this.y = 0;
+      this.moveX = 0;
+      this.moveY = 0;
+
       this.width = 0;
       this.height = 0;
 
-      this.alpha = 1;
-      this.scaleX = 1;
-      this.scaleY = 1;
       this.rotation = 0;
       this.skewX = 0;
       this.skewY = 0;
+      this.alpha = 1;
+      this.scaleX = 1;
+      this.scaleY = 1;
       this.anchorX = 0;
       this.anchorY = 0;
-      this.moveX = 0;
-      this.moveY = 0;
 
       this.visible = true;
       this.touchEnabled = false;
@@ -3581,7 +3586,7 @@ var cancelAnimationFrame =
       this.x = x || 0;
       this.y = y || 0;
 
-      this.texture = null;
+      this.$texture = null;
 
       if (EC.isDefined(sx)) {
         this.sx = sx;
@@ -3610,21 +3615,38 @@ var cancelAnimationFrame =
         this.height = height;
       }
 
+      this.observe('texture', {
+        set: function (data) {
+          this.setTexture(data);
+        },
+        get: function () {
+          return this.$texture;
+        },
+        enumerable: true
+      });
+
     },
     setTexture: function (data) {
       if (EC.isString(data)) {
         this.setTexture(RES.getRes(data));
-      } else if (EC.isObject(data)) {
+      }
+      else if (EC.isObject(data)) {
         if (data.nodeName === "IMG") {
           this.setParams({
-            texture: data,
+            $texture: data,
             width: data.width,
             height: data.height
-          })
-        } else {
-          this.setParams(data);
+          });
         }
-      } else {
+        else {
+          this.setParams({
+            $texture: data.texture,
+            width: data.width,
+            height: data.height
+          });
+        }
+      }
+      else {
         throw new TypeError(String(data) + " is a invalid texture");
       }
 
@@ -3914,6 +3936,7 @@ var cancelAnimationFrame =
       this.$height = h || 0;
       this.$hasW = false;
       this.$hasH = false;
+      this.$mask = null;
 
       this.observe('width', {
         set: function (newVal) {
@@ -3937,9 +3960,18 @@ var cancelAnimationFrame =
         enumerable: true
       });
 
+      this.observe('mask', {
+        set: function (masker) {
+          this._addMask(masker);
+        },
+        get: function () {
+          return this.$mask;
+        },
+        enumerable: true
+      });
+
     },
-    addChild: function (childObj) {
-      this._addMask();
+    addChild: function () {
       Sprite.superclass.addChild.apply(this, arguments);
       this.resize();
 
@@ -3951,10 +3983,16 @@ var cancelAnimationFrame =
 
       return this;
     },
-    _addMask: function () {
-      if (!this.mask || this._isMaskAdded) return;
-      if (this.mask instanceof EC.Masker) {
-        Sprite.superclass.addChild.call(this, this.mask, 0);
+    _addMask: function (masker) {
+      if (masker === null && this._isMaskAdded) {
+        this._isMaskAdded = false;
+        this.children.shift();
+        return;
+      }
+      if (this._isMaskAdded) return;
+      if (masker instanceof EC.Masker) {
+        this.children.unshift(masker);
+        this.$mask = masker;
         this._isMaskAdded = true;
       } else {
         throw new TypeError("mask must be a instance of EC.Masker");
@@ -4531,6 +4569,7 @@ var cancelAnimationFrame =
       var parentH = parent.nodeName === 'BODY' ? window.innerHeight : parent.offsetHeight - parseFloat(EC.getStyle(parent, 'padding-top')) - parseFloat(EC.getStyle(parent, 'padding-bottom'));
       var width = parentW;
       var height = this.height / this.width * width;
+      var marginTop = 0;
 
       switch (this.options.scaleMode) {
         case 'showAll':
@@ -4539,12 +4578,16 @@ var cancelAnimationFrame =
             width = this.width / this.height * height;
           }
           break;
+        case 'noBorder':
+          marginTop = (parentH - height) / 2;
+          break;
         case 'fixedWidth':
           break;
       }
 
       this.canvas.style.width = width + "px";
       this.canvas.style.height = height + "px";
+      this.canvas.style.marginTop = marginTop + "px";
       this.scaleRatio = this.width / width;
 
       return this;
@@ -4948,7 +4991,7 @@ var cancelAnimationFrame =
         this.mask = new EC.Masker();
         this.mask.drawRect(0, 0, this.width, this.height);
         if (this.layout) {
-          this.touchScroll = this._createScroll();
+          this._createScroll();
           this.addChild(this.layout);
         }
       }, this);
@@ -4956,7 +4999,11 @@ var cancelAnimationFrame =
       Object.defineProperty(this, 'layout', {
         set: function(target) {
           self.$layout = target;
-          self.touchScroll = self._createScroll();
+          if (self.touchScroll) {
+            self.refresh();
+          } else {
+            self._createScroll();
+          }
           self.addChild(target);
         },
         get: function() {
@@ -4981,23 +5028,34 @@ var cancelAnimationFrame =
 
       return this;
     },
+    setContent: function (sprContent) {
+      this.layout = sprContent;
+      return this;
+    },
+    clearContent: function () {
+      this.removeAllChildren();
+      return this;
+    },
+    refresh: function () {
+      this.touchScroll.min = (this.vertical ? (this.height - this.layout.height) : (this.width - this.layout.width)) - this.adjustValue;
+      return this;
+    },
     _createScroll: function () {
       var self = this;
-      var min = (this.vertical ? (this.height - this.layout.height) : (this.width - this.layout.width)) - this.adjustValue;
-      return new EC.TouchScroll({
+      this.touchScroll = new EC.TouchScroll({
         touch: this,
         vertical: this.vertical,
         target: this.layout,
         property: this.vertical ? 'y' : 'x',
         max: 0,
-        min: min,
+        min: 0,
         step: this.step,
         fixed: this.disabled,
         initialValue: this.initialValue,
         scroll: function (value) {
           if(value === 0) {
             self.dispatch('totop', value);
-          } else if (value === min) {
+          } else if (value === self.touchScroll.min) {
             self.dispatch('tobottom', value);
           } else {
             self.dispatch('scroll', value);
@@ -5010,6 +5068,7 @@ var cancelAnimationFrame =
           self.dispatch('scrollstop', value);
         }
       });
+      this.refresh();
     }
   });
 

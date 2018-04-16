@@ -188,6 +188,7 @@
           set: function(reached){
             if(reached === true){
               self._waitTime = 0;
+              self._startTime = 0;
               delayCallback();
             }
           }
@@ -249,6 +250,7 @@
         this.dequeue();
 
         var fx = queueManager.get(this);
+
         if (!fx.length) {
 
           this._triggerComplete();

@@ -6,43 +6,7 @@
   "use strict";
 
   var EVENTS = EC.EVENTS,
-    isTouch = EC.isTouch,
-    isFirefox = /Firefox\/([\d.]+)/.test(navigator.userAgent);
-
-  function getBoundingClientRect(el) {
-    // BlackBerry 5, iOS 3 (original iPhone) don't have getBoundingRect
-    try {
-      return el.getBoundingClientRect();
-    }
-    catch (e) {
-      return {
-        left: 0,
-        top: 0
-      };
-    }
-  }
-
-  function getBounding(el, e) {
-    if (isFirefox && e.layerX !== undefined && e.layerX !== e.offsetX) {
-      return {
-        x: e.layerX,
-        y: e.layerY
-      }
-    }
-    else if (e.offsetX !== undefined) {
-      return {
-        x: e.offsetX,
-        y: e.offsetY
-      }
-    }
-    else {
-      var box = getBoundingClientRect(el);
-      return {
-        x: e.clientX - box.left,
-        y: e.clientY - box.top
-      }
-    }
-  }
+    isTouch = EC.isTouch;
 
   var TouchEvent = function () {
     this.enableStack = [];
@@ -244,7 +208,7 @@
       return props;
     },
     _setTouchXY: function (event) {
-      var bound = getBounding(this.element, event);
+      var bound = EC.Util.getBounding(this.element, event);
       this._touchX = bound.x;
       this._touchY = bound.y;
     }

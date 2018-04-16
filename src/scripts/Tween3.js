@@ -245,6 +245,7 @@
           set: function(reached){
             if(reached === true){
               self._waitTime = 0;
+              self._startTime = 0;
               delayCallback();
             }
           }

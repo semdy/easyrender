@@ -391,19 +391,20 @@
 
       this.x = 0;
       this.y = 0;
+      this.moveX = 0;
+      this.moveY = 0;
+
       this.width = 0;
       this.height = 0;
 
-      this.alpha = 1;
-      this.scaleX = 1;
-      this.scaleY = 1;
       this.rotation = 0;
       this.skewX = 0;
       this.skewY = 0;
+      this.alpha = 1;
+      this.scaleX = 1;
+      this.scaleY = 1;
       this.anchorX = 0;
       this.anchorY = 0;
-      this.moveX = 0;
-      this.moveY = 0;
 
       this.visible = true;
       this.touchEnabled = false;
@@ -775,7 +776,7 @@
       this.x = x || 0;
       this.y = y || 0;
 
-      this.texture = null;
+      this.$texture = null;
 
       if (EC.isDefined(sx)) {
         this.sx = sx;
@@ -804,21 +805,38 @@
         this.height = height;
       }
 
+      this.observe('texture', {
+        set: function (data) {
+          this.setTexture(data);
+        },
+        get: function () {
+          return this.$texture;
+        },
+        enumerable: true
+      });
+
     },
     setTexture: function (data) {
       if (EC.isString(data)) {
         this.setTexture(RES.getRes(data));
-      } else if (EC.isObject(data)) {
+      }
+      else if (EC.isObject(data)) {
         if (data.nodeName === "IMG") {
           this.setParams({
-            texture: data,
+            $texture: data,
             width: data.width,
             height: data.height
-          })
-        } else {
-          this.setParams(data);
+          });
         }
-      } else {
+        else {
+          this.setParams({
+            $texture: data.texture,
+            width: data.width,
+            height: data.height
+          });
+        }
+      }
+      else {
         throw new TypeError(String(data) + " is a invalid texture");
       }
 
@@ -1108,6 +1126,7 @@
       this.$height = h || 0;
       this.$hasW = false;
       this.$hasH = false;
+      this.$mask = null;
 
       this.observe('width', {
         set: function (newVal) {
@@ -1131,9 +1150,18 @@
         enumerable: true
       });
 
+      this.observe('mask', {
+        set: function (masker) {
+          this._addMask(masker);
+        },
+        get: function () {
+          return this.$mask;
+        },
+        enumerable: true
+      });
+
     },
-    addChild: function (childObj) {
-      this._addMask();
+    addChild: function () {
       Sprite.superclass.addChild.apply(this, arguments);
       this.resize();
 
@@ -1145,10 +1173,16 @@
 
       return this;
     },
-    _addMask: function () {
-      if (!this.mask || this._isMaskAdded) return;
-      if (this.mask instanceof EC.Masker) {
-        Sprite.superclass.addChild.call(this, this.mask, 0);
+    _addMask: function (masker) {
+      if (masker === null && this._isMaskAdded) {
+        this._isMaskAdded = false;
+        this.children.shift();
+        return;
+      }
+      if (this._isMaskAdded) return;
+      if (masker instanceof EC.Masker) {
+        this.children.unshift(masker);
+        this.$mask = masker;
         this._isMaskAdded = true;
       } else {
         throw new TypeError("mask must be a instance of EC.Masker");
@@ -1725,6 +1759,7 @@
       var parentH = parent.nodeName === 'BODY' ? window.innerHeight : parent.offsetHeight - parseFloat(EC.getStyle(parent, 'padding-top')) - parseFloat(EC.getStyle(parent, 'padding-bottom'));
       var width = parentW;
       var height = this.height / this.width * width;
+      var marginTop = 0;
 
       switch (this.options.scaleMode) {
         case 'showAll':
@@ -1733,12 +1768,16 @@
             width = this.width / this.height * height;
           }
           break;
+        case 'noBorder':
+          marginTop = (parentH - height) / 2;
+          break;
         case 'fixedWidth':
           break;
       }
 
       this.canvas.style.width = width + "px";
       this.canvas.style.height = height + "px";
+      this.canvas.style.marginTop = marginTop + "px";
       this.scaleRatio = this.width / width;
 
       return this;
