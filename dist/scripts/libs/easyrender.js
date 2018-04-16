@@ -1380,6 +1380,7 @@ var cancelAnimationFrame =
           cancelAnimationFrame(this._ticker);
         }
         delete this._ticker;
+        this.dispatch('stop', Date.now());
       }
 
       return this;
@@ -2075,8 +2076,8 @@ var cancelAnimationFrame =
       var percent, _object, value,
         elapse = (time || Date.now()) - this._startTime;
 
-      if(this._waitTime > 0) {
-        if(elapse >= this._waitTime) {
+      if (this._waitTime > 0) {
+        if (elapse >= this._waitTime) {
           this._timeup = true;
         }
         return true;

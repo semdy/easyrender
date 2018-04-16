@@ -44,6 +44,7 @@
           cancelAnimationFrame(this._ticker);
         }
         delete this._ticker;
+        this.dispatch('stop', Date.now());
       }
 
       return this;
