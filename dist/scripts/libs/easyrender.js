@@ -199,16 +199,32 @@ var EC = {
   var pointerEnabled = window.navigator.msPointerEnabled;
   var isIeMobile = pointerEnabled && /IEMobile/i.test(ua);
 
+  var hidden, visibilityChange;
+  if (typeof document.hidden !== "undefined") { // Opera 12.10 and Firefox 18 and later support
+    hidden = "hidden";
+    visibilityChange = "visibilitychange";
+  } else if (typeof document.msHidden !== "undefined") {
+    hidden = "msHidden";
+    visibilityChange = "msvisibilitychange";
+  } else if (typeof document.webkitHidden !== "undefined") {
+    hidden = "webkitHidden";
+    visibilityChange = "webkitvisibilitychange";
+  }
+
   isTouch = isTouch || isIeMobile || false;
 
   var EVENTS = isIeMobile ? {
     START: 'MSPointerDown',
     MOVE: 'MSPointerMove',
-    END: 'MSPointerCancel'
+    END: 'MSPointerCancel',
+    HIDDEN: hidden,
+    VISIBILITYCHANGE: visibilityChange
   } : {
     START: isTouch ? 'touchstart' : 'mousedown',
     MOVE: isTouch ? 'touchmove' : 'mousemove',
-    END: isTouch ? 'touchend' : 'mouseup'
+    END: isTouch ? 'touchend' : 'mouseup',
+    HIDDEN: hidden,
+    VISIBILITYCHANGE: visibilityChange
   };
 
   EVENTS.RESIZE = 'onorientationchange' in window ? 'orientationchange' : 'resize';
@@ -4457,7 +4473,10 @@ var cancelAnimationFrame =
         width: window.innerWidth,
         height: window.innerHeight,
         blendMode: null,
-        autoRender: true
+        autoRender: true,
+        autoPauseRender: true,
+        onPause: EC.noop,
+        onResume: EC.noop
       }, options || {});
 
       this.width = parseFloat(this.canvas.getAttribute("width")) || opts.width;
@@ -4555,12 +4574,14 @@ var cancelAnimationFrame =
       if (this._isRendering) return;
       this._isRendering = true;
       this._ticker.start();
+      this.options.onResume();
 
       return this;
     },
     stopRender: function () {
       this._ticker.stop();
       this._isRendering = false;
+      this.options.onPause();
       return this;
     },
     setAdapter: function () {
@@ -4608,6 +4629,24 @@ var cancelAnimationFrame =
       if (opts.scaleMode !== 'noScale') {
         window.addEventListener(EC.EVENTS.RESIZE, function () {
           this.setAdapter();
+        }.bind(this), false);
+      }
+
+      if (opts.autoPauseRender && opts.autoRender) {
+        document.addEventListener(EC.EVENTS.VISIBILITYCHANGE, function () {
+          if (document[EC.EVENTS.HIDDEN]) {
+            this.stopRender();
+          } else {
+            this.startRender();
+          }
+        }.bind(this), false);
+
+        window.addEventListener("focus", function(){
+          this.startRender();
+        }.bind(this), false);
+
+        window.addEventListener("blur", function(){
+          this.stopRender();
         }.bind(this), false);
       }
 

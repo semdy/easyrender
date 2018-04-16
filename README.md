@@ -2246,6 +2246,24 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>true</td>
 		<td>是否自动开始渲染</td>
 	</tr>
+<tr>
+        <td>autoPauseRender</td>
+        <td>Boolean</td>
+        <td>true</td>
+        <td>当页面隐藏或失去焦点时是否自动暂停渲染</td>
+    </tr>
+<tr>
+        <td>onPause</td>
+        <td>Function</td>
+        <td>EC.noop</td>
+        <td>当页面暂停渲染时的回调</td>
+    </tr>
+<tr>
+        <td>onResume</td>
+        <td>Function</td>
+        <td>EC.noop</td>
+        <td>当页面重新开始渲染时的回调</td>
+    </tr>
 </table>
 
 ### EC.Stage methods ###

@@ -1647,7 +1647,10 @@
         width: window.innerWidth,
         height: window.innerHeight,
         blendMode: null,
-        autoRender: true
+        autoRender: true,
+        autoPauseRender: true,
+        onPause: EC.noop,
+        onResume: EC.noop
       }, options || {});
 
       this.width = parseFloat(this.canvas.getAttribute("width")) || opts.width;
@@ -1745,12 +1748,14 @@
       if (this._isRendering) return;
       this._isRendering = true;
       this._ticker.start();
+      this.options.onResume();
 
       return this;
     },
     stopRender: function () {
       this._ticker.stop();
       this._isRendering = false;
+      this.options.onPause();
       return this;
     },
     setAdapter: function () {
@@ -1798,6 +1803,24 @@
       if (opts.scaleMode !== 'noScale') {
         window.addEventListener(EC.EVENTS.RESIZE, function () {
           this.setAdapter();
+        }.bind(this), false);
+      }
+
+      if (opts.autoPauseRender && opts.autoRender) {
+        document.addEventListener(EC.EVENTS.VISIBILITYCHANGE, function () {
+          if (document[EC.EVENTS.HIDDEN]) {
+            this.stopRender();
+          } else {
+            this.startRender();
+          }
+        }.bind(this), false);
+
+        window.addEventListener("focus", function(){
+          this.startRender();
+        }.bind(this), false);
+
+        window.addEventListener("blur", function(){
+          this.stopRender();
         }.bind(this), false);
       }
 

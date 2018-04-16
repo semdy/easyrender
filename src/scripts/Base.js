@@ -199,16 +199,32 @@ var EC = {
   var pointerEnabled = window.navigator.msPointerEnabled;
   var isIeMobile = pointerEnabled && /IEMobile/i.test(ua);
 
+  var hidden, visibilityChange;
+  if (typeof document.hidden !== "undefined") { // Opera 12.10 and Firefox 18 and later support
+    hidden = "hidden";
+    visibilityChange = "visibilitychange";
+  } else if (typeof document.msHidden !== "undefined") {
+    hidden = "msHidden";
+    visibilityChange = "msvisibilitychange";
+  } else if (typeof document.webkitHidden !== "undefined") {
+    hidden = "webkitHidden";
+    visibilityChange = "webkitvisibilitychange";
+  }
+
   isTouch = isTouch || isIeMobile || false;
 
   var EVENTS = isIeMobile ? {
     START: 'MSPointerDown',
     MOVE: 'MSPointerMove',
-    END: 'MSPointerCancel'
+    END: 'MSPointerCancel',
+    HIDDEN: hidden,
+    VISIBILITYCHANGE: visibilityChange
   } : {
     START: isTouch ? 'touchstart' : 'mousedown',
     MOVE: isTouch ? 'touchmove' : 'mousemove',
-    END: isTouch ? 'touchend' : 'mouseup'
+    END: isTouch ? 'touchend' : 'mouseup',
+    HIDDEN: hidden,
+    VISIBILITYCHANGE: visibilityChange
   };
 
   EVENTS.RESIZE = 'onorientationchange' in window ? 'orientationchange' : 'resize';
