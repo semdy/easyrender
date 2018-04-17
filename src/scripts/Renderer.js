@@ -521,7 +521,7 @@
 
     _triggerAddToStage: function (childObj, context) {
       var setParams = function(obj){
-        return {target: obj, renderContext: context.renderContext, stage: context};
+        return {target: obj, renderContext: context.cacheContext, stage: context};
       };
       var _runAddToStage = function (obj) {
         if(!obj._stageAddFired){
@@ -1665,6 +1665,8 @@
 
       this.canvas = canvas;
       this.renderContext = this.canvas.getContext('2d');
+      this.cacheCanvas = document.createElement('canvas');
+      this.cacheContext = this.cacheCanvas.getContext('2d');
 
       var self = this;
       var opts = this.options = EC.extend({}, {
@@ -1693,10 +1695,12 @@
 
       this.canvas.width = this.width;
       this.canvas.height = this.height;
+      this.cacheCanvas.width = this.width;
+      this.cacheCanvas.height = this.height;
 
       this.observe('blendMode', {
         set: function (value) {
-          self.renderContext.globalCompositeOperation = value;
+          self.cacheContext.globalCompositeOperation = value;
         },
         enumerable: true
       });
@@ -1728,7 +1732,7 @@
     },
     render: function (time) {
       var self = this;
-      var ctx = this.renderContext;
+      var ctx = this.cacheContext;
       var _render = function (obj) {
         if (obj.visible) {
           obj.dispatch("enterframe", time);
@@ -1746,6 +1750,8 @@
       };
 
       _render(this);
+
+      this.renderContext.drawImage(this.cacheCanvas, 0, 0);
 
       return this;
     },
@@ -1769,6 +1775,7 @@
       obj.isMasker || ctx.restore();
     },
     clear: function () {
+      this.cacheContext.clearRect(0, 0, this.width, this.height);
       this.renderContext.clearRect(0, 0, this.width, this.height);
       return this;
     },
@@ -1817,8 +1824,10 @@
     },
     _initEvents: function () {
 
+      var self = this;
       var opts = this.options;
       var isShowFPS = opts.showFps;
+      var timeId = null;
 
       this._ticker.on("ticker", function (time) {
         isShowFPS && this.FPS.begin();
@@ -1830,26 +1839,27 @@
 
       if (opts.scaleMode !== 'noScale') {
         window.addEventListener(EC.EVENTS.RESIZE, function () {
-          this.setAdapter();
-        }.bind(this), false);
+          if (timeId) clearTimeout(timeId);
+          timeId = setTimeout(self.setAdapter.bind(self), 100);
+        }, false);
       }
 
       if (opts.autoPauseRender && opts.autoRender) {
         document.addEventListener(EC.EVENTS.VISIBILITYCHANGE, function () {
           if (document[EC.EVENTS.HIDDEN]) {
-            this.stopRender();
+            self.stopRender();
           } else {
-            this.startRender();
+            self.startRender();
           }
-        }.bind(this), false);
+        }, false);
 
         window.addEventListener("focus", function(){
-          this.startRender();
-        }.bind(this), false);
+          self.startRender();
+        }, false);
 
         window.addEventListener("blur", function(){
-          this.stopRender();
-        }.bind(this), false);
+          self.stopRender();
+        }, false);
       }
 
       new EC.TouchEvent().attach(this);
@@ -1884,7 +1894,7 @@
     "isPointInPath"
   ].forEach(function (method) {
     Stage.prototype[method] = function () {
-      return this.renderContext[method].apply(this, arguments);
+      return this.cacheContext[method].apply(this, arguments);
     };
   });
 
