@@ -2836,6 +2836,7 @@ var cancelAnimationFrame =
   var CONST_ANGLE = PI / 180;
   var slice = Array.prototype.slice;
   var tmpCtx = document.createElement("canvas").getContext("2d");
+  var heightCache = {};
 
   function drawImg(ctx, obj) {
     if (!obj.texture) return;
@@ -2903,8 +2904,12 @@ var cancelAnimationFrame =
     ctx.restore();
   }
 
+  function getFontStyle(obj) {
+    return obj.font || (obj.textStyle + " " + obj.textWeight + " " + obj.size + "px " + obj.fontFamily);
+  }
+
   function drawText(ctx, obj) {
-    ctx.font = obj.font || (obj.textStyle + " " + obj.textWeight + " " + obj.size + "px " + obj.fontFamily);
+    ctx.font = getFontStyle(obj);
     ctx.textAlign = obj.textAlign;
     ctx.textBaseline = obj.textBaseline;
 
@@ -2963,10 +2968,98 @@ var cancelAnimationFrame =
   }
 
   function getTextWidth(obj, text) {
-    tmpCtx.font = obj.font || (obj.textStyle + " " + obj.textWeight + " " + obj.size + "px " + obj.fontFamily);
+    tmpCtx.font = getFontStyle(obj);
     tmpCtx.textAlign = obj.textAlign;
     return tmpCtx.measureText(text).width;
   }
+
+  //检测BOM环境
+  function checkBOMEnv() {
+    if (typeof window !== 'object') return false;
+    if (window.document === undefined) return false;
+    try {
+      var div = window.document.createElement('div');
+      var body = document.body;
+      div.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;';
+      body.appendChild(div);
+      var result = div.offsetWidth;
+      body.removeChild(div);
+      if (result === 1) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
+
+  //BOM环境测量文本高度的方法
+  function determineFontHeight(fontStyle) {
+    var result = heightCache[fontStyle];
+
+    if (!result) {
+      var body = document.body;
+      var dummy = document.createElement('div');
+
+      var dummyText = document.createTextNode('gM');
+      dummy.appendChild(dummyText);
+      dummy.setAttribute('style', 'font:'+ fontStyle +';line-height:1;position:absolute;top:0;left:-9999px');
+      body.appendChild(dummy);
+      result = dummy.offsetHeight;
+      heightCache[fontStyle] = result;
+      body.removeChild(dummy);
+    }
+
+    return result;
+  }
+
+  //非BOM环境测量文本高度的方法
+  function determineFontHeightInPixels(fontStyle) {
+    var result = heightCache[fontStyle];
+
+    if (!result) {
+      var fontDraw = document.createElement("canvas");
+      var ctx = fontDraw.getContext('2d');
+      ctx.fillRect(0, 0, fontDraw.width, fontDraw.height);
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = 'white';
+      ctx.font = fontStyle;
+      ctx.fillText('gM', 0, 0);
+      var pixels = ctx.getImageData(0, 0, fontDraw.width, fontDraw.height).data;
+      var start = -1;
+      var end = -1;
+      for (var row = 0; row < fontDraw.height; row++) {
+        for (var column = 0; column < fontDraw.width; column++) {
+          var index = (row * fontDraw.width + column) * 4;
+          if (pixels[index] === 0) {
+            if (column === fontDraw.width - 1 && start !== -1) {
+              end = row;
+              row = fontDraw.height;
+              break;
+            }
+            continue;
+          }
+          else {
+            if (start === -1)
+            {
+              start = row;
+            }
+            break;
+          }
+        }
+      }
+      result = end - start;
+      heightCache[fontStyle] = result;
+    }
+    return result;
+  }
+
+  var getTextHeight = checkBOMEnv() ? function(obj){
+    return determineFontHeight(getFontStyle(obj));
+  } : function (obj) {
+    return determineFontHeightInPixels(getFontStyle(obj));
+  };
 
   function drawShape(ctx, obj) {
     ctx.beginPath();
@@ -3512,7 +3605,7 @@ var cancelAnimationFrame =
 
       this.$text = text || "";
       this.$textArr = [];
-      this.size = size || 16;
+      this.$size = size || 16;
       this.textAlign = align || "start";
       this.textBaseline = "top";
       this.textColor = color || "#000";
@@ -3535,23 +3628,40 @@ var cancelAnimationFrame =
       this.$hasW = false;
       this.$hasH = false;
 
+      var determineTextSetter = function () {
+        if (this.multiline) {
+          this.$textArr = calcTextArr(this, this.$text).split(/\n/);
+        }
+        else {
+          this.$textArr = this.$text.split(/\n/);
+          if (!this.$hasW) {
+            this.$width = getTextWidth(this, getMaxLenText(this.$textArr));
+          }
+        }
+        if (!this.$hasH) {
+          this.$height = (getTextHeight(this) + this.lineSpacing) * this.numLines - this.lineSpacing;
+        }
+      };
+
       this.observe('text', {
         get: function () {
           return this.$text;
         },
         set: function (newVal) {
           this.$text = String(newVal);
-          if (this.multiline) {
-            this.$textArr = calcTextArr(this, this.$text).split(/\n/);
-          }
-          else {
-            this.$textArr = this.$text.split(/\n/);
-            if (!this.$hasW) {
-              this.$width = getTextWidth(this, getMaxLenText(this.$textArr));
-            }
-          }
-          if (!this.$hasH) {
-            this.$height = (this.size + 4 + this.lineSpacing) * this.numLines - this.lineSpacing;
+          determineTextSetter.call(this);
+        },
+        enumerable: true
+      });
+
+      this.observe('size', {
+        get: function () {
+          return this.$size;
+        },
+        set: function (newVal) {
+          this.$size = newVal;
+          if (this.$text) {
+            determineTextSetter.call(this);
           }
         },
         enumerable: true
@@ -4157,7 +4267,7 @@ var cancelAnimationFrame =
       this.textField.size = this.fontSize;
       this.textField.fontFamily = this.fontFamily || this.textField.fontFamily;
       this.textField.x = this.borderWidth + this.padding[3];
-      this.textField.y = this.inputType === "textarea" ? this.padding[0] : (this.height - this.textField.height + this.borderWidth) / 2;
+      this.textField.y = this.inputType === "textarea" ? this.padding[0] : (this.height - this.textField.height - this.borderWidth) /2;
 
       this.mask = new Masker();
       this.mask.drawRect(0, 0, this.width + this.borderWidth, this.height + this.borderWidth);
