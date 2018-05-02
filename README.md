@@ -1634,12 +1634,6 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>输入框文本字体</td>
 	</tr>
 <tr>
-		<td>lineHeight</td>
-		<td>Number</td>
-		<td>16</td>
-		<td>输入框文本行高</td>
-	</tr>
-<tr>
 		<td>lineSpacing</td>
 		<td>Number</td>
 		<td>2</td>

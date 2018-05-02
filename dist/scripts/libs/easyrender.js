@@ -4208,7 +4208,6 @@ var cancelAnimationFrame =
       this.placeholderColor = "#999";
       this.placeholder = "";
       this.fontFamily = "";
-      this.lineHeight = 16;
       this.lineSpacing = 2;
       this.inputType = "text";
 
@@ -4282,10 +4281,10 @@ var cancelAnimationFrame =
     _setInputStyle: function () {
       var self = this;
       var ratio = 1 / this.stage.scaleRatio;
-      var lineHeight = this.inputType !== "textarea" ? this.height : this.lineHeight;
+      var marginTop = this.inputType === "textarea" ? -this.lineSpacing/2 : 0;
       var totalOffset = getTotalOffset(this);
       this.inputText.style.cssText = "display:none;position:absolute;border:none;background:none;outline:none;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none;appearance:none;-webkit-text-size-adjust:none;text-size-adjust:none;-webkit-box-sizing:border-box;box-sizing:border-box;overflow:auto;resize:none;" +
-        "left:" + (totalOffset.x + self.borderWidth / 2) * ratio + "px;top:" + totalOffset.y * ratio + "px;width:" + this.width * ratio + "px;height:" + this.height * ratio + "px;line-height:" + lineHeight * ratio + "px;font-size:" + this.fontSize * ratio + "px;font-family:" + (this.fontFamily || this.textField.fontFamily) + ";color:" + this.color + ";padding:" +
+        "left:" + (totalOffset.x + self.borderWidth / 2) * ratio + "px;top:" + totalOffset.y * ratio + "px;width:" + this.width * ratio + "px;height:" + this.height * ratio + "px;line-height:" + (this.fontSize + this.lineSpacing) * ratio + "px;font-size:" + this.fontSize * ratio + "px;font-family:" + (this.fontFamily || this.textField.fontFamily) + ";color:" + this.color + ";margin-top:"+ marginTop +"px;padding:" +
         this.padding.map(function (pad) {
           return (pad + self.borderWidth / 2) * ratio + "px"
         }).join(" ");
