@@ -148,23 +148,7 @@
 
   //检测BOM环境
   function checkBOMEnv() {
-    if (typeof window !== 'object') return false;
-    if (window.document === undefined) return false;
-    try {
-      var div = window.document.createElement('div');
-      var body = document.body;
-      div.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;';
-      body.appendChild(div);
-      var result = div.offsetWidth;
-      body.removeChild(div);
-      if (result === 1) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (e) {
-      return false;
-    }
+    return typeof window === 'object' && !!window.document && !!window.setInterval;
   }
 
   //BOM环境测量文本高度的方法
