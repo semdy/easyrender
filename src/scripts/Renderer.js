@@ -591,7 +591,7 @@
       return this;
     },
 
-    observe: function (property, descriptor) {
+    defineProperty: function (property, descriptor) {
       Object.defineProperty(this, property, descriptor);
       return this;
     },
@@ -640,7 +640,7 @@
 
       this.$type = 'Sprite';
 
-      this.observe('numChildren', {
+      this.defineProperty('numChildren', {
         get: function () {
           return this.size();
         },
@@ -800,7 +800,7 @@
         }
       };
 
-      this.observe('text', {
+      this.defineProperty('text', {
         get: function () {
           return this.$text;
         },
@@ -811,7 +811,7 @@
         enumerable: true
       });
 
-      this.observe('size', {
+      this.defineProperty('size', {
         get: function () {
           return this.$size;
         },
@@ -824,14 +824,14 @@
         enumerable: true
       });
 
-      this.observe('numLines', {
+      this.defineProperty('numLines', {
         get: function () {
           return this.$textArr.length;
         },
         enumerable: true
       });
 
-      this.observe('width', {
+      this.defineProperty('width', {
         set: function (newVal) {
           this.$width = newVal;
           this.$hasW = true;
@@ -842,7 +842,7 @@
         enumerable: true
       });
 
-      this.observe('height', {
+      this.defineProperty('height', {
         set: function (newVal) {
           this.$height = newVal;
           this.$hasH = true;
@@ -853,7 +853,7 @@
         enumerable: true
       });
 
-      this.observe('bold', {
+      this.defineProperty('bold', {
         set: function (newVal) {
           if (newVal === true) {
             this.textWeight = 'bold';
@@ -867,7 +867,7 @@
         enumerable: true
       });
 
-      this.observe('italic', {
+      this.defineProperty('italic', {
         set: function (newVal) {
           if (newVal === true) {
             this.textStyle = 'italic';
@@ -927,7 +927,7 @@
         this.height = height;
       }
 
-      this.observe('texture', {
+      this.defineProperty('texture', {
         set: function (data) {
           this.setTexture(data);
         },
@@ -1250,7 +1250,7 @@
       this.$hasH = false;
       this.$mask = null;
 
-      this.observe('width', {
+      this.defineProperty('width', {
         set: function (newVal) {
           this.$width = newVal;
           this.$hasW = true;
@@ -1261,7 +1261,7 @@
         enumerable: true
       });
 
-      this.observe('height', {
+      this.defineProperty('height', {
         set: function (newVal) {
           this.$height = newVal;
           this.$hasH = true;
@@ -1272,7 +1272,7 @@
         enumerable: true
       });
 
-      this.observe('mask', {
+      this.defineProperty('mask', {
         set: function (masker) {
           this._addMask(masker);
         },
@@ -1495,7 +1495,7 @@
       this.$textArr = [];
       this.$textwrap = new Sprite();
 
-      this.observe('text', {
+      this.defineProperty('text', {
         set: function (newVal) {
           this.$text = newVal;
           this.$textArr = newVal.split("");
@@ -1791,7 +1791,7 @@
       this.cacheCanvas.width = this.width;
       this.cacheCanvas.height = this.height;
 
-      this.observe('blendMode', {
+      this.defineProperty('blendMode', {
         set: function (value) {
           self.cacheContext.globalCompositeOperation = value;
         },
