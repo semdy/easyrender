@@ -896,7 +896,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
         <td>EC.DisplayObject</td>
     </tr>
 <tr>
-        <td>observe</td>
+        <td>defineProperty</td>
         <td>String: property -> 被定义的属性<br>
             Object: descriptor  -> 被定义属性的描述
         </td>
