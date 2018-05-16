@@ -13,12 +13,12 @@
   EC.extend(Event.prototype, {
 
     initialize: function () {
-      this._eventPool = {};
+      this.$e = {};
       return this;
     },
 
     on: function (name, callback, ctx) {
-      var e = this._eventPool;
+      var e = this.$e;
 
       (e[name] || (e[name] = [])).push({
         fn: callback,
@@ -42,7 +42,7 @@
     },
 
     has: function (name, callback) {
-      var evts = this._eventPool[name];
+      var evts = this.$e[name];
       if (evts !== undefined) {
         if(callback) {
           for (var i = 0; i < evts.length; i++) {
@@ -59,7 +59,7 @@
     },
 
     off: function (name, callback) {
-      var e = this._eventPool;
+      var e = this.$e;
       var evts = e[name];
       var liveEvents = [];
 
@@ -78,7 +78,7 @@
 
     dispatch: function (name) {
       var args = slice.call(arguments, 1);
-      var evts = (this._eventPool[name] || []).slice();
+      var evts = (this.$e[name] || []).slice();
 
       if (evts.length) {
         evts.forEach(function (evt) {
@@ -106,7 +106,7 @@
     },
 
     clear: function () {
-      this._eventPool = {};
+      this.$e = {};
       return this;
     }
   });

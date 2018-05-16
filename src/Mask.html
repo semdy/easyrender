@@ -69,20 +69,20 @@
         stage.addChild(sprite);
 
         var isLeft = true;
-        mask.on("enterframe", function () {
+      sprite.on("enterframe", function () {
             if( isLeft ) {
-                this.x += 2;
+                mask.x += 2;
             }
 
             if( !isLeft ){
-                this.x -= 2;
+              mask.x -= 2;
             }
 
-            if( this.x > stage.width - 500 ){
+            if( mask.x > stage.width - 500 ){
                 isLeft = false;
             }
 
-            if( this.x <= 0 ){
+            if( mask.x <= 0 ){
                 isLeft = true;
             }
         });

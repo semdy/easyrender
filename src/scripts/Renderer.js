@@ -24,7 +24,11 @@
       if (sheight >= _height) sheight = _height - 1;
       ctx.drawImage(obj.texture, obj.sx, obj.sy, swidth, sheight, 0, 0, obj.width, obj.height);
     } else {
-      ctx.drawImage(obj.texture, 0, 0, obj.width, obj.height);
+      if (obj.cacheAsBitmap) {
+        ctx.drawImage(obj.texture, 0, 0, obj.texture.width, obj.texture.height);
+      } else {
+        ctx.drawImage(obj.texture, 0, 0, obj.width, obj.height);
+      }
     }
   }
 
@@ -161,7 +165,7 @@
 
       var dummyText = document.createTextNode('gM');
       dummy.appendChild(dummyText);
-      dummy.setAttribute('style', 'font:'+ fontStyle +';line-height:1;position:absolute;top:0;left:-9999px');
+      dummy.setAttribute('style', 'font:' + fontStyle + ';line-height:1;position:absolute;top:0;left:-9999px');
       body.appendChild(dummy);
       result = dummy.offsetHeight;
       heightCache[fontStyle] = result;
@@ -198,8 +202,7 @@
             continue;
           }
           else {
-            if (start === -1)
-            {
+            if (start === -1) {
               start = row;
             }
             break;
@@ -212,7 +215,7 @@
     return result;
   }
 
-  var getTextHeight = checkBOMEnv() ? function(obj){
+  var getTextHeight = checkBOMEnv() ? function (obj) {
     return determineFontHeight(getFontStyle(obj));
   } : function (obj) {
     return determineFontHeightInPixels(getFontStyle(obj));
@@ -230,8 +233,8 @@
     var moveY = obj.moveY * (obj.anchorY > 0 ? 1 : 0);
     var anchorW = obj.anchorX * obj.width;
     var anchorH = obj.anchorY * obj.height;
-    var x = obj.x + moveX + anchorW - ( obj.isMasker ? 0 : (parent.mask ? parent.mask.x : 0 ));
-    var y = obj.y + moveY + anchorH - ( obj.isMasker ? 0 : (parent.mask ? parent.mask.y : 0 ));
+    var x = obj.x + moveX + anchorW - ( obj.$isMasker ? 0 : (parent.mask ? parent.mask.x : 0 ));
+    var y = obj.y + moveY + anchorH - ( obj.$isMasker ? 0 : (parent.mask ? parent.mask.y : 0 ));
 
     if (obj.alpha < 1) {
       ctx.globalAlpha = obj.alpha;
@@ -287,7 +290,8 @@
     if (obj.dashLength > 0) {
       try {
         ctx.setLineDash([obj.dashLength, obj.dashGap || obj.dashLength]);
-      } catch (e) {}
+      } catch (e) {
+      }
     }
   }
 
@@ -301,7 +305,7 @@
 
   function getLineSize(coords, moveX, moveY) {
     var widths = [moveX],
-        heights = [moveY];
+      heights = [moveY];
     coords.forEach(function (coord) {
       widths.push(coord[0]);
       heights.push(coord[1]);
@@ -314,7 +318,7 @@
   }
 
   function getQuadraticLineSize(coords, moveX, moveY) {
-    var widths = [moveX||0], heights = [moveY||0];
+    var widths = [moveX || 0], heights = [moveY || 0];
     coords.forEach(function (coord, i) {
       if (i % 2 === 0) {
         widths.push(coord);
@@ -362,16 +366,17 @@
     var objectOffset = getTotalOffset(object);
     var ctx = object.renderContext;
 
-    var ObjConstructor = function () {};
+    var ObjConstructor = function () {
+    };
     ObjConstructor.prototype = object;
     var newObj = new ObjConstructor();
-    newObj.x = objectOffset.x;
-    newObj.y = objectOffset.y;
+    newObj.$x = objectOffset.x;
+    newObj.$y = objectOffset.y;
 
     ctx.save();
     drawContext(ctx, newObj);
     ctx.beginPath();
-    drawShapeFuns[newObj.drawType||'rect'](ctx, newObj);
+    drawShapeFuns[newObj.drawType || 'rect'](ctx, newObj);
     ctx.restore();
 
     return ctx.isPointInPath(coord.x, coord.y);
@@ -387,7 +392,7 @@
 
   Bounds.prototype = {
     intersects: function (target) {
-      if((target.x <= this.x + this.width) && (target.x + target.width >= this.x) &&
+      if ((target.x <= this.x + this.width) && (target.x + target.width >= this.x) &&
         (target.y <= this.y + this.height) && (target.y + target.height >= this.y)) {
         return true;
       }
@@ -421,7 +426,7 @@
 
     lineTo: function (ctx, obj) {
       ctx.moveTo(obj.moveX, obj.moveY);
-      obj.coords.forEach(function (coord) {
+      obj.$coords.forEach(function (coord) {
         ctx.lineTo.apply(ctx, coord);
       });
     },
@@ -440,7 +445,7 @@
     },
 
     curve: function (ctx, obj) {
-      ctx.curve(obj.coords);
+      ctx.curve(obj.$coords);
     },
 
     clip: function (ctx) {
@@ -449,12 +454,12 @@
 
     quadraticCurveTo: function (ctx, obj) {
       ctx.moveTo(obj.moveX, obj.moveY);
-      ctx.quadraticCurveTo.apply(ctx, obj.coords);
+      ctx.quadraticCurveTo.apply(ctx, obj.$coords);
     },
 
     bezierCurveTo: function (ctx, obj) {
       ctx.moveTo(obj.moveX, obj.moveY);
-      ctx.bezierCurveTo.apply(ctx, obj.coords);
+      ctx.bezierCurveTo.apply(ctx, obj.$coords);
     }
   };
 
@@ -466,43 +471,79 @@
     initialize: function () {
       DisplayObject.superclass.initialize.call(this);
 
-      this.x = 0;
-      this.y = 0;
-      this.moveX = 0;
-      this.moveY = 0;
-
-      this.width = 0;
-      this.height = 0;
-
-      this.rotation = 0;
-      this.skewX = 0;
-      this.skewY = 0;
-      this.alpha = 1;
-      this.scaleX = 1;
-      this.scaleY = 1;
-      this.anchorX = 0;
-      this.anchorY = 0;
-
-      this.visible = true;
-      this.touchEnabled = false;
-      this._stageAdded = false;
-      this._stageAddFired = false;
+      this.$x = 0;
+      this.$y = 0;
+      this.$moveX = 0;
+      this.$moveY = 0;
+      this.$width = 0;
+      this.$height = 0;
+      this.$rotation = 0;
+      this.$skewX = 0;
+      this.$skewY = 0;
+      this.$alpha = 1;
+      this.$scaleX = 1;
+      this.$scaleY = 1;
+      this.$anchorX = 0;
+      this.$anchorY = 0;
+      this.$visible = true;
+      this.$touchEnabled = false;
+      this.$hasDefineWidth = false;
+      this.$hasDefineHeight = false;
+      this.$cacheAsBitmap = false;
+      this.$hasAddToStage = false;
+      this.$hasAddToStageFired = false;
+      this.$renderType = 'DisplayObject';
 
       this.cursor = 'pointer';
-      this.$type = 'DisplayObject';
-
       this.children = [];
 
       this.once("addToStage", function (e) {
         this.renderContext = e.renderContext;
         this.stage = e.stage;
-        this._stageAdded = true;
-        this._stageAddFired = true;
+        this.$hasAddToStage = true;
+        this.$hasAddToStageFired = true;
       }, this);
+
+      ['x', 'y', 'moveX', 'moveY', 'width', 'height', 'rotation',
+        'skewX', 'skewY', 'alpha', 'scaleX', 'scaleY', 'anchorX',
+        'anchorY', 'visible', 'touchEnabled'
+      ].forEach(function (prop) {
+        this.defineProperty(prop, {
+          get: function () {
+            return this['$' + prop];
+          },
+          set: function (newVal) {
+            this['$' + prop] = newVal;
+            if (prop === 'width') {
+              this.$hasDefineWidth = true;
+            }
+            else if (prop === 'height') {
+              this.$hasDefineHeight = true;
+            }
+            this.$renderHooker();
+          },
+          enumerable: true
+        });
+      }.bind(this));
     },
 
-    remove: function(){
-      if(this.parent){
+    $renderHooker: function () {
+      var target = this;
+      while (target) {
+        if (target.$cacheRenderer) {
+          target.$cacheRenderer.clear();
+          target.$cacheRenderer.render(Date.now(), true);
+        }
+        /*else if (target.stage) {
+          target.stage.clear();
+          target.stage.render(Date.now(), true);
+        }*/
+        target = target.parent;
+      }
+    },
+
+    remove: function () {
+      if (this.parent) {
         this.parent.removeChild(this);
       }
 
@@ -596,31 +637,31 @@
       return this;
     },
 
-    _triggerAddToStage: function (childObj, context) {
-      var setParams = function(obj){
-        return {target: obj, renderContext: context.cacheContext, stage: context};
+    $triggerAddToStage: function (childObj, context) {
+      var setParams = function (obj) {
+        return {target: obj, renderContext: context.renderContext, stage: context};
       };
       var _runAddToStage = function (obj) {
-        if(!obj._stageAddFired){
+        if (!obj.$hasAddToStageFired) {
           obj.dispatch("addToStage", setParams(obj));
-          if (obj.$type === 'Sprite') {
+          if (obj.$renderType === 'Sprite') {
             obj.each(_runAddToStage);
           }
         }
       };
-      if(!childObj._stageAddFired) {
+      if (!childObj.$hasAddToStageFired) {
         childObj.dispatch("addToStage", setParams(childObj));
         childObj.each(_runAddToStage);
       }
     },
 
-    _triggerRemove: function (childObj) {
+    $triggerRemove: function (childObj) {
 
       var _runRemove = function (obj) {
 
         obj.dispatch("remove", obj);
 
-        if (obj.$type === 'Sprite') {
+        if (obj.$renderType === 'Sprite') {
           obj.each(_runRemove);
         }
       };
@@ -638,7 +679,7 @@
     initialize: function () {
       DisplayObjectContainer.superclass.initialize.call(this);
 
-      this.$type = 'Sprite';
+      this.$renderType = 'Sprite';
 
       this.defineProperty('numChildren', {
         get: function () {
@@ -653,9 +694,9 @@
         throw new TypeError(String(object) + " is not a instance of EC.DisplayObject");
       }
 
-      if (object.parent) {
+      /*if (object.parent) {
         object.parent.removeChild(object);
-      }
+      }*/
 
       object.parent = this;
 
@@ -665,45 +706,45 @@
         this.children.splice(index, 0, object);
       }
 
-      if(this._stageAdded){
-        this._triggerAddToStage(object, this.stage);
+      if (this.$hasAddToStage) {
+        this.$triggerAddToStage(object, this.stage);
       }
 
       return this;
     },
 
-    addChild: function(object){
+    addChild: function (object) {
       return this.addChildAt(object);
     },
 
     removeChild: function (object) {
       this.getChilds().splice(this.getChildIndex(object), 1);
-      this._stopTweens(object);
-      this._triggerRemove(object);
+      this.$stopTweens(object);
+      this.$triggerRemove(object);
 
       return this;
     },
 
-    removeChildAt : function (i) {
+    removeChildAt: function (i) {
       var c = this.children;
       if (c.length <= i) {
         return this;
       }
 
       var object = c.splice(i, 1)[0];
-      if(object) {
+      if (object) {
         delete object.parent;
-        this._stopTweens(object);
-        this._triggerRemove(object);
+        this.$stopTweens(object);
+        this.$triggerRemove(object);
       }
 
       return this;
     },
 
     removeAllChildren: function () {
-      this._stopAllTweens();
-      this.each(function(child) {
-        this._triggerRemove(child);
+      this.$stopAllTweens();
+      this.each(function (child) {
+        this.$triggerRemove(child);
       }, this);
       this.children.length = 0;
       this.$width = 0;
@@ -716,7 +757,7 @@
       return this.children;
     },
 
-    getChildAt : function (i) {
+    getChildAt: function (i) {
       var c = this.children;
       if (c.length === 0 || c.length <= i) {
         return null;
@@ -744,11 +785,11 @@
       return this;
     },
 
-    _stopTweens: function (target) {
+    $stopTweens: function (target) {
       EC.Tween.removeTweens(target);
     },
 
-    _stopAllTweens: function () {
+    $stopAllTweens: function () {
       EC.Tween.removeAllTweens(this);
     }
   });
@@ -760,30 +801,25 @@
     initialize: function (text, size, x, y, color, align, family, width, height) {
       TextField.superclass.initialize.call(this);
 
+      this.$x = x || 0;
+      this.$y = y || 0;
+      this.$width = width || 0;
+      this.$height = height || 0;
       this.$text = text || "";
       this.$textArr = [];
       this.$size = size || 16;
-      this.textAlign = align || "start";
-      this.textBaseline = "top";
-      this.textColor = color || "#000";
-      this.fontFamily = family || "Arial";
-      this.strokeColor = color || "#000";
-      this.textStyle = "normal";
-      this.textWeight = "normal";
-      this.lineSpacing = 2;
-      this.stroke = false;
-      this.strokeOnly = false;
-      this.multiline = false;
-
-      this.x = x || 0;
-      this.y = y || 0;
-      this.$width = width || 0;
-      this.$height = height || 0;
-
-      this.$type = "TextField";
-
-      this.$hasW = false;
-      this.$hasH = false;
+      this.$textAlign = align || "start";
+      this.$textBaseline = "top";
+      this.$textColor = color || "#000";
+      this.$fontFamily = family || "Arial";
+      this.$strokeColor = color || "#000";
+      this.$textStyle = "normal";
+      this.$textWeight = "normal";
+      this.$lineSpacing = 2;
+      this.$stroke = false;
+      this.$strokeOnly = false;
+      this.$multiline = false;
+      this.$renderType = "TextField";
 
       var determineTextSetter = function () {
         if (this.multiline) {
@@ -791,11 +827,11 @@
         }
         else {
           this.$textArr = this.$text.split(/\n/);
-          if (!this.$hasW) {
+          if (!this.$hasDefineWidth) {
             this.$width = getTextWidth(this, getMaxLenText(this.$textArr));
           }
         }
-        if (!this.$hasH) {
+        if (!this.$hasDefineHeight) {
           this.$height = (getTextHeight(this) + this.lineSpacing) * this.numLines - this.lineSpacing;
         }
       };
@@ -831,28 +867,6 @@
         enumerable: true
       });
 
-      this.defineProperty('width', {
-        set: function (newVal) {
-          this.$width = newVal;
-          this.$hasW = true;
-        },
-        get: function () {
-          return this.$width;
-        },
-        enumerable: true
-      });
-
-      this.defineProperty('height', {
-        set: function (newVal) {
-          this.$height = newVal;
-          this.$hasH = true;
-        },
-        get: function () {
-          return this.$height;
-        },
-        enumerable: true
-      });
-
       this.defineProperty('bold', {
         set: function (newVal) {
           if (newVal === true) {
@@ -881,7 +895,32 @@
         enumerable: true
       });
 
-      if(this.$text) {
+      [
+        'textAlign',
+        'textBaseline',
+        'textColor',
+        'fontFamily',
+        'strokeColor',
+        'textStyle',
+        'textWeight',
+        'lineSpacing',
+        'stroke',
+        'strokeOnly',
+        'multiline'
+      ].forEach(function (prop) {
+        this.defineProperty(prop, {
+          get: function () {
+            return this['$' + prop];
+          },
+          set: function (newVal) {
+            this['$' + prop] = newVal;
+            this.$renderHooker();
+          },
+          enumerable: true
+        });
+      }.bind(this));
+
+      if (this.$text) {
         this.text = this.$text;
       }
 
@@ -895,36 +934,34 @@
     initialize: function (key, x, y, width, height, sx, sy, swidth, sheight) {
       BitMap.superclass.initialize.call(this);
 
-      this.x = x || 0;
-      this.y = y || 0;
-
+      this.$x = x || 0;
+      this.$y = y || 0;
+      this.$renderType = "BitMap";
       this.$texture = null;
 
       if (EC.isDefined(sx)) {
-        this.sx = sx;
+        this.$sx = sx;
       }
       if (EC.isDefined(sy)) {
-        this.sy = sy;
+        this.$sy = sy;
       }
       if (EC.isDefined(swidth)) {
-        this.swidth = swidth || 0.1;
+        this.$swidth = swidth || 0.1;
       }
       if (EC.isDefined(sheight)) {
-        this.sheight = sheight || 0.1;
+        this.$sheight = sheight || 0.1;
       }
-
-      this.$type = "BitMap";
 
       if (EC.isDefined(key)) {
         this.setTexture(key);
       }
 
       if (EC.isDefined(width)) {
-        this.width = width;
+        this.$width = width;
       }
 
       if (EC.isDefined(height)) {
-        this.height = height;
+        this.$height = height;
       }
 
       this.defineProperty('texture', {
@@ -936,6 +973,24 @@
         },
         enumerable: true
       });
+
+      [
+        'sx',
+        'sy',
+        'swidth',
+        'sheight'
+      ].forEach(function (prop) {
+        this.defineProperty(prop, {
+          get: function () {
+            return this['$' + prop];
+          },
+          set: function (newVal) {
+            this['$' + prop] = newVal;
+            this.$renderHooker();
+          },
+          enumerable: true
+        });
+      }.bind(this));
 
     },
     setTexture: function (data) {
@@ -973,31 +1028,59 @@
     initialize: function (x, y, w, h) {
       Shape.superclass.initialize.call(this);
 
-      this.x = x || 0;
-      this.y = y || 0;
-      this.width = w || 0;
-      this.height = h || 0;
-      this.radius = 0;
-      this.dashLength = 0;
-      this.dashGap = 0;
-      this.lineWidth = 0;
-      this.fillStyle = null;
-      this.strokeStyle = null;
-      this.shadowColor = null;
-      this.shadowBlur = 0;
-      this.shadowOffsetX = 0;
-      this.shadowOffsetY = 0;
-      this.lineCap = null;
-      this.lineJoin = null;
-      this.miterLimit = null;
-      this.coords = [];
-      this._fill = false;
-      this._stroke = false;
-      this._closePath = false;
+      this.$x = x || 0;
+      this.$y = y || 0;
+      this.$width = w || 0;
+      this.$height = h || 0;
+      this.$fillStyle = null;
+      this.$strokeStyle = null;
+      this.$lineWidth = 0;
+      this.$shadowColor = null;
+      this.$shadowBlur = 0;
+      this.$shadowOffsetX = 0;
+      this.$shadowOffsetY = 0;
+      this.$radius = 0;
+      this.$dashLength = 0;
+      this.$dashGap = 0;
+      this.$lineCap = null;
+      this.$lineJoin = null;
+      this.$miterLimit = null;
+      this.$closePath = false;
 
-      this.$type = "Shape";
+      this.$renderType = "Shape";
+      this.$needFill = false;
+      this.$needStroke = false;
+      this.$coords = [];
+
+      [
+        'fillStyle',
+        'strokeStyle',
+        'lineWidth',
+        'shadowColor',
+        'shadowBlur',
+        'shadowOffsetX',
+        'shadowOffsetY',
+        'lineCap',
+        'lineJoin',
+        'miterLimit',
+        'radius',
+        'dashLength',
+        'dashGap',
+        'closePath'
+      ].forEach(function (prop) {
+        this.defineProperty(prop, {
+          get: function () {
+            return this['$' + prop];
+          },
+          set: function (newVal) {
+            this['$' + prop] = newVal;
+            this.$renderHooker();
+          },
+          enumerable: true
+        });
+      }.bind(this));
     },
-    _setStyle: function (type, color, alpha) {
+    $setStyle: function (type, color, alpha) {
       if (typeof alpha === 'number' && alpha < 1) {
         this[type] = EC.Util.color.toRgb(color, alpha);
       } else {
@@ -1007,23 +1090,23 @@
     fill: function () {
       var args = slice.call(arguments);
       args.unshift("fillStyle");
-      this._fill = true;
-      this._setStyle.apply(this, args);
+      this.$needFill = true;
+      this.$setStyle.apply(this, args);
     },
     stroke: function () {
       var args = slice.call(arguments);
       args.unshift("strokeStyle");
-      this._stroke = true;
-      this._setStyle.apply(this, args);
+      this.$needStroke = true;
+      this.$setStyle.apply(this, args);
     },
     draw: function (ctx) {
       drawShapeFuns[this.drawType](ctx, this);
-      this._closePath && ctx.closePath();
-      this._fill && ctx.fill();
-      this._stroke && ctx.stroke();
+      this.$closePath && ctx.closePath();
+      this.$needFill && ctx.fill();
+      this.$needStroke && ctx.stroke();
     },
     close: function () {
-      this._closePath = true;
+      this.$closePath = true;
     }
   });
 
@@ -1083,12 +1166,12 @@
       return this;
     },
     lineTo: function (x, y) {
-      if(Array.isArray(x)) {
-        [].push.apply(this.coords, x);
+      if (Array.isArray(x)) {
+        [].push.apply(this.$coords, x);
       } else {
-        this.coords.push([x, y]);
+        this.$coords.push([x, y]);
       }
-      var lineSize = getLineSize(this.coords, this.moveX, this.moveY);
+      var lineSize = getLineSize(this.$coords, this.moveX, this.moveY);
       this.width = lineSize.width;
       this.height = lineSize.height;
       this.drawType = 'lineTo';
@@ -1125,8 +1208,8 @@
       return this;
     },
     drawCurve: function (coords) {
-      this.coords = coords || [];
-      var lineSize = getBezierCurveLineSize(this.coords);
+      this.$coords = coords || [];
+      var lineSize = getBezierCurveLineSize(this.$coords);
       this.width = lineSize.width;
       this.height = lineSize.height;
       this.drawType = 'curve';
@@ -1137,16 +1220,16 @@
       return this;
     },
     quadraticCurveTo: function () {
-      this.coords = slice.call(arguments);
-      var lineSize = getQuadraticLineSize(this.coords, this.moveX, this.moveY);
+      this.$coords = slice.call(arguments);
+      var lineSize = getQuadraticLineSize(this.$coords, this.moveX, this.moveY);
       this.width = lineSize.width;
       this.height = lineSize.height;
       this.drawType = 'quadraticCurveTo';
       return this;
     },
     bezierCurveTo: function () {
-      this.coords = slice.call(arguments);
-      var lineSize = getQuadraticLineSize(this.coords, this.moveX, this.moveY);
+      this.$coords = slice.call(arguments);
+      var lineSize = getQuadraticLineSize(this.$coords, this.moveX, this.moveY);
       this.width = lineSize.width;
       this.height = lineSize.height;
       this.drawType = 'bezierCurveTo';
@@ -1200,7 +1283,7 @@
     curve: function (points) {
       var i = 0, len = points.length, ctrlP;
       for (; i < len; i++) {
-        if (i === 0 ) {
+        if (i === 0) {
           this.moveTo(points[0][0], points[0][1]);
         } else {
           ctrlP = EC.Util.getCtrlPoint(points, i - 1);
@@ -1227,7 +1310,7 @@
   var Masker = Shape.extend({
     initialize: function () {
       Masker.superclass.initialize.apply(this, arguments);
-      this.isMasker = true;
+      this.$isMasker = true;
     },
     draw: function (ctx) {
       Masker.superclass.draw.call(this, ctx);
@@ -1242,39 +1325,28 @@
     initialize: function (x, y, w, h) {
       Sprite.superclass.initialize.call(this);
 
-      this.x = x || 0;
-      this.y = y || 0;
+      this.$x = x || 0;
+      this.$y = y || 0;
       this.$width = w || 0;
       this.$height = h || 0;
-      this.$hasW = false;
-      this.$hasH = false;
+
       this.$mask = null;
+      this.$texture = null;
+      this.$cacheRenderer = null;
+      this.$cacheAsBitmap = true;
 
-      this.defineProperty('width', {
-        set: function (newVal) {
-          this.$width = newVal;
-          this.$hasW = true;
+      this.defineProperty('texture', {
+        set: function (texture) {
+          this.$texture = texture;
         },
         get: function () {
-          return this.$width;
-        },
-        enumerable: true
-      });
-
-      this.defineProperty('height', {
-        set: function (newVal) {
-          this.$height = newVal;
-          this.$hasH = true;
-        },
-        get: function () {
-          return this.$height;
-        },
-        enumerable: true
+          return this.$texture;
+        }
       });
 
       this.defineProperty('mask', {
         set: function (masker) {
-          this._addMask(masker);
+          this.$addMask(masker);
         },
         get: function () {
           return this.$mask;
@@ -1282,35 +1354,85 @@
         enumerable: true
       });
 
+      this.defineProperty('cacheAsBitmap', {
+        set: function (cacheFlag) {
+          this.$cacheAsBitmap = cacheFlag;
+          if (cacheFlag) {
+            this.$texture = document.createElement('canvas');
+            //document.body.appendChild(this.$texture);
+            this.$cacheRenderer = new Stage(this.$texture, {
+              width: this.stage ? this.stage.width : 0,
+              height: this.stage ? this.stage.height : 0,
+              scaleMode: 'noScale',
+              autoRender: false,
+              needEvents: false
+            });
+          } else {
+            this.$texture = null;
+            this.$cacheRenderer = null;
+          }
+        },
+        get: function () {
+          return this.$cacheAsBitmap;
+        },
+        enumerable: true
+      });
+
+      this.once('addToStage', function () {
+        if (this.$cacheAsBitmap) {
+          this.$texture.width = this.stage.width;
+          this.$texture.height = this.stage.height;
+          this.$cacheRenderer.width = this.stage.width;
+          this.$cacheRenderer.height = this.stage.height;
+          this.$renderHooker();
+        }
+      }, this);
+
+      if (this.$cacheAsBitmap) {
+        this.cacheAsBitmap = this.$cacheAsBitmap;
+        this.on('enterframe', function (time) {
+          this.children.forEach(function (item) {
+            item.dispatch('enterframe', time);
+          });
+        }, this);
+      }
     },
     addChild: function () {
+      if (this.cacheAsBitmap) {
+        this.$cacheRenderer.addChild.apply(this.$cacheRenderer, arguments);
+      }
       Sprite.superclass.addChild.apply(this, arguments);
       this.resize();
+      this.$renderHooker();
 
       return this;
     },
-    removeChild: function (){
+    removeChild: function () {
+      if (this.cacheAsBitmap) {
+        this.$cacheRenderer.removeChild.apply(this.$cacheRenderer, arguments);
+      }
       Sprite.superclass.removeChild.apply(this, arguments);
       this.resize();
+      this.$renderHooker();
 
       return this;
     },
-    _addMask: function (masker) {
-      if (masker === null && this._isMaskAdded) {
-        this._isMaskAdded = false;
+    $addMask: function (masker) {
+      if (masker === null && this.$isMaskAdded) {
+        this.$isMaskAdded = false;
         this.children.shift();
         return;
       }
-      if (this._isMaskAdded) return;
+      if (this.$isMaskAdded) return;
       if (masker instanceof EC.Masker) {
         this.children.unshift(masker);
         this.$mask = masker;
-        this._isMaskAdded = true;
+        this.$isMaskAdded = true;
       } else {
         throw new TypeError("mask must be a instance of EC.Masker");
       }
     },
-    _getSize: function (obj){
+    $getSize: function (obj) {
       var x = obj.x + obj.moveX;
       var y = obj.y + obj.moveY;
       var lineWidth = obj.lineWidth || 0;
@@ -1327,16 +1449,16 @@
       var heights = [];
       var size;
 
-      this.each(function(obj){
-        size = this._getSize(obj);
+      this.each(function (obj) {
+        size = this.$getSize(obj);
         widths.push(size.width);
         heights.push(size.height);
       }, this);
 
-      if (!this.$hasW) {
+      if (!this.$hasDefineWidth) {
         this.$width = getMax(widths);
       }
-      if (!this.$hasH) {
+      if (!this.$hasDefineHeight) {
         this.$height = getMax(heights);
       }
     }
@@ -1369,8 +1491,8 @@
       this.inputType = "text";
 
       this.on("addToStage", function () {
-        this._create();
-        this._events();
+        this.$create();
+        this.$events();
       }, this);
 
       this.on("remove", function () {
@@ -1378,7 +1500,7 @@
         window.removeEventListener(EC.EVENTS.RESIZE, this.resizeListener, false);
       }, this);
     },
-    _create: function () {
+    $create: function () {
       var pad = this.padding;
       this.touchEnabled = true;
       this.cursor = "";
@@ -1423,7 +1545,7 @@
       this.textField.size = this.fontSize;
       this.textField.fontFamily = this.fontFamily || this.textField.fontFamily;
       this.textField.x = this.borderWidth + this.padding[3];
-      this.textField.y = this.inputType === "textarea" ? this.padding[0] : (this.height - this.textField.height - this.borderWidth) /2;
+      this.textField.y = this.inputType === "textarea" ? this.padding[0] : (this.height - this.textField.height - this.borderWidth) / 2;
 
       this.mask = new Masker();
       this.mask.drawRect(0, 0, this.width + this.borderWidth, this.height + this.borderWidth);
@@ -1431,22 +1553,22 @@
       this.addChild(this.input);
       this.addChild(this.textField);
 
-      this._setInputStyle();
+      this.$setInputStyle();
       document.body.appendChild(this.inputText);
 
     },
-    _setInputStyle: function () {
+    $setInputStyle: function () {
       var self = this;
       var ratio = 1 / this.stage.scaleRatio;
-      var marginTop = this.inputType === "textarea" ? -this.lineSpacing/2 : 0;
+      var marginTop = this.inputType === "textarea" ? -this.lineSpacing / 2 : 0;
       var totalOffset = getTotalOffset(this);
       this.inputText.style.cssText = "display:none;position:absolute;border:none;background:none;outline:none;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none;appearance:none;-webkit-text-size-adjust:none;text-size-adjust:none;-webkit-box-sizing:border-box;box-sizing:border-box;overflow:auto;resize:none;" +
-        "left:" + (totalOffset.x + self.borderWidth / 2) * ratio + "px;top:" + totalOffset.y * ratio + "px;width:" + this.width * ratio + "px;height:" + this.height * ratio + "px;line-height:" + (this.fontSize + this.lineSpacing) * ratio + "px;font-size:" + this.fontSize * ratio + "px;font-family:" + (this.fontFamily || this.textField.fontFamily) + ";color:" + this.color + ";margin-top:"+ marginTop +"px;padding:" +
+        "left:" + (totalOffset.x + self.borderWidth / 2) * ratio + "px;top:" + totalOffset.y * ratio + "px;width:" + this.width * ratio + "px;height:" + this.height * ratio + "px;line-height:" + (this.fontSize + this.lineSpacing) * ratio + "px;font-size:" + this.fontSize * ratio + "px;font-family:" + (this.fontFamily || this.textField.fontFamily) + ";color:" + this.color + ";margin-top:" + marginTop + "px;padding:" +
         this.padding.map(function (pad) {
           return (pad + self.borderWidth / 2) * ratio + "px"
         }).join(" ");
     },
-    _events: function () {
+    $events: function () {
       this.on("touch", function () {
         this.textField.visible = false;
         this.inputText.style.display = "block";
@@ -1475,7 +1597,7 @@
       }.bind(this), false);
 
       window.addEventListener(EC.EVENTS.RESIZE, this.resizeListener = function () {
-        this._setInputStyle();
+        this.$setInputStyle();
       }.bind(this), false);
     }
   });
@@ -1491,9 +1613,11 @@
       this.font = "";
       this.textAlign = 'left';
       this.letterSpacing = 0;
-      this.$type = "BitMapText";
+      this.$renderType = "BitMapText";
       this.$textArr = [];
       this.$textwrap = new Sprite();
+      this.cacheAsBitmap = false;
+      this.$textwrap.cacheAsBitmap = false;
 
       this.defineProperty('text', {
         set: function (newVal) {
@@ -1507,11 +1631,11 @@
       });
 
       this.on("addToStage", function () {
-        this._create();
+        this.$create();
         this.addChild(this.$textwrap);
       }, this);
     },
-    _create: function () {
+    $create: function () {
       this.fontData = (EC.isString(this.font) ? RES.getRes(this.font + "_fnt") : this.font).data;
       this.fontTexture = RES.getRes(this.fontData.file.replace(/\.(\w+)$/, "_$1")).texture;
     }
@@ -1533,10 +1657,10 @@
         alpha: 1
       };
 
-      var NORMAL = EC.extend({}, _DEFAULTS, this._getConfig(statusArgs.normal) || {});
-      var HOVER = EC.extend({}, _DEFAULTS, this._getConfig(statusArgs.hover) || {});
-      var ACTIVE = EC.extend({}, _DEFAULTS, this._getConfig(statusArgs.active) || {});
-      var DISABLED = EC.extend({}, _DEFAULTS, this._getConfig(statusArgs.disabled) || {});
+      var NORMAL = EC.extend({}, _DEFAULTS, this.$getConfig(statusArgs.normal) || {});
+      var HOVER = EC.extend({}, _DEFAULTS, this.$getConfig(statusArgs.hover) || {});
+      var ACTIVE = EC.extend({}, _DEFAULTS, this.$getConfig(statusArgs.active) || {});
+      var DISABLED = EC.extend({}, _DEFAULTS, this.$getConfig(statusArgs.disabled) || {});
 
       this.statusCfg = {
         normal: NORMAL,
@@ -1556,17 +1680,17 @@
       this.textField = new TextField();
 
       this.on("addToStage", function () {
-        this._create();
-        this._events();
+        this.$create();
+        this.$events();
       }, this);
     },
-    _create: function () {
+    $create: function () {
       this.setButton("normal");
       this.addChild(this.bitMap);
       this.addChild(this.shape);
       this.addChild(this.textField);
     },
-    _getConfig: function (status) {
+    $getConfig: function (status) {
       return EC.isString(status) ? RES.getRes(status) : status;
     },
     setButton: function (status) {
@@ -1627,7 +1751,7 @@
 
       return _config;
     },
-    _events: function () {
+    $events: function () {
       this.on("touchstart", function () {
         this.setButton("active");
       }, this);
@@ -1658,7 +1782,7 @@
   };
 
   EC.extend(Point.prototype, {
-    toString: function() {
+    toString: function () {
       return "[object EC.Point(" + this.x + "," + this.y + ")]";
     },
     set: function (x, y) {
@@ -1667,81 +1791,81 @@
 
       return this;
     },
-    clone: function() {
+    clone: function () {
       return new Point(this.x, this.y);
     },
-    add: function(e) {
+    add: function (e) {
       return new Point(this.x + e.x, this.y + e.y);
     },
-    distance: function(){
+    distance: function () {
       return Point.calcDistance(this.x, this.y, 0, 0);
     },
-    copyFrom: function(t) {
+    copyFrom: function (t) {
       this.set(t.x, t.y);
 
       return this;
     },
-    equals: function(t) {
+    equals: function (t) {
       return this.x === t.x && this.y === t.y;
     },
-    offset: function(t, e) {
+    offset: function (t, e) {
       this.x += t;
       this.y += e;
 
       return this;
     },
-    subtract: function(e) {
+    subtract: function (e) {
       return new Point(this.x - e.x, this.y - e.y);
     },
-    getAngle: function(){
+    getAngle: function () {
       return Point.getAngle(0, 0, this.x, this.y);
     }
   });
 
   EC.extend(Point, {
-    calcDistance: function(x1, y1, x2, y2) {
+    calcDistance: function (x1, y1, x2, y2) {
       var n = Math.abs(x2 - x1),
         s = Math.abs(y2 - y1);
       return Math.sqrt(n * n + s * s);
     },
-    distance: function(e, o) {
+    distance: function (e, o) {
       return this.calcDistance(e.x, e.y, o.x, o.y);
     },
-    fromValues: function(x, y) {
+    fromValues: function (x, y) {
       var out = new Array(2);
       out[0] = x;
       out[1] = y;
       return out;
     },
-    getAngle: function(px, py, mx, my){
-      var x = Math.abs(px-mx);
-      var y = Math.abs(py-my);
-      var z = Math.sqrt(Math.pow(x,2)+Math.pow(y,2));
-      var cos = y/z;
+    getAngle: function (px, py, mx, my) {
+      var x = Math.abs(px - mx);
+      var y = Math.abs(py - my);
+      var z = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+      var cos = y / z;
       var radina = Math.acos(cos);//用反三角函数求弧度
-      var angle = 180/(Math.PI/radina);//将弧度转换成角度
+      var angle = 180 / (Math.PI / radina);//将弧度转换成角度
 
-      if(mx > px && my > py){//目标点在第四象限
+      if (mx > px && my > py) {//目标点在第四象限
         angle = 180 - angle;
       }
 
-      if(mx === px && my > py){//目标点在y轴负方向上
+      if (mx === px && my > py) {//目标点在y轴负方向上
         angle = 180;
       }
 
-      if(mx > px && my === py){//目标点在x轴正方向上
+      if (mx > px && my === py) {//目标点在x轴正方向上
         angle = 90;
       }
 
-      if(mx < px && my > py){//目标点在第三象限
+      if (mx < px && my > py) {//目标点在第三象限
         angle = 180 + angle;
       }
 
-      if(mx < px && my === py){//目标点在x轴负方向
+      if (mx < px && my === py) {//目标点在x轴负方向
         angle = 270;
       }
 
-      if(mx < px && my < py){//目标点在第二象限
+      if (mx < px && my < py) {//目标点在第二象限
         angle = 360 - angle;
       }
 
@@ -1758,8 +1882,6 @@
 
       this.canvas = canvas;
       this.renderContext = this.canvas.getContext('2d');
-      this.cacheCanvas = document.createElement('canvas');
-      this.cacheContext = this.cacheCanvas.getContext('2d');
 
       var self = this;
       var opts = this.options = EC.extend({}, {
@@ -1772,6 +1894,7 @@
         blendMode: null,
         autoRender: true,
         autoPauseRender: true,
+        needEvents: true,
         onPause: EC.noop,
         onResume: EC.noop
       }, options || {});
@@ -1780,20 +1903,19 @@
       this.height = parseFloat(this.canvas.getAttribute("height")) || opts.height;
       this.scaleRatio = 1;
       this.cursor = "";
-      this._isRendering = false;
-      this._ticker = new EC.Ticker({
+      this.$isRendering = false;
+      this.$renderThrottle = null;
+      this.$ticker = new EC.Ticker({
         useInterval: opts.forceUpdate,
         frameRate: opts.frameRate
       });
 
       this.canvas.width = this.width;
       this.canvas.height = this.height;
-      this.cacheCanvas.width = this.width;
-      this.cacheCanvas.height = this.height;
 
       this.defineProperty('blendMode', {
         set: function (value) {
-          self.cacheContext.globalCompositeOperation = value;
+          self.renderContext.globalCompositeOperation = value;
         },
         enumerable: true
       });
@@ -1811,7 +1933,7 @@
         this.showFps();
       }
 
-      this._initEvents();
+      this.$initEvents();
 
       if (opts.autoRender) {
         this.startRender();
@@ -1819,17 +1941,19 @@
     },
     addChild: function (childObj) {
       Stage.superclass.addChild.apply(this, arguments);
-      this._triggerAddToStage(childObj, this);
+      this.$triggerAddToStage(childObj, this);
 
       return this;
     },
-    render: function (time) {
+    render: function (time, cacheMode) {
       var self = this;
-      var ctx = this.cacheContext;
+      var ctx = this.renderContext;
       var _render = function (obj) {
         if (obj.visible) {
-          obj.dispatch("enterframe", time);
-          if (obj.$type === 'Sprite') {
+          if (!cacheMode) {
+            obj.dispatch('enterframe', time);
+          }
+          if (obj.$renderType === 'Sprite' && (!obj.cacheAsBitmap || cacheMode)) {
             ctx.save();
             drawContext(ctx, obj);
             obj.children.forEach(function (item) {
@@ -1837,21 +1961,22 @@
             });
             ctx.restore();
           } else {
-            self._renderItem(ctx, obj);
+            self.renderItem(ctx, obj);
           }
         }
       };
 
       _render(this);
 
-      this.renderContext.drawImage(this.cacheCanvas, 0, 0);
-
       return this;
     },
-    _renderItem: function (ctx, obj) {
-      obj.isMasker || ctx.save();
+    renderItem: function (ctx, obj) {
+      obj.$isMasker || ctx.save();
       drawContext(ctx, obj);
-      switch (obj.$type) {
+      switch (obj.$renderType) {
+        case 'Sprite':
+          drawImg(ctx, obj);
+          break;
         case 'BitMap':
           drawImg(ctx, obj);
           break;
@@ -1865,24 +1990,23 @@
           drawShape(ctx, obj);
           break;
       }
-      obj.isMasker || ctx.restore();
+      obj.$isMasker || ctx.restore();
     },
     clear: function () {
-      this.cacheContext.clearRect(0, 0, this.width, this.height);
       this.renderContext.clearRect(0, 0, this.width, this.height);
       return this;
     },
     startRender: function () {
-      if (this._isRendering) return;
-      this._isRendering = true;
-      this._ticker.start();
+      if (this.$isRendering) return;
+      this.$isRendering = true;
+      this.$ticker.start();
       this.options.onResume();
 
       return this;
     },
     stopRender: function () {
-      this._ticker.stop();
-      this._isRendering = false;
+      this.$ticker.stop();
+      this.$isRendering = false;
       this.options.onPause();
       return this;
     },
@@ -1915,14 +2039,14 @@
 
       return this;
     },
-    _initEvents: function () {
+    $initEvents: function () {
 
       var self = this;
       var opts = this.options;
       var isShowFPS = opts.showFps;
       var timeId = null;
 
-      this._ticker.on("ticker", function (time) {
+      this.$ticker.on("ticker", function (time) {
         isShowFPS && this.FPS.begin();
         this.clear();
         this.render(time);
@@ -1946,23 +2070,25 @@
           }
         }, false);
 
-        window.addEventListener("focus", function(){
+        window.addEventListener("focus", function () {
           self.startRender();
         }, false);
 
-        window.addEventListener("blur", function(){
+        window.addEventListener("blur", function () {
           self.stopRender();
         }, false);
       }
 
-      new EC.TouchEvent().attach(this);
+      if (opts.needEvents) {
+        new EC.TouchEvent().attach(this);
+      }
 
     },
     createFps: function () {
       this.FPS = new Stats();
     },
     showFps: function (position) {
-      if(!this.options.showFps) return;
+      if (!this.options.showFps) return;
       if (EC.isObject(position)) {
         this.FPS.dom.style.left = EC.isDefined(position.left) ? (EC.isNumber(position.left) ? position.left + "px" : position.left) : "";
         this.FPS.dom.style.right = EC.isDefined(position.right) ? (EC.isNumber(position.right) ? position.right + "px" : position.right) : "";
@@ -1970,8 +2096,8 @@
         this.FPS.dom.style.bottom = EC.isDefined(position.bottom) ? (EC.isNumber(position.bottom) ? position.bottom + "px" : position.bottom) : "";
       }
 
-      if (!this._fpsDom) {
-        document.body.appendChild(this._fpsDom = this.FPS.dom);
+      if (!this.$fpsDom) {
+        document.body.appendChild(this.$fpsDom = this.FPS.dom);
       }
     }
   });
@@ -1987,7 +2113,7 @@
     "isPointInPath"
   ].forEach(function (method) {
     Stage.prototype[method] = function () {
-      return this.cacheContext[method].apply(this, arguments);
+      return this.renderContext[method].apply(this, arguments);
     };
   });
 
@@ -2000,7 +2126,7 @@
     TextInput: TextInput,
     Masker: Masker,
     DisplayObject: DisplayObject,
-    DisplayObjectContainer : DisplayObjectContainer,
+    DisplayObjectContainer: DisplayObjectContainer,
     Sprite: Sprite,
     Button: Button,
     Point: Point,

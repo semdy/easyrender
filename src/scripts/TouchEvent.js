@@ -113,7 +113,7 @@
 
           if (event.isPropagationStopped()) break;
 
-          if (obj.$type === "Sprite" || obj.$type === "Stage") {
+          if (obj.$renderType === "Sprite") {
             if (obj.touchEnabled) {
               obj.dispatch(type, EC.extend(event, {target: this._getTouchedTarget(obj) || obj}));
             }
@@ -160,7 +160,7 @@
         var i = childs.length;
         while (i--) {
           if (!childs[i].visible) continue;
-          if (childs[i].$type === "Sprite") {
+          if (childs[i].$renderType === "Sprite") {
             getItems(childs[i]);
           } else {
             elStack.push(childs[i]);
@@ -182,7 +182,7 @@
         var i = childs.length;
         while (i--) {
           if (!childs[i].visible) continue;
-          if (childs[i].$type === "Sprite") {
+          if (childs[i].$renderType === "Sprite") {
             getItems(childs[i]);
           }
           if (childs[i].touchEnabled) {
