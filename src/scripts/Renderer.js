@@ -289,11 +289,11 @@
   };
 
   function getMin(vals) {
-    return Math.min.apply(Math, vals);
+    return vals.length === 0 ? 0 : Math.min.apply(Math, vals);
   }
 
   function getMax(vals) {
-    return Math.max.apply(Math, vals);
+    return vals.length === 0 ? 0 : Math.max.apply(Math, vals);
   }
 
   function getLineSize(coords, moveX, moveY) {
@@ -1374,7 +1374,7 @@
           this.$cacheAsBitmap = cacheFlag;
           if (cacheFlag) {
             this.$texture = document.createElement('canvas');
-            document.body.appendChild(this.$texture);
+            //document.body.appendChild(this.$texture);
             this.$cacheRenderer = new Stage(this.$texture, {
               width: this.stage.width,
               height: this.stage.height,
