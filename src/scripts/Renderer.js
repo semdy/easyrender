@@ -1036,11 +1036,19 @@
       this.$lineJoin = null;
       this.$miterLimit = null;
       this.$closePath = false;
+      this.$counterclockwise = false;
+      this.$startX = 0;
+      this.$startY = 0;
+      this.$endX = 0;
+      this.$endY = 0;
+      this.$startAngle = 0;
+      this.$endAngle = 0;
+      this.$coords = [];
+      this.$drawType = 'rect';
 
       this.$renderType = "Shape";
       this.$needFill = false;
       this.$needStroke = false;
-      this.$coords = [];
 
       [
         'fillStyle',
