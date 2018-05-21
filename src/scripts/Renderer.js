@@ -14,15 +14,7 @@
   function drawImg(ctx, obj) {
     if (!obj.texture) return;
     if (obj.sx !== undefined) {
-      var
-        _width = ctx.canvas.width,
-        _height = ctx.canvas.height,
-        swidth = obj.swidth,
-        sheight = obj.sheight;
-
-      if (swidth >= _width) swidth = _width - 1;
-      if (sheight >= _height) sheight = _height - 1;
-      ctx.drawImage(obj.texture, obj.sx, obj.sy, swidth, sheight, 0, 0, obj.width, obj.height);
+      ctx.drawImage(obj.texture, obj.sx, obj.sy, obj.swidth, obj.sheight, 0, 0, obj.width, obj.height);
     } else {
       if (obj.cacheAsBitmap) {
         ctx.drawImage(obj.texture, 0, 0, obj.texture.width, obj.texture.height);
@@ -33,26 +25,26 @@
   }
 
   function fillBitMapText(obj) {
-    var data = obj.fontData.frames;
-    var texture = obj.fontTexture;
+    var data = obj.$fontData.frames;
+    var texture = obj.$fontTexture;
+    var textwrap = obj.$textwrap;
     var startX = 0;
     var lastWidth = 0;
-    var item;
     var bitMapText;
-    var textwrap = obj.$textwrap;
+    var item;
 
     textwrap.children.length = 0;
     obj.$textArr.forEach(function (n) {
       item = data[n];
       bitMapText = new BitMap().setParams({
-        texture: texture,
-        width: item.w,
-        height: item.h,
-        sx: item.x,
-        sy: item.y,
-        x: startX += (lastWidth + obj.letterSpacing),
-        swidth: item.w,
-        sheight: item.h
+        $texture: texture,
+        $width: item.w,
+        $height: item.h,
+        $sx: item.x,
+        $sy: item.y,
+        $x: startX += (lastWidth + obj.$letterSpacing),
+        $swidth: item.w,
+        $sheight: item.h
       });
 
       lastWidth = item.w;
@@ -60,11 +52,11 @@
 
     });
 
-    if (obj.textAlign === 'center') {
-      textwrap.x = (obj.width - textwrap.width) / 2;
+    if (obj.$textAlign === 'center') {
+      textwrap.$x = (obj.parent.width - textwrap.width) / 2;
     }
-    else if (obj.textAlign === 'right') {
-      textwrap.x = obj.width - textwrap.width;
+    else if (obj.$textAlign === 'right') {
+      textwrap.$x = obj.parent.width - textwrap.width;
     }
   }
 
@@ -79,6 +71,81 @@
       ctx.restore();
     });
     ctx.restore();
+  }
+
+  function drawShape(ctx, obj) {
+    ctx.beginPath();
+    drawShapeContext(ctx, obj);
+    obj.draw(ctx);
+  }
+
+  function drawContext(ctx, obj) {
+    var parent = obj.parent || {};
+    var moveX = obj.moveX * (obj.anchorX > 0 ? 1 : 0);
+    var moveY = obj.moveY * (obj.anchorY > 0 ? 1 : 0);
+    var anchorW = obj.anchorX * obj.width;
+    var anchorH = obj.anchorY * obj.height;
+
+    var x = obj.x + moveX + anchorW - ( obj.$isMasker ? 0 : (parent.mask ? parent.mask.x : 0 ));
+    var y = obj.y + moveY + anchorH - ( obj.$isMasker ? 0 : (parent.mask ? parent.mask.y : 0 ));
+
+    if (obj.alpha < 1) {
+      ctx.globalAlpha = obj.alpha;
+    }
+    if (x !== 0 || y !== 0) {
+      ctx.translate(x, y);
+    }
+    if (obj.scaleX !== 1 || obj.scaleY !== 1) {
+      ctx.scale(obj.scaleX, obj.scaleY);
+    }
+    if (obj.skewX !== 0 || obj.skewY !== 0) {
+      ctx.transform(1, obj.skewX, obj.skewY, 1, 0, 0);
+    }
+    if (obj.rotation !== 0) {
+      ctx.rotate(obj.rotation * CONST_ANGLE);
+    }
+    if (obj.anchorX > 0 || obj.anchorY > 0) {
+      ctx.translate(-moveX - anchorW, -moveY - anchorH);
+    }
+  }
+
+  function drawShapeContext(ctx, obj) {
+    if (obj.fillStyle) {
+      ctx.fillStyle = obj.fillStyle;
+    }
+    if (obj.strokeStyle) {
+      ctx.strokeStyle = obj.strokeStyle;
+    }
+    if (obj.shadowColor) {
+      ctx.shadowColor = obj.shadowColor;
+    }
+    if (obj.shadowBlur > 0) {
+      ctx.shadowBlur = obj.shadowBlur;
+    }
+    if (obj.shadowOffsetX > 0) {
+      ctx.shadowOffsetX = obj.shadowOffsetX;
+    }
+    if (obj.shadowOffsetY > 0) {
+      ctx.shadowOffsetY = obj.shadowOffsetY;
+    }
+    if (obj.lineCap) {
+      ctx.lineCap = obj.lineCap;
+    }
+    if (obj.lineJoin) {
+      ctx.lineJoin = obj.lineJoin;
+    }
+    if (obj.lineWidth > 0) {
+      ctx.lineWidth = obj.lineWidth;
+    }
+    if (obj.miterLimit) {
+      ctx.miterLimit = obj.miterLimit;
+    }
+    if (obj.dashLength > 0) {
+      try {
+        ctx.setLineDash([obj.dashLength, obj.dashGap || obj.dashLength]);
+      } catch (e) {
+      }
+    }
   }
 
   function getFontStyle(obj) {
@@ -221,80 +288,6 @@
     return determineFontHeightInPixels(getFontStyle(obj));
   };
 
-  function drawShape(ctx, obj) {
-    ctx.beginPath();
-    drawShapeContext(ctx, obj);
-    obj.draw(ctx);
-  }
-
-  function drawContext(ctx, obj) {
-    var parent = obj.parent || {};
-    var moveX = obj.moveX * (obj.anchorX > 0 ? 1 : 0);
-    var moveY = obj.moveY * (obj.anchorY > 0 ? 1 : 0);
-    var anchorW = obj.anchorX * obj.width;
-    var anchorH = obj.anchorY * obj.height;
-    var x = obj.x + moveX + anchorW - ( obj.$isMasker ? 0 : (parent.mask ? parent.mask.x : 0 ));
-    var y = obj.y + moveY + anchorH - ( obj.$isMasker ? 0 : (parent.mask ? parent.mask.y : 0 ));
-
-    if (obj.alpha < 1) {
-      ctx.globalAlpha = obj.alpha;
-    }
-    if (x !== 0 || y !== 0) {
-      ctx.translate(x, y);
-    }
-    if (obj.scaleX !== 1 || obj.scaleY !== 1) {
-      ctx.scale(obj.scaleX, obj.scaleY);
-    }
-    if (obj.skewX !== 0 || obj.skewY !== 0) {
-      ctx.transform(1, obj.skewX, obj.skewY, 1, 0, 0);
-    }
-    if (obj.rotation !== 0) {
-      ctx.rotate(obj.rotation * CONST_ANGLE);
-    }
-    if (obj.anchorX > 0 || obj.anchorY > 0) {
-      ctx.translate(-moveX - anchorW, -moveY - anchorH);
-    }
-  }
-
-  function drawShapeContext(ctx, obj) {
-    if (obj.fillStyle) {
-      ctx.fillStyle = obj.fillStyle;
-    }
-    if (obj.strokeStyle) {
-      ctx.strokeStyle = obj.strokeStyle;
-    }
-    if (obj.shadowColor) {
-      ctx.shadowColor = obj.shadowColor;
-    }
-    if (obj.shadowBlur > 0) {
-      ctx.shadowBlur = obj.shadowBlur;
-    }
-    if (obj.shadowOffsetX > 0) {
-      ctx.shadowOffsetX = obj.shadowOffsetX;
-    }
-    if (obj.shadowOffsetY > 0) {
-      ctx.shadowOffsetY = obj.shadowOffsetY;
-    }
-    if (obj.lineCap) {
-      ctx.lineCap = obj.lineCap;
-    }
-    if (obj.lineJoin) {
-      ctx.lineJoin = obj.lineJoin;
-    }
-    if (obj.lineWidth > 0) {
-      ctx.lineWidth = obj.lineWidth;
-    }
-    if (obj.miterLimit) {
-      ctx.miterLimit = obj.miterLimit;
-    }
-    if (obj.dashLength > 0) {
-      try {
-        ctx.setLineDash([obj.dashLength, obj.dashGap || obj.dashLength]);
-      } catch (e) {
-      }
-    }
-  }
-
   function getMin(vals) {
     return Math.min.apply(Math, vals);
   }
@@ -304,8 +297,8 @@
   }
 
   function getLineSize(coords, moveX, moveY) {
-    var widths = [moveX],
-      heights = [moveY];
+    var widths = [moveX];
+    var heights = [moveY];
     coords.forEach(function (coord) {
       widths.push(coord[0]);
       heights.push(coord[1]);
@@ -318,7 +311,8 @@
   }
 
   function getQuadraticLineSize(coords, moveX, moveY) {
-    var widths = [moveX || 0], heights = [moveY || 0];
+    var widths = [moveX || 0];
+    var heights = [moveY || 0];
     coords.forEach(function (coord, i) {
       if (i % 2 === 0) {
         widths.push(coord);
@@ -334,7 +328,8 @@
   }
 
   function getBezierCurveLineSize(coords) {
-    var widths = [], heights = [];
+    var widths = [];
+    var heights = [];
     coords.forEach(function (coord) {
       widths.push(coord[0]);
       heights.push(coord[1]);
@@ -366,17 +361,16 @@
     var objectOffset = getTotalOffset(object);
     var ctx = object.renderContext;
 
-    var ObjConstructor = function () {
-    };
-    ObjConstructor.prototype = object;
-    var newObj = new ObjConstructor();
+    var NewObj = function () {};
+    NewObj.prototype = object;
+    var newObj = new NewObj();
     newObj.$x = objectOffset.x;
     newObj.$y = objectOffset.y;
 
     ctx.save();
     drawContext(ctx, newObj);
     ctx.beginPath();
-    drawShapeFuns[newObj.drawType || 'rect'](ctx, newObj);
+    drawShapeMethods[newObj.drawType || 'rect'](ctx, newObj);
     ctx.restore();
 
     return ctx.isPointInPath(coord.x, coord.y);
@@ -401,7 +395,7 @@
     }
   };
 
-  var drawShapeFuns = {
+  var drawShapeMethods = {
     rect: function (ctx, obj) {
       ctx.rect(obj.moveX, obj.moveY, obj.width, obj.height);
     },
@@ -426,7 +420,7 @@
 
     lineTo: function (ctx, obj) {
       ctx.moveTo(obj.moveX, obj.moveY);
-      obj.$coords.forEach(function (coord) {
+      obj.coords.forEach(function (coord) {
         ctx.lineTo.apply(ctx, coord);
       });
     },
@@ -445,7 +439,7 @@
     },
 
     curve: function (ctx, obj) {
-      ctx.curve(obj.$coords);
+      ctx.curve(obj.coords);
     },
 
     clip: function (ctx) {
@@ -454,17 +448,17 @@
 
     quadraticCurveTo: function (ctx, obj) {
       ctx.moveTo(obj.moveX, obj.moveY);
-      ctx.quadraticCurveTo.apply(ctx, obj.$coords);
+      ctx.quadraticCurveTo.apply(ctx, obj.coords);
     },
 
     bezierCurveTo: function (ctx, obj) {
       ctx.moveTo(obj.moveX, obj.moveY);
-      ctx.bezierCurveTo.apply(ctx, obj.$coords);
+      ctx.bezierCurveTo.apply(ctx, obj.coords);
     }
   };
 
   /**
-   * DisplayObject 操作基类
+   * DisplayObject 基类
    * **/
   var DisplayObject = EC.Event.extend({
 
@@ -529,15 +523,11 @@
 
     $renderHooker: function () {
       var target = this;
-      while (target) {
+      while (target && target.$hasAddToStage) {
         if (target.$cacheRenderer) {
           target.$cacheRenderer.clear();
           target.$cacheRenderer.render(Date.now(), true);
         }
-        /*else if (target.stage) {
-          target.stage.clear();
-          target.stage.render(Date.now(), true);
-        }*/
         target = target.parent;
       }
     },
@@ -753,6 +743,13 @@
       return this;
     },
 
+    setChildIndex: function (child, index) {
+      this.children.splice(this.getChildIndex(child), 1);
+      this.children.splice(index, 0, child);
+
+      return this;
+    },
+
     getChilds: function () {
       return this.children;
     },
@@ -776,13 +773,6 @@
 
     size: function () {
       return this.children.length;
-    },
-
-    setChildIndex: function (child, index) {
-      this.children.splice(this.getChildIndex(child), 1);
-      this.children.splice(index, 0, child);
-
-      return this;
     },
 
     $stopTweens: function (target) {
@@ -1066,7 +1056,16 @@
         'radius',
         'dashLength',
         'dashGap',
-        'closePath'
+        'closePath',
+        'startX',
+        'startY',
+        'endX',
+        'endY',
+        'startAngle',
+        'endAngle',
+        'counterclockwise',
+        'coords',
+        'drawType'
       ].forEach(function (prop) {
         this.defineProperty(prop, {
           get: function () {
@@ -1100,7 +1099,7 @@
       this.$setStyle.apply(this, args);
     },
     draw: function (ctx) {
-      drawShapeFuns[this.drawType](ctx, this);
+      drawShapeMethods[this.drawType](ctx, this);
       this.$closePath && ctx.closePath();
       this.$needFill && ctx.fill();
       this.$needStroke && ctx.stroke();
@@ -1167,11 +1166,11 @@
     },
     lineTo: function (x, y) {
       if (Array.isArray(x)) {
-        [].push.apply(this.$coords, x);
+        [].push.apply(this.coords, x);
       } else {
-        this.$coords.push([x, y]);
+        this.coords.push([x, y]);
       }
-      var lineSize = getLineSize(this.$coords, this.moveX, this.moveY);
+      var lineSize = getLineSize(this.coords, this.moveX, this.moveY);
       this.width = lineSize.width;
       this.height = lineSize.height;
       this.drawType = 'lineTo';
@@ -1208,8 +1207,8 @@
       return this;
     },
     drawCurve: function (coords) {
-      this.$coords = coords || [];
-      var lineSize = getBezierCurveLineSize(this.$coords);
+      this.coords = coords || [];
+      var lineSize = getBezierCurveLineSize(this.coords);
       this.width = lineSize.width;
       this.height = lineSize.height;
       this.drawType = 'curve';
@@ -1220,16 +1219,16 @@
       return this;
     },
     quadraticCurveTo: function () {
-      this.$coords = slice.call(arguments);
-      var lineSize = getQuadraticLineSize(this.$coords, this.moveX, this.moveY);
+      this.coords = slice.call(arguments);
+      var lineSize = getQuadraticLineSize(this.coords, this.moveX, this.moveY);
       this.width = lineSize.width;
       this.height = lineSize.height;
       this.drawType = 'quadraticCurveTo';
       return this;
     },
     bezierCurveTo: function () {
-      this.$coords = slice.call(arguments);
-      var lineSize = getQuadraticLineSize(this.$coords, this.moveX, this.moveY);
+      this.coords = slice.call(arguments);
+      var lineSize = getQuadraticLineSize(this.coords, this.moveX, this.moveY);
       this.width = lineSize.width;
       this.height = lineSize.height;
       this.drawType = 'bezierCurveTo';
@@ -1359,10 +1358,10 @@
           this.$cacheAsBitmap = cacheFlag;
           if (cacheFlag) {
             this.$texture = document.createElement('canvas');
-            //document.body.appendChild(this.$texture);
+            document.body.appendChild(this.$texture);
             this.$cacheRenderer = new Stage(this.$texture, {
-              width: this.stage ? this.stage.width : 0,
-              height: this.stage ? this.stage.height : 0,
+              width: this.stage.width,
+              height: this.stage.height,
               scaleMode: 'noScale',
               autoRender: false,
               needEvents: false
@@ -1380,22 +1379,15 @@
 
       this.once('addToStage', function () {
         if (this.$cacheAsBitmap) {
-          this.$texture.width = this.stage.width;
-          this.$texture.height = this.stage.height;
-          this.$cacheRenderer.width = this.stage.width;
-          this.$cacheRenderer.height = this.stage.height;
+          this.cacheAsBitmap = this.$cacheAsBitmap;
           this.$renderHooker();
+          this.on('enterframe', function (time) {
+            this.children.forEach(function (item) {
+              item.dispatch('enterframe', time);
+            });
+          }, this);
         }
       }, this);
-
-      if (this.$cacheAsBitmap) {
-        this.cacheAsBitmap = this.$cacheAsBitmap;
-        this.on('enterframe', function (time) {
-          this.children.forEach(function (item) {
-            item.dispatch('enterframe', time);
-          });
-        }, this);
-      }
     },
     addChild: function () {
       if (this.cacheAsBitmap) {
@@ -1403,7 +1395,9 @@
       }
       Sprite.superclass.addChild.apply(this, arguments);
       this.resize();
-      this.$renderHooker();
+      if (this.cacheAsBitmap) {
+        this.$renderHooker();
+      }
 
       return this;
     },
@@ -1413,18 +1407,57 @@
       }
       Sprite.superclass.removeChild.apply(this, arguments);
       this.resize();
-      this.$renderHooker();
+      if (this.cacheAsBitmap) {
+        this.$renderHooker();
+      }
 
       return this;
     },
+    removeChildAt: function () {
+      if (this.cacheAsBitmap) {
+        this.$cacheRenderer.removeChildAt.apply(this.$cacheRenderer, arguments);
+      }
+      Sprite.superclass.removeChildAt.apply(this, arguments);
+      this.resize();
+      if (this.cacheAsBitmap) {
+        this.$renderHooker();
+      }
+    },
+    removeAllChildren: function () {
+      if (this.cacheAsBitmap) {
+        this.$cacheRenderer.removeAllChildren.apply(this.$cacheRenderer, arguments);
+      }
+      Sprite.superclass.removeAllChildren.apply(this, arguments);
+      this.resize();
+      if (this.cacheAsBitmap) {
+        this.$renderHooker();
+      }
+    },
+    setChildIndex: function () {
+      if (this.cacheAsBitmap) {
+        this.$cacheRenderer.setChildIndex.apply(this.$cacheRenderer, arguments);
+      }
+      Sprite.superclass.setChildIndex.apply(this, arguments);
+      if (this.cacheAsBitmap) {
+        this.$renderHooker();
+      }
+    },
     $addMask: function (masker) {
       if (masker === null && this.$isMaskAdded) {
+        this.$mask = null;
         this.$isMaskAdded = false;
+        if (this.cacheAsBitmap) {
+          this.$cacheRenderer.children.shift();
+        }
         this.children.shift();
         return;
       }
       if (this.$isMaskAdded) return;
       if (masker instanceof EC.Masker) {
+        if (this.cacheAsBitmap) {
+          this.$cacheRenderer.children.unshift(masker);
+          masker.parent = this;
+        }
         this.children.unshift(masker);
         this.$mask = masker;
         this.$isMaskAdded = true;
@@ -1490,12 +1523,12 @@
       this.lineSpacing = 2;
       this.inputType = "text";
 
-      this.on("addToStage", function () {
+      this.once("addToStage", function () {
         this.$create();
         this.$events();
       }, this);
 
-      this.on("remove", function () {
+      this.once("remove", function () {
         this.inputText.parentNode.removeChild(this.inputText);
         window.removeEventListener(EC.EVENTS.RESIZE, this.resizeListener, false);
       }, this);
@@ -1610,34 +1643,51 @@
     initialize: function () {
       BitMapText.superclass.initialize.apply(this, arguments);
       this.$text = "";
-      this.font = "";
-      this.textAlign = 'left';
-      this.letterSpacing = 0;
-      this.$renderType = "BitMapText";
-      this.$textArr = [];
-      this.$textwrap = new Sprite();
-      this.cacheAsBitmap = false;
-      this.$textwrap.cacheAsBitmap = false;
+      this.$font = "";
+      this.$textAlign = 'left';
+      this.$letterSpacing = 0;
 
-      this.defineProperty('text', {
+      this.$textRenderer = new Sprite();
+      this.$textRenderer.$renderType = 'BitMapText';
+      this.$textRenderer.cacheAsBitmap = false;
+
+      this.$textRenderer.$textwrap = new Sprite();
+      this.$textRenderer.$textwrap.cacheAsBitmap = false;
+
+      ['text', 'textAlign', 'letterSpacing'].forEach(function(prop){
+        this.defineProperty(prop, {
+          set: function (newVal) {
+            this.$textRenderer['$' + prop] = newVal;
+            if (prop === 'text') {
+              this.$textRenderer.$textArr = newVal.split("");
+            }
+            this.$renderHooker();
+          },
+          get: function () {
+            return this.$textRenderer['$' + prop];
+          },
+          enumerable: true
+        });
+      }.bind(this));
+
+      this.defineProperty('font', {
         set: function (newVal) {
-          this.$text = newVal;
-          this.$textArr = newVal.split("");
+          this.$font = newVal;
+          this.$createData();
         },
         get: function () {
-          return this.$text;
-        },
-        enumerable: true
+          return this.$font;
+        }
       });
 
-      this.on("addToStage", function () {
-        this.$create();
-        this.addChild(this.$textwrap);
+      this.once("addToStage", function () {
+        this.$textRenderer.addChild(this.$textRenderer.$textwrap);
+        this.addChild(this.$textRenderer);
       }, this);
     },
-    $create: function () {
-      this.fontData = (EC.isString(this.font) ? RES.getRes(this.font + "_fnt") : this.font).data;
-      this.fontTexture = RES.getRes(this.fontData.file.replace(/\.(\w+)$/, "_$1")).texture;
+    $createData: function () {
+      this.$textRenderer.$fontData = (EC.isString(this.$font) ? RES.getRes(this.$font + "_fnt") : this.$font).data;
+      this.$textRenderer.$fontTexture = RES.getRes(this.$textRenderer.$fontData.file.replace(/\.(\w+)$/, "_$1")).texture;
     }
   });
 
@@ -1679,7 +1729,7 @@
       this.shape = new Shape();
       this.textField = new TextField();
 
-      this.on("addToStage", function () {
+      this.once("addToStage", function () {
         this.$create();
         this.$events();
       }, this);
@@ -1904,7 +1954,6 @@
       this.scaleRatio = 1;
       this.cursor = "";
       this.$isRendering = false;
-      this.$renderThrottle = null;
       this.$ticker = new EC.Ticker({
         useInterval: opts.forceUpdate,
         frameRate: opts.frameRate

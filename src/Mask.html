@@ -1,24 +1,25 @@
 <!Doctype html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-    <title>EC Mask</title>
-    <style>
-        body{
-            margin:0;
-            background-color: #ccc;
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>EC Mask</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #ccc;
+    }
+  </style>
 </head>
 
 <body>
 
 <div id="ec_loading">
-    <div id="ec_load_inner">
-        <div id="ec_load"></div>
-        <span id="ec_spin"></span>
-    </div>
+  <div id="ec_load_inner">
+    <div id="ec_load"></div>
+    <span id="ec_spin"></span>
+  </div>
 </div>
 
 <canvas id="canvas-mask" width="850" height="548"></canvas>
@@ -44,53 +45,53 @@
 
 <script>
 
-    function startGame(img){
-        var canvas = document.getElementById('canvas-mask');
-        var stage = new EC.Stage(canvas, {
-            scaleMode: EC.isTouch ? "showAll" : "noScale",
-            showFps: true
-        });
-
-        stage.showFps({
-            right: 0,
-            left: "auto",
-            top: 0
-        });
-
-        var sprite = new EC.Sprite();
-
-        var mask = new EC.Masker();
-        mask.drawCircle(0,0,250);
-        sprite.mask = mask;
-
-        var bgImg = new EC.BitMap(img);
-
-        sprite.addChild(bgImg);
-        stage.addChild(sprite);
-
-        var isLeft = true;
-      sprite.on("enterframe", function () {
-            if( isLeft ) {
-                mask.x += 2;
-            }
-
-            if( !isLeft ){
-              mask.x -= 2;
-            }
-
-            if( mask.x > stage.width - 500 ){
-                isLeft = false;
-            }
-
-            if( mask.x <= 0 ){
-                isLeft = true;
-            }
-        });
-    }
-
-    RES.loadImage("images/girl.jpg").success(function ( img ) {
-        startGame(img);
+  function startGame(img) {
+    var canvas = document.getElementById('canvas-mask');
+    var stage = new EC.Stage(canvas, {
+      scaleMode: EC.isTouch ? "showAll" : "noScale",
+      showFps: true
     });
+
+    stage.showFps({
+      right: 0,
+      left: "auto",
+      top: 0
+    });
+
+    var sprite = new EC.Sprite();
+
+    var mask = new EC.Masker();
+    mask.drawCircle(0, 0, 250);
+    sprite.mask = mask;
+
+    var bgImg = new EC.BitMap(img);
+
+    sprite.addChild(bgImg);
+    stage.addChild(sprite);
+
+    var isLeft = true;
+    mask.on("enterframe", function () {
+      if (isLeft) {
+        this.x += 2;
+      }
+
+      if (!isLeft) {
+        this.x -= 2;
+      }
+
+      if (this.x > stage.width - 500) {
+        isLeft = false;
+      }
+
+      if (this.x <= 0) {
+        isLeft = true;
+      }
+    });
+  }
+
+  RES.loadImage("images/girl.jpg").success(function (img) {
+    startGame(img);
+  });
 </script>
 </body>
 </html>
