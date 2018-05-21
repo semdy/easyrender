@@ -522,17 +522,6 @@
       }.bind(this));
     },
 
-    $renderHooker: function () {
-      var target = this;
-      while (target && target.$hasAddToStage) {
-        if (target.$cacheRenderer) {
-          target.$cacheRenderer.clear();
-          target.$cacheRenderer.render(Date.now(), true);
-        }
-        target = target.parent;
-      }
-    },
-
     remove: function () {
       if (this.parent) {
         this.parent.removeChild(this);
@@ -626,6 +615,17 @@
     defineProperty: function (property, descriptor) {
       Object.defineProperty(this, property, descriptor);
       return this;
+    },
+
+    $renderHooker: function () {
+      var target = this;
+      while (target && target.$hasAddToStage) {
+        if (target.$cacheRenderer) {
+          target.$cacheRenderer.clear();
+          target.$cacheRenderer.render(Date.now(), true);
+        }
+        target = target.parent;
+      }
     },
 
     $triggerAddToStage: function (childObj, context) {
