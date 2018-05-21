@@ -157,8 +157,8 @@
     ctx.textAlign = obj.textAlign;
     ctx.textBaseline = obj.textBaseline;
 
-    var textX = obj.textAlign === "center" ? obj.width / 2 : (obj.textAlign === "right" ? obj.width : 0),
-      textY = 0;
+    var textX = obj.textAlign === "center" ? obj.width / 2 : (obj.textAlign === "right" ? obj.width : 0);
+    var textY = 0;
 
     if (!obj.strokeOnly) {
       if (obj.textColor) {
@@ -361,7 +361,8 @@
     var objectOffset = getTotalOffset(object);
     var ctx = object.renderContext;
 
-    var NewObj = function () {};
+    var NewObj = function () {
+    };
     NewObj.prototype = object;
     var newObj = new NewObj();
     newObj.$x = objectOffset.x;
@@ -708,7 +709,11 @@
     },
 
     removeChild: function (object) {
-      this.getChilds().splice(this.getChildIndex(object), 1);
+      var index = this.getChildIndex(object);
+      if (index > -1) {
+        this.getChilds().splice(index, 1);
+      }
+      delete object.parent;
       this.$stopTweens(object);
       this.$triggerRemove(object);
 
@@ -744,8 +749,11 @@
     },
 
     setChildIndex: function (child, index) {
-      this.children.splice(this.getChildIndex(child), 1);
-      this.children.splice(index, 0, child);
+      var i = this.getChildIndex(child);
+      if (i > -1) {
+        this.children.splice(i, 1);
+        this.children.splice(index, 0, child);
+      }
 
       return this;
     },
@@ -1662,7 +1670,7 @@
       this.$textRenderer.$textwrap = new Sprite();
       this.$textRenderer.$textwrap.cacheAsBitmap = false;
 
-      ['text', 'textAlign', 'letterSpacing'].forEach(function(prop){
+      ['text', 'textAlign', 'letterSpacing'].forEach(function (prop) {
         this.defineProperty(prop, {
           set: function (newVal) {
             this.$textRenderer['$' + prop] = newVal;
