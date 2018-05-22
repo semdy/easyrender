@@ -180,7 +180,7 @@
 
     _initEvents: function () {
 
-      this.on("addToStage", function () {
+      this.once("addToStage", function () {
         this.addChild(this._clip);
       }, this);
 

@@ -29,6 +29,7 @@
 <script src="scripts/Event.js"></script>
 <script src="scripts/GroupManager.js"></script>
 <script src="scripts/Loader.js"></script>
+<script src="scripts/Pool.js"></script>
 <script src="scripts/Ticker.js"></script>
 <script src="scripts/Timer.js"></script>
 <script src="scripts/Easing.js"></script>
@@ -59,9 +60,11 @@
   var scrollview = new EC.ScrollView();
   scrollview.width = stage.width;
   scrollview.height = stage.height*0.8;
+  scrollview.__type = 'scrollview';
 
   var rows = new EC.Sprite();
-  for(var i=1;i<101;i++) {
+  rows.__type = 'rows';
+  for(var i=1;i<10;i++) {
     var row = new EC.TextField();
     row.text = 'row' + i;
     row.y = (i-1)*40;
@@ -74,7 +77,7 @@
   stage.addChild(scrollview);
 
   scrollview.on('scroll', function(value){
-    console.log(value);
+    //console.log(value);
   });
 
   scrollview.on('totop', function(){

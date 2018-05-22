@@ -6,7 +6,7 @@
       this.bulletColor = data.color;
       this.startY = startY;
 
-      this.on("addToStage", this.onAddToStage, this);
+      this.once("addToStage", this.onAddToStage, this);
     },
     onAddToStage: function () {
       this.x = VideoBullet.mainInstance.stageW;

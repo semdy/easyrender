@@ -218,7 +218,7 @@
   }
 
   //检测BOM环境
-  function checkBOMEnv() {
+  function isBOMEnv() {
     return typeof window === 'object' && !!window.document && !!window.setInterval;
   }
 
@@ -282,7 +282,7 @@
     return result;
   }
 
-  var getTextHeight = checkBOMEnv() ? function (obj) {
+  var getTextHeight = isBOMEnv() ? function (obj) {
     return determineFontHeight(getFontStyle(obj));
   } : function (obj) {
     return determineFontHeightInPixels(getFontStyle(obj));
@@ -361,8 +361,7 @@
     var objectOffset = getTotalOffset(object);
     var ctx = object.renderContext;
 
-    var NewObj = function () {
-    };
+    var NewObj = function () {};
     NewObj.prototype = object;
     var newObj = new NewObj();
     newObj.$x = objectOffset.x;
@@ -486,7 +485,6 @@
       this.$hasDefineHeight = false;
       this.$cacheAsBitmap = false;
       this.$hasAddToStage = false;
-      this.$hasAddToStageFired = false;
       this.$renderType = 'DisplayObject';
 
       this.cursor = 'pointer';
@@ -496,7 +494,6 @@
         this.renderContext = e.renderContext;
         this.stage = e.stage;
         this.$hasAddToStage = true;
-        this.$hasAddToStageFired = true;
       }, this);
 
       ['x', 'y', 'moveX', 'moveY', 'width', 'height', 'rotation',
@@ -619,10 +616,11 @@
 
     $renderHooker: function () {
       var target = this;
+      console.log(target)
       while (target && target.$hasAddToStage) {
         if (target.$cacheRenderer) {
           target.$cacheRenderer.clear();
-          target.$cacheRenderer.render(Date.now(), true);
+          target.$cacheRenderer.renderCache();
         }
         target = target.parent;
       }
@@ -633,32 +631,24 @@
         return {target: obj, renderContext: context.renderContext, stage: context};
       };
       var _runAddToStage = function (obj) {
-        if (!obj.$hasAddToStageFired) {
+        if (!obj.$hasAddToStage) {
           obj.dispatch("addToStage", setParams(obj));
-          if (obj.$renderType === 'Sprite') {
-            obj.each(_runAddToStage);
-          }
+        }
+        if (obj.$renderType === 'Sprite') {
+          obj.each(_runAddToStage);
         }
       };
-      if (!childObj.$hasAddToStageFired) {
-        childObj.dispatch("addToStage", setParams(childObj));
-        childObj.each(_runAddToStage);
-      }
+      _runAddToStage(childObj);
     },
 
     $triggerRemove: function (childObj) {
-
       var _runRemove = function (obj) {
-
         obj.dispatch("remove", obj);
-
         if (obj.$renderType === 'Sprite') {
           obj.each(_runRemove);
         }
       };
-
-      childObj.dispatch("remove", childObj);
-      childObj.each(_runRemove);
+      _runRemove(childObj);
     }
   });
 
@@ -680,7 +670,7 @@
       });
     },
 
-    addChildAt: function (object, index) {
+    addChild: function (object, index) {
       if (!(object instanceof DisplayObject)) {
         throw new TypeError(String(object) + " is not a instance of EC.DisplayObject");
       }
@@ -704,8 +694,8 @@
       return this;
     },
 
-    addChild: function (object) {
-      return this.addChildAt(object);
+    addChildAt: function () {
+      return this.addChild.apply(this, arguments);
     },
 
     removeChild: function (object) {
@@ -1374,7 +1364,7 @@
           this.$cacheAsBitmap = cacheFlag;
           if (cacheFlag) {
             this.$texture = document.createElement('canvas');
-            //document.body.appendChild(this.$texture);
+            document.body.appendChild(this.$texture);
             this.$cacheRenderer = new Stage(this.$texture, {
               width: this.stage.width,
               height: this.stage.height,
@@ -1396,17 +1386,32 @@
       this.once('addToStage', function () {
         if (this.$cacheAsBitmap) {
           this.cacheAsBitmap = this.$cacheAsBitmap;
+
+          this.each(function (child) {
+            this.$cacheRenderer.addChild(child);
+            child.parent = this;
+          }, this);
+
+          if (this.mask) {
+            this.$cacheRenderer.children.unshift(this.mask);
+          }
+
           this.$renderHooker();
+
           this.on('enterframe', function (time) {
+            if (this.mask) {
+              this.mask.dispatch('enterframe', time);
+            }
             this.children.forEach(function (item) {
               item.dispatch('enterframe', time);
             });
           }, this);
+
         }
       }, this);
     },
     addChild: function () {
-      if (this.cacheAsBitmap) {
+      if (this.$cacheRenderer) {
         this.$cacheRenderer.addChild.apply(this.$cacheRenderer, arguments);
       }
       Sprite.superclass.addChild.apply(this, arguments);
@@ -1418,7 +1423,7 @@
       return this;
     },
     removeChild: function () {
-      if (this.cacheAsBitmap) {
+      if (this.$cacheRenderer) {
         this.$cacheRenderer.removeChild.apply(this.$cacheRenderer, arguments);
       }
       Sprite.superclass.removeChild.apply(this, arguments);
@@ -1430,7 +1435,7 @@
       return this;
     },
     removeChildAt: function () {
-      if (this.cacheAsBitmap) {
+      if (this.$cacheRenderer) {
         this.$cacheRenderer.removeChildAt.apply(this.$cacheRenderer, arguments);
       }
       Sprite.superclass.removeChildAt.apply(this, arguments);
@@ -1440,7 +1445,7 @@
       }
     },
     removeAllChildren: function () {
-      if (this.cacheAsBitmap) {
+      if (this.$cacheRenderer) {
         this.$cacheRenderer.removeAllChildren.apply(this.$cacheRenderer, arguments);
       }
       Sprite.superclass.removeAllChildren.apply(this, arguments);
@@ -1450,7 +1455,7 @@
       }
     },
     setChildIndex: function () {
-      if (this.cacheAsBitmap) {
+      if (this.$cacheRenderer) {
         this.$cacheRenderer.setChildIndex.apply(this.$cacheRenderer, arguments);
       }
       Sprite.superclass.setChildIndex.apply(this, arguments);
@@ -1462,7 +1467,7 @@
       if (masker === null && this.$isMaskAdded) {
         this.$mask = null;
         this.$isMaskAdded = false;
-        if (this.cacheAsBitmap) {
+        if (this.$cacheRenderer) {
           this.$cacheRenderer.children.shift();
         }
         this.children.shift();
@@ -1471,10 +1476,14 @@
       if (this.$isMaskAdded) return;
       if (masker instanceof EC.Masker) {
         if (this.cacheAsBitmap) {
-          this.$cacheRenderer.children.unshift(masker);
-          masker.parent = this;
+          if (this.$cacheRenderer) {
+            this.$cacheRenderer.children.unshift(masker);
+          }
+          masker.$hasAddToStage = true;
+        } else {
+          this.children.unshift(masker);
         }
-        this.children.unshift(masker);
+        masker.parent = this;
         this.$mask = masker;
         this.$isMaskAdded = true;
       } else {
@@ -2019,6 +2028,28 @@
             obj.dispatch('enterframe', time);
           }
           if (obj.$renderType === 'Sprite' && (!obj.cacheAsBitmap || cacheMode)) {
+            ctx.save();
+            drawContext(ctx, obj);
+            obj.children.forEach(function (item) {
+              _render(item);
+            });
+            ctx.restore();
+          } else {
+            self.renderItem(ctx, obj);
+          }
+        }
+      };
+
+      _render(this);
+
+      return this;
+    },
+    renderCache: function () {
+      var self = this;
+      var ctx = this.renderContext;
+      var _render = function (obj) {
+        if (obj.visible) {
+          if (obj.$renderType === 'Sprite' && !obj.cacheAsBitmap && !obj.texture) {
             ctx.save();
             drawContext(ctx, obj);
             obj.children.forEach(function (item) {

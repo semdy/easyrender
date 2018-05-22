@@ -10,6 +10,7 @@ gulp.task('makefile', function() {
       "src/scripts/Event.js",
       "src/scripts/GroupManager.js",
       "src/scripts/Loader.js",
+      "src/scripts/Pool.js",
       "src/scripts/Ticker.js",
       "src/scripts/Timer.js",
       "src/scripts/Easing.js",

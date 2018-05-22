@@ -5,7 +5,6 @@
     initialize: function () {
       ScrollView.superclass.initialize.apply(this, arguments);
 
-      var self = this;
       this.cursor = '';
       this.vertical = true;
       this.adjustValue = 0;
@@ -14,27 +13,30 @@
       this.$layout = null;
       this.touchScroll = null;
 
-      this.on("addToStage", function() {
+      this.once("addToStage", function() {
         this.mask = new EC.Masker();
         this.mask.drawRect(0, 0, this.width, this.height);
         if (this.layout) {
-          this._createScroll();
           this.addChild(this.layout);
+          this._createScroll();
         }
       }, this);
 
       Object.defineProperty(this, 'layout', {
         set: function(target) {
-          self.$layout = target;
-          if (self.touchScroll) {
-            self.refresh();
-          } else {
-            self._createScroll();
+          this.$layout = target;
+          if (this.$hasAddToStage) {
+            this.clearContent();
+            this.addChild(target);
+            if (this.touchScroll) {
+              this.refresh();
+            } else {
+              this._createScroll();
+            }
           }
-          self.addChild(target);
         },
         get: function() {
-          return self.$layout;
+          return this.$layout;
         },
         enumerable: true
       });
@@ -64,7 +66,7 @@
       return this;
     },
     refresh: function () {
-      this.touchScroll.min = (this.vertical ? (this.height - this.layout.height) : (this.width - this.layout.width)) - this.adjustValue;
+      this.touchScroll.min = Math.min(0, ((this.vertical ? (this.height - this.layout.height) : (this.width - this.layout.width)) - this.adjustValue));
       return this;
     },
     _createScroll: function () {
@@ -80,7 +82,7 @@
         fixed: this.disabled,
         initialValue: this.initialValue,
         scroll: function (value) {
-          if(value === 0) {
+          if (value === 0) {
             self.dispatch('totop', value);
           } else if (value === self.touchScroll.min) {
             self.dispatch('tobottom', value);
