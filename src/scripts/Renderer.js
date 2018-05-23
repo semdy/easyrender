@@ -1367,7 +1367,6 @@
           this.$cacheAsBitmap = cacheFlag;
           if (cacheFlag) {
             this.$texture = document.createElement('canvas');
-            //document.body.appendChild(this.$texture);
             this.$cacheRenderer = new Stage(this.$texture, {
               width: Math.max(this.width, this.stage.width),
               height: Math.max(this.height, this.stage.height),
