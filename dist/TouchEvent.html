@@ -40,15 +40,10 @@
         top: 0
     });
 
-    var sprite = new EC.Sprite();
-    sprite.x = 100;
-    sprite.y = 10;
-    stage.addChild(sprite);
-
     var rect = new EC.Shape();
     rect.stroke("#f90");
     rect.drawRect(100, 50, 200, 100);
-    sprite.addChild(rect);
+    stage.addChild(rect);
 
     rect.touchEnabled = true;
     rect.on("touch", function () {
@@ -58,7 +53,7 @@
     var roundRect = new EC.Shape();
     roundRect.stroke("#06c");
     roundRect.drawRoundRect(100, 250, 200, 100, 12);
-    sprite.addChild(roundRect);
+    stage.addChild(roundRect);
 
     roundRect.touchEnabled = true;
     roundRect.on("touch", function () {
@@ -67,7 +62,7 @@
 
     var arc = new EC.Shape();
     arc.stroke("#cc0000");
-    arc.drawCircle(200, 450, 80);
+    arc.drawCircle(120, 450, 80);
     stage.addChild(arc);
 
     arc.touchEnabled = true;

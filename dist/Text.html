@@ -40,6 +40,7 @@
         top: 0
     });
 
+    var spr = new EC.Sprite();
     var text = new EC.TextField();
     text.width = 200;
     text.x = 10;
@@ -47,7 +48,7 @@
     text.size = 14;
     text.multiline = true;
     text.text = "这是一段测试字符串。This is an test string.当在文本框输入内容后会同步显示到canvas上。";
-    stage.addChild(text);
+    spr.addChild(text);
 
     var text2 = new EC.TextField();
     text2.width = 200;
@@ -55,13 +56,13 @@
     text2.y = 200;
     text2.textAlign = "center";
     text2.text = "文本居中";
-    stage.addChild(text2);
+    spr.addChild(text2);
 
     var text3 = new EC.TextField();
     text3.x = 10;
     text3.y = 250;
     text3.text = "斜杠n\n换行\n123";
-    stage.addChild(text3);
+    spr.addChild(text3);
 
     var strokeText = new EC.TextField();
     strokeText.x = 10;
@@ -71,7 +72,7 @@
     strokeText.strokeColor = "#f90";
     strokeText.fontFamily = 'Microsoft yahei';
     strokeText.text = "带描边的文字";
-    stage.addChild(strokeText);
+    spr.addChild(strokeText);
 
     var hollowText = new EC.TextField();
     hollowText.x = 10;
@@ -81,7 +82,9 @@
     hollowText.strokeColor = "#f90";
     hollowText.fontFamily = 'Microsoft yahei';
     hollowText.text = "空心的文字";
-    stage.addChild(hollowText);
+    spr.addChild(hollowText);
+
+    stage.addChild(spr);
 
 </script>
 </body>
