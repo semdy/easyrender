@@ -512,23 +512,11 @@
             else if (prop === 'height') {
               this.$hasDefineHeight = true;
             }
-            this.renderHooker();
+            this.$renderHooker();
           },
           enumerable: true
         });
       }.bind(this));
-    },
-
-    renderHooker: function (fromSelf) {
-      var target = fromSelf ? this : this.parent;
-
-      while (target && target.$hasAddToStage) {
-        if (target.$cacheRenderer) {
-          target.$cacheRenderer.clear();
-          target.$cacheRenderer.renderCache(target.children);
-        }
-        target = target.parent;
-      }
     },
 
     remove: function () {
@@ -624,6 +612,18 @@
     defineProperty: function (property, descriptor) {
       Object.defineProperty(this, property, descriptor);
       return this;
+    },
+
+    $renderHooker: function () {
+      var target = this;
+      console.log(target)
+      while (target && target.$hasAddToStage) {
+        if (target.$cacheRenderer) {
+          target.$cacheRenderer.clear();
+          target.$cacheRenderer.renderCache();
+        }
+        target = target.parent;
+      }
     },
 
     $triggerAddToStage: function (childObj, context) {
@@ -902,7 +902,7 @@
           },
           set: function (newVal) {
             this['$' + prop] = newVal;
-            this.renderHooker();
+            this.$renderHooker();
           },
           enumerable: true
         });
@@ -974,7 +974,7 @@
           },
           set: function (newVal) {
             this['$' + prop] = newVal;
-            this.renderHooker();
+            this.$renderHooker();
           },
           enumerable: true
         });
@@ -1079,7 +1079,7 @@
           },
           set: function (newVal) {
             this['$' + prop] = newVal;
-            this.renderHooker();
+            this.$renderHooker();
           },
           enumerable: true
         });
@@ -1364,10 +1364,10 @@
           this.$cacheAsBitmap = cacheFlag;
           if (cacheFlag) {
             this.$texture = document.createElement('canvas');
-            //document.body.appendChild(this.$texture);
+            document.body.appendChild(this.$texture);
             this.$cacheRenderer = new Stage(this.$texture, {
-              width: Math.max(this.width, this.stage.width),
-              height: Math.max(this.height, this.stage.height),
+              width: this.stage.width,
+              height: this.stage.height,
               scaleMode: 'noScale',
               autoRender: false,
               needEvents: false
@@ -1386,8 +1386,22 @@
       this.once('addToStage', function () {
         if (this.$cacheAsBitmap) {
           this.cacheAsBitmap = this.$cacheAsBitmap;
-          this.renderHooker(true);
+
+          this.each(function (child) {
+            this.$cacheRenderer.addChild(child);
+            child.parent = this;
+          }, this);
+
+          if (this.mask) {
+            this.$cacheRenderer.children.unshift(this.mask);
+          }
+
+          this.$renderHooker();
+
           this.on('enterframe', function (time) {
+            if (this.mask) {
+              this.mask.dispatch('enterframe', time);
+            }
             this.children.forEach(function (item) {
               item.dispatch('enterframe', time);
             });
@@ -1397,53 +1411,79 @@
       }, this);
     },
     addChild: function () {
+      if (this.$cacheRenderer) {
+        this.$cacheRenderer.addChild.apply(this.$cacheRenderer, arguments);
+      }
       Sprite.superclass.addChild.apply(this, arguments);
       this.resize();
       if (this.cacheAsBitmap) {
-        this.renderHooker(true);
+        this.$renderHooker();
       }
 
       return this;
     },
     removeChild: function () {
+      if (this.$cacheRenderer) {
+        this.$cacheRenderer.removeChild.apply(this.$cacheRenderer, arguments);
+      }
       Sprite.superclass.removeChild.apply(this, arguments);
       this.resize();
       if (this.cacheAsBitmap) {
-        this.renderHooker(true);
+        this.$renderHooker();
       }
 
       return this;
     },
     removeChildAt: function () {
+      if (this.$cacheRenderer) {
+        this.$cacheRenderer.removeChildAt.apply(this.$cacheRenderer, arguments);
+      }
       Sprite.superclass.removeChildAt.apply(this, arguments);
       this.resize();
       if (this.cacheAsBitmap) {
-        this.renderHooker(true);
+        this.$renderHooker();
       }
     },
     removeAllChildren: function () {
+      if (this.$cacheRenderer) {
+        this.$cacheRenderer.removeAllChildren.apply(this.$cacheRenderer, arguments);
+      }
       Sprite.superclass.removeAllChildren.apply(this, arguments);
       this.resize();
       if (this.cacheAsBitmap) {
-        this.renderHooker(true);
+        this.$renderHooker();
       }
     },
     setChildIndex: function () {
+      if (this.$cacheRenderer) {
+        this.$cacheRenderer.setChildIndex.apply(this.$cacheRenderer, arguments);
+      }
       Sprite.superclass.setChildIndex.apply(this, arguments);
       if (this.cacheAsBitmap) {
-        this.renderHooker(true);
+        this.$renderHooker();
       }
     },
     $addMask: function (masker) {
       if (masker === null && this.$isMaskAdded) {
         this.$mask = null;
         this.$isMaskAdded = false;
+        if (this.$cacheRenderer) {
+          this.$cacheRenderer.children.shift();
+        }
         this.children.shift();
         return;
       }
       if (this.$isMaskAdded) return;
       if (masker instanceof EC.Masker) {
-        this.children.unshift(masker);
+        if (this.cacheAsBitmap) {
+          if (this.$cacheRenderer) {
+            this.$cacheRenderer.children.unshift(masker);
+          }
+          masker.$hasAddToStage = true;
+        } else {
+          this.children.unshift(masker);
+        }
+        masker.parent = this;
         this.$mask = masker;
         this.$isMaskAdded = true;
       } else {
@@ -1646,7 +1686,7 @@
             if (prop === 'text') {
               this.$textRenderer.$textArr = newVal.split("");
             }
-            this.renderHooker(true);
+            this.$renderHooker();
           },
           get: function () {
             return this.$textRenderer['$' + prop];
@@ -1979,13 +2019,15 @@
 
       return this;
     },
-    render: function (time) {
+    render: function (time, cacheMode) {
       var self = this;
       var ctx = this.renderContext;
       var _render = function (obj) {
         if (obj.visible) {
-          obj.dispatch('enterframe', time);
-          if (obj.$renderType === 'Sprite' && !obj.cacheAsBitmap) {
+          if (!cacheMode) {
+            obj.dispatch('enterframe', time);
+          }
+          if (obj.$renderType === 'Sprite' && (!obj.cacheAsBitmap || cacheMode)) {
             ctx.save();
             drawContext(ctx, obj);
             obj.children.forEach(function (item) {
@@ -2002,31 +2044,25 @@
 
       return this;
     },
-    renderCache: function (children) {
+    renderCache: function () {
       var self = this;
       var ctx = this.renderContext;
       var _render = function (obj) {
         if (obj.visible) {
-          if (obj.$renderType === 'Sprite') {
-            if (obj.cacheAsBitmap) {
-              self.renderItem(ctx, obj);
-            } else {
-              ctx.save();
-              drawContext(ctx, obj);
-              obj.children.forEach(function (item) {
-                _render(item);
-              });
-              ctx.restore();
-            }
+          if (obj.$renderType === 'Sprite' && !obj.cacheAsBitmap && !obj.texture) {console.log(obj)
+            ctx.save();
+            drawContext(ctx, obj);
+            obj.children.forEach(function (item) {
+              _render(item);
+            });
+            ctx.restore();
           } else {
             self.renderItem(ctx, obj);
           }
         }
       };
 
-      children.forEach(function (obj) {
-        _render(obj);
-      });
+      _render(this);
 
       return this;
     },
@@ -2051,6 +2087,7 @@
           break;
       }
       obj.$isMasker || ctx.restore();
+      //console.log(obj.$renderType)
     },
     clear: function () {
       this.renderContext.clearRect(0, 0, this.width, this.height);

@@ -20,7 +20,7 @@
      * 获取对应的对象池
      */
     Pool.prototype.getPoolBySign = function(name) {
-      return this[__.poolDic][name] || ( this[__.poolDic][name] = [] );
+      return this[__.poolDic][name] || (this[__.poolDic][name] = []);
     };
 
     /**
