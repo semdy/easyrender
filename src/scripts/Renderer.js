@@ -1319,7 +1319,7 @@
     },
     draw: function (ctx) {
       Masker.superclass.draw.call(this, ctx);
-      ctx.clip();
+      //ctx.clip();
     }
   });
 
@@ -1364,7 +1364,7 @@
           this.$cacheAsBitmap = cacheFlag;
           if (cacheFlag) {
             this.$texture = document.createElement('canvas');
-            //document.body.appendChild(this.$texture);
+            document.body.appendChild(this.$texture);
             this.$cacheRenderer = new Stage(this.$texture, {
               width: Math.max(this.width, this.stage.width),
               height: Math.max(this.height, this.stage.height),
@@ -1444,6 +1444,7 @@
       if (this.$isMaskAdded) return;
       if (masker instanceof EC.Masker) {
         this.children.unshift(masker);
+        masker.parent = this;
         this.$mask = masker;
         this.$isMaskAdded = true;
       } else {
