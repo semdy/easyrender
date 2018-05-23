@@ -61,13 +61,10 @@
     var sprite = new EC.Sprite();
 
     var mask = new EC.Masker();
-    mask.stroke("#ff0000");
-    mask.drawCircle(0, 0, 200);
+    mask.drawCircle(0, 0, 250);
     sprite.mask = mask;
 
     var bgImg = new EC.BitMap(img);
-    bgImg.width = 100;
-    bgImg.height = 100;
 
     sprite.addChild(bgImg);
     stage.addChild(sprite);

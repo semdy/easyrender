@@ -10,6 +10,7 @@
   var slice = Array.prototype.slice;
   var tmpCtx = document.createElement("canvas").getContext("2d");
   var heightCache = {};
+  var textInputDiv;
 
   function drawImg(ctx, obj) {
     if (!obj.texture) return;
@@ -521,7 +522,6 @@
 
     renderHooker: function (fromSelf) {
       var target = fromSelf ? this : this.parent;
-
       while (target && target.$hasAddToStage) {
         if (target.$cacheRenderer) {
           target.$cacheRenderer.clear();
@@ -675,9 +675,9 @@
         throw new TypeError(String(object) + " is not a instance of EC.DisplayObject");
       }
 
-      /*if (object.parent) {
+      if (object.parent) {
         object.parent.removeChild(object);
-      }*/
+      }
 
       object.parent = this;
 
@@ -930,12 +930,15 @@
       if (EC.isDefined(sx)) {
         this.$sx = sx;
       }
+
       if (EC.isDefined(sy)) {
         this.$sy = sy;
       }
+
       if (EC.isDefined(swidth)) {
         this.$swidth = swidth || 0.1;
       }
+
       if (EC.isDefined(sheight)) {
         this.$sheight = sheight || 0.1;
       }
@@ -1319,7 +1322,7 @@
     },
     draw: function (ctx) {
       Masker.superclass.draw.call(this, ctx);
-      //ctx.clip();
+      ctx.clip();
     }
   });
 
@@ -1364,7 +1367,7 @@
           this.$cacheAsBitmap = cacheFlag;
           if (cacheFlag) {
             this.$texture = document.createElement('canvas');
-            document.body.appendChild(this.$texture);
+            //document.body.appendChild(this.$texture);
             this.$cacheRenderer = new Stage(this.$texture, {
               width: Math.max(this.width, this.stage.width),
               height: Math.max(this.height, this.stage.height),
@@ -1392,7 +1395,6 @@
               item.dispatch('enterframe', time);
             });
           }, this);
-
         }
       }, this);
     },
@@ -1503,7 +1505,7 @@
       this.padding = 3;
       this.fontSize = 28;
       this.color = "#000";
-      this.placeholderColor = "#999";
+      this.placeholderColor = "#777";
       this.placeholder = "";
       this.fontFamily = "";
       this.lineSpacing = 2;
@@ -1573,8 +1575,15 @@
       this.addChild(this.textField);
 
       this.$setInputStyle();
-      document.body.appendChild(this.inputText);
 
+      if (!textInputDiv) {
+        textInputDiv = document.createElement("div");
+        textInputDiv.id = 'StageTextInputDiv';
+        textInputDiv.style.cssText = 'position:absolute;margin:0;padding:0;border:none;';
+        document.body.appendChild(textInputDiv);
+      }
+
+      textInputDiv.appendChild(this.inputText);
     },
     $setInputStyle: function () {
       var self = this;
@@ -1881,27 +1890,33 @@
       var radina = Math.acos(cos);//用反三角函数求弧度
       var angle = 180 / (Math.PI / radina);//将弧度转换成角度
 
-      if (mx > px && my > py) {//目标点在第四象限
+      //目标点在第四象限
+      if (mx > px && my > py) {
         angle = 180 - angle;
       }
 
-      if (mx === px && my > py) {//目标点在y轴负方向上
+      //目标点在y轴负方向上
+      if (mx === px && my > py) {
         angle = 180;
       }
 
-      if (mx > px && my === py) {//目标点在x轴正方向上
+      //目标点在x轴正方向上
+      if (mx > px && my === py) {
         angle = 90;
       }
 
-      if (mx < px && my > py) {//目标点在第三象限
+      //目标点在第三象限
+      if (mx < px && my > py) {
         angle = 180 + angle;
       }
 
-      if (mx < px && my === py) {//目标点在x轴负方向
+      //目标点在x轴负方向
+      if (mx < px && my === py) {
         angle = 270;
       }
 
-      if (mx < px && my < py) {//目标点在第二象限
+      //目标点在第二象限
+      if (mx < px && my < py) {
         angle = 360 - angle;
       }
 
@@ -2025,9 +2040,14 @@
         }
       };
 
-      children.forEach(function (obj) {
-        _render(obj);
-      });
+      if (children.length) {
+        var hasMasker = children[0].$isMasker;
+        hasMasker && ctx.save();
+        children.forEach(function (obj) {
+          _render(obj);
+        });
+        hasMasker && ctx.restore();
+      }
 
       return this;
     },

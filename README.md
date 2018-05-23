@@ -1660,7 +1660,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 <tr>
 		<td>placeholderColor</td>
 		<td>String</td>
-		<td>#999</td>
+		<td>#777</td>
 		<td>输入框提示文本颜色</td>
 	</tr>
 <tr>
