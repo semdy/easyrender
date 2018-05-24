@@ -58,16 +58,14 @@
       top: 0
     });
 
-    var sprite = new EC.Sprite();
+    var bgImg = new EC.Bitmap(img);
 
     var mask = new EC.Masker();
     mask.drawCircle(0, 0, 250);
-    sprite.mask = mask;
 
-    var bgImg = new EC.BitMap(img);
+    bgImg.mask = mask;
 
-    sprite.addChild(bgImg);
-    stage.addChild(sprite);
+    stage.addChild(bgImg);
 
     var isLeft = true;
     mask.on("enterframe", function () {

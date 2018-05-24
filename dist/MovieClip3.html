@@ -28,7 +28,7 @@
 <script>
     var imgLoader = RES.loadImage("images/qie_dance.png");
 
-    imgLoader.on("success", function(qieBitMapData){
+    imgLoader.on("success", function(qieBitmapData){
         var resLoader = RES.loadJson("images/mc_qie.json");
         resLoader.on("success", function(resData){
             var canvas = document.getElementById('canvas-movieclip');
@@ -37,7 +37,7 @@
                 height: 1334
             });
 
-            var mc = new EC.MovieClip(qieBitMapData, resData, 'qie');
+            var mc = new EC.MovieClip(qieBitmapData, resData, 'qie');
             mc.x = 50;
             mc.y = 50;
             mc.gotoAndPlay(1, -1);

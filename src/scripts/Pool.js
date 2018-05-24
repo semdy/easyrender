@@ -11,41 +11,48 @@
    * 可以有效减少对象创建开销和避免频繁的垃圾回收
    * 提高游戏性能
    */
-    var Pool = function() {
-      this[__.poolDic] = {};
-    };
+  var Pool = function () {
+    this[__.poolDic] = {};
+  };
 
-    /**
-     * 根据对象标识符
-     * 获取对应的对象池
-     */
-    Pool.prototype.getPoolBySign = function(name) {
-      return this[__.poolDic][name] || (this[__.poolDic][name] = []);
-    };
+  /**
+   * 根据对象标识符
+   * 获取对应的对象池
+   */
+  Pool.prototype.getPoolBySign = function (name) {
+    return this[__.poolDic][name] || (this[__.poolDic][name] = []);
+  };
 
-    /**
-     * 根据传入的对象标识符，查询对象池
-     * 对象池为空创建新的类，否则从对象池中取
-     */
-    Pool.prototype.getItemByClass = function(name, className) {
-      var pool = this.getPoolBySign(name);
-      var result = pool.length
-        ? pool.shift()
-        : new className();
+  /**
+   * 根据传入的对象标识符，查询对象池
+   * 对象池为空创建新的类，否则从对象池中取
+   */
+  Pool.prototype.getItemByClass = function (name, className) {
+    var pool = this.getPoolBySign(name);
+    var result = pool.length
+      ? pool.shift()
+      : new className();
 
-      return result;
-    };
+    return result;
+  };
 
-    /**
-     * 将对象回收到对象池
-     * 方便后续继续使用
-     */
-    Pool.prototype.recover = function(name, instance) {
-      this.getPoolBySign(name).push(instance);
-    };
+  /**
+   * 将对象回收到对象池
+   * 方便后续继续使用
+   */
+  Pool.prototype.recover = function (name, instance) {
+    this.getPoolBySign(name).push(instance);
+  };
 
-    EC.provide({
-      Pool: Pool
-    });
+  /**
+   * 清空对象池
+   */
+  Pool.prototype.clear = function (name) {
+    this.getPoolBySign(name).length = 0;
+  };
+
+  EC.provide({
+    Pool: Pool
+  });
 
 })(window.EC);

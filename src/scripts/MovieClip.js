@@ -17,7 +17,7 @@
       this.currentFrame = 0;
 
       this.setRES(resUrl, res);
-      this._clip = new EC.BitMap(this.RESUrl);
+      this._clip = new EC.Bitmap(this.RESUrl);
 
       if (Array.isArray(this.RESUrl)) {
         this.width = this.RESUrl[0].width;

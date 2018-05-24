@@ -1347,42 +1347,49 @@ var cancelAnimationFrame =
    * 可以有效减少对象创建开销和避免频繁的垃圾回收
    * 提高游戏性能
    */
-    var Pool = function() {
-      this[__.poolDic] = {};
-    };
+  var Pool = function () {
+    this[__.poolDic] = {};
+  };
 
-    /**
-     * 根据对象标识符
-     * 获取对应的对象池
-     */
-    Pool.prototype.getPoolBySign = function(name) {
-      return this[__.poolDic][name] || (this[__.poolDic][name] = []);
-    };
+  /**
+   * 根据对象标识符
+   * 获取对应的对象池
+   */
+  Pool.prototype.getPoolBySign = function (name) {
+    return this[__.poolDic][name] || (this[__.poolDic][name] = []);
+  };
 
-    /**
-     * 根据传入的对象标识符，查询对象池
-     * 对象池为空创建新的类，否则从对象池中取
-     */
-    Pool.prototype.getItemByClass = function(name, className) {
-      var pool = this.getPoolBySign(name);
-      var result = pool.length
-        ? pool.shift()
-        : new className();
+  /**
+   * 根据传入的对象标识符，查询对象池
+   * 对象池为空创建新的类，否则从对象池中取
+   */
+  Pool.prototype.getItemByClass = function (name, className) {
+    var pool = this.getPoolBySign(name);
+    var result = pool.length
+      ? pool.shift()
+      : new className();
 
-      return result;
-    };
+    return result;
+  };
 
-    /**
-     * 将对象回收到对象池
-     * 方便后续继续使用
-     */
-    Pool.prototype.recover = function(name, instance) {
-      this.getPoolBySign(name).push(instance);
-    };
+  /**
+   * 将对象回收到对象池
+   * 方便后续继续使用
+   */
+  Pool.prototype.recover = function (name, instance) {
+    this.getPoolBySign(name).push(instance);
+  };
 
-    EC.provide({
-      Pool: Pool
-    });
+  /**
+   * 清空对象池
+   */
+  Pool.prototype.clear = function (name) {
+    this.getPoolBySign(name).length = 0;
+  };
+
+  EC.provide({
+    Pool: Pool
+  });
 
 })(window.EC);
 /**
@@ -2903,7 +2910,7 @@ var cancelAnimationFrame =
     }
   }
 
-  function fillBitMapText(obj) {
+  function fillBitmapText(obj) {
     var data = obj.$fontData.frames;
     var texture = obj.$fontTexture;
     var textwrap = obj.$textwrap;
@@ -2915,7 +2922,7 @@ var cancelAnimationFrame =
     textwrap.children.length = 0;
     obj.$textArr.forEach(function (n) {
       item = data[n];
-      bitMapText = new BitMap().setParams({
+      bitMapText = new Bitmap().setParams({
         $texture: texture,
         $width: item.w,
         $height: item.h,
@@ -2939,8 +2946,8 @@ var cancelAnimationFrame =
     }
   }
 
-  function drawBitMapText(ctx, obj) {
-    fillBitMapText(obj);
+  function drawBitmapText(ctx, obj) {
+    fillBitmapText(obj);
     ctx.save();
     ctx.translate(obj.$textwrap.x, obj.$textwrap.y);
     obj.$textwrap.each(function (childObj) {
@@ -3240,7 +3247,8 @@ var cancelAnimationFrame =
     var objectOffset = getTotalOffset(object);
     var ctx = object.renderContext;
 
-    var NewObj = function () {};
+    var NewObj = function () {
+    };
     NewObj.prototype = object;
     var newObj = new NewObj();
     newObj.$x = objectOffset.x;
@@ -3373,6 +3381,9 @@ var cancelAnimationFrame =
         this.renderContext = e.renderContext;
         this.stage = e.stage;
         this.$hasAddToStage = true;
+        if (this.$mask) {
+          this.addMask(this.$mask);
+        }
       }, this);
 
       ['x', 'y', 'moveX', 'moveY', 'width', 'height', 'rotation',
@@ -3396,10 +3407,25 @@ var cancelAnimationFrame =
           enumerable: true
         });
       }.bind(this));
+
+      this.defineProperty('mask', {
+        set: function (masker) {
+          this.$mask = masker;
+          this.addMask(masker);
+        },
+        get: function () {
+          return this.$mask;
+        },
+        enumerable: true
+      });
+
     },
 
     renderHooker: function (fromSelf) {
-      var target = fromSelf ? this : this.parent;
+      var target = fromSelf
+        ? this
+        : this.parent;
+
       while (target && target.$hasAddToStage) {
         if (target.$cacheRenderer) {
           target.$cacheRenderer.clear();
@@ -3458,6 +3484,19 @@ var cancelAnimationFrame =
       return this;
     },
 
+    getSize: function () {
+      var x = this.x + this.moveX;
+      var y = this.y + this.moveY;
+      var lineWidth = this.lineWidth || 0;
+      var width = x + this.width + lineWidth;
+      var height = y + this.height + lineWidth;
+
+      return {
+        width: width,
+        height: height
+      }
+    },
+
     getBounds: function () {
       return new Bounds(this);
     },
@@ -3504,6 +3543,50 @@ var cancelAnimationFrame =
       return this;
     },
 
+    addMask: function (masker) {
+      if (!this.$hasAddToStage) return;
+
+      var target = this.$renderType === 'Sprite'
+        ? this
+        : this.parent;
+
+      if (masker === null && target.$hasAddMask) {
+        target.$mask = null;
+        target.$hasAddMask = false;
+        target.children.shift();
+        if (target.cacheAsBitmap) {
+          this.renderHooker();
+        }
+        return;
+      }
+
+      if (masker instanceof EC.Shape) {
+        if (target.$hasAddMask) {
+          target.children.shift();
+        }
+        target.children.unshift(masker);
+        masker.parent = target;
+        target.$mask = masker;
+        target.$hasAddMask = true;
+
+        if (!(masker instanceof EC.Masker)) {
+          masker.$isMasker = true;
+          var origDraw = masker.draw;
+          masker.draw = function (ctx) {
+            origDraw.call(masker, ctx);
+            ctx.clip();
+          };
+        }
+
+        if (target.cacheAsBitmap) {
+          this.renderHooker();
+        }
+
+      } else {
+        throw new TypeError("mask must be a instance of EC.Shape or EC.Masker");
+      }
+    },
+
     $triggerAddToStage: function (childObj, context) {
       var setParams = function (obj) {
         return {target: obj, renderContext: context.renderContext, stage: context};
@@ -3521,6 +3604,8 @@ var cancelAnimationFrame =
 
     $triggerRemove: function (childObj) {
       var _runRemove = function (obj) {
+        delete obj.parent;
+        EC.Tween.removeTweens(obj);
         obj.dispatch("remove", obj);
         if (obj.$renderType === 'Sprite') {
           obj.each(_runRemove);
@@ -3553,9 +3638,9 @@ var cancelAnimationFrame =
         throw new TypeError(String(object) + " is not a instance of EC.DisplayObject");
       }
 
-      if (object.parent) {
+      /*if (object.parent) {
         object.parent.removeChild(object);
-      }
+      }*/
 
       object.parent = this;
 
@@ -3581,8 +3666,7 @@ var cancelAnimationFrame =
       if (index > -1) {
         this.getChilds().splice(index, 1);
       }
-      delete object.parent;
-      this.$stopTweens(object);
+
       this.$triggerRemove(object);
 
       return this;
@@ -3596,8 +3680,6 @@ var cancelAnimationFrame =
 
       var object = c.splice(i, 1)[0];
       if (object) {
-        delete object.parent;
-        this.$stopTweens(object);
         this.$triggerRemove(object);
       }
 
@@ -3605,13 +3687,13 @@ var cancelAnimationFrame =
     },
 
     removeAllChildren: function () {
-      this.$stopAllTweens();
-      this.each(function (child) {
-        this.$triggerRemove(child);
+      EC.Tween.removeAllTweens(this);
+
+      this.each(function (child, index) {
+        this.removeChildAt(index);
       }, this);
+
       this.children.length = 0;
-      this.$width = 0;
-      this.$height = 0;
 
       return this;
     },
@@ -3649,14 +3731,6 @@ var cancelAnimationFrame =
 
     size: function () {
       return this.children.length;
-    },
-
-    $stopTweens: function (target) {
-      EC.Tween.removeTweens(target);
-    },
-
-    $stopAllTweens: function () {
-      EC.Tween.removeAllTweens(this);
     }
   });
 
@@ -3709,6 +3783,7 @@ var cancelAnimationFrame =
         set: function (newVal) {
           this.$text = String(newVal);
           determineTextSetter.call(this);
+          this.renderHooker();
         },
         enumerable: true
       });
@@ -3721,6 +3796,7 @@ var cancelAnimationFrame =
           this.$size = newVal;
           if (this.$text) {
             determineTextSetter.call(this);
+            this.renderHooker();
           }
         },
         enumerable: true
@@ -3794,15 +3870,15 @@ var cancelAnimationFrame =
   });
 
   /**
-   * BitMap 位图类
+   * Bitmap 位图类
    * **/
-  var BitMap = DisplayObject.extend({
+  var Bitmap = DisplayObject.extend({
     initialize: function (key, x, y, width, height, sx, sy, swidth, sheight) {
-      BitMap.superclass.initialize.call(this);
+      Bitmap.superclass.initialize.call(this);
 
       this.$x = x || 0;
       this.$y = y || 0;
-      this.$renderType = "BitMap";
+      this.$renderType = "Bitmap";
       this.$texture = null;
 
       if (EC.isDefined(sx)) {
@@ -3870,17 +3946,18 @@ var cancelAnimationFrame =
         if (data.nodeName === "IMG") {
           this.setParams({
             $texture: data,
-            width: data.width,
-            height: data.height
+            $width: data.width,
+            $height: data.height
           });
         }
         else {
           this.setParams({
             $texture: data.texture,
-            width: data.width,
-            height: data.height
+            $width: data.width,
+            $height: data.height
           });
         }
+        this.renderHooker();
       }
       else {
         throw new TypeError(String(data) + " is a invalid texture");
@@ -4224,20 +4301,11 @@ var cancelAnimationFrame =
       this.defineProperty('texture', {
         set: function (texture) {
           this.$texture = texture;
+          this.renderHooker();
         },
         get: function () {
           return this.$texture;
         }
-      });
-
-      this.defineProperty('mask', {
-        set: function (masker) {
-          this.$addMask(masker);
-        },
-        get: function () {
-          return this.$mask;
-        },
-        enumerable: true
       });
 
       this.defineProperty('cacheAsBitmap', {
@@ -4245,7 +4313,7 @@ var cancelAnimationFrame =
           this.$cacheAsBitmap = cacheFlag;
           if (cacheFlag) {
             this.$texture = document.createElement('canvas');
-            //document.body.appendChild(this.$texture);
+            //document.body.appendChild(this.$texture)
             this.$cacheRenderer = new Stage(this.$texture, {
               width: Math.max(this.width, this.stage.width),
               height: Math.max(this.height, this.stage.height),
@@ -4314,42 +4382,13 @@ var cancelAnimationFrame =
         this.renderHooker(true);
       }
     },
-    $addMask: function (masker) {
-      if (masker === null && this.$isMaskAdded) {
-        this.$mask = null;
-        this.$isMaskAdded = false;
-        this.children.shift();
-        return;
-      }
-      if (this.$isMaskAdded) return;
-      if (masker instanceof EC.Masker) {
-        this.children.unshift(masker);
-        masker.parent = this;
-        this.$mask = masker;
-        this.$isMaskAdded = true;
-      } else {
-        throw new TypeError("mask must be a instance of EC.Masker");
-      }
-    },
-    $getSize: function (obj) {
-      var x = obj.x + obj.moveX;
-      var y = obj.y + obj.moveY;
-      var lineWidth = obj.lineWidth || 0;
-      var width = x + obj.width + lineWidth;
-      var height = y + obj.height + lineWidth;
-
-      return {
-        width: width,
-        height: height
-      }
-    },
     resize: function () {
       var widths = [];
       var heights = [];
       var size;
 
       this.each(function (obj) {
-        size = this.$getSize(obj);
+        size = obj.getSize();
         widths.push(size.width);
         heights.push(size.height);
       }, this);
@@ -4360,6 +4399,8 @@ var cancelAnimationFrame =
       if (!this.$hasDefineHeight) {
         this.$height = getMax(heights);
       }
+
+      return this;
     }
   });
 
@@ -4509,19 +4550,19 @@ var cancelAnimationFrame =
   });
 
   /**
-   * BitMapText
+   * BitmapText
    * */
 
-  var BitMapText = Sprite.extend({
+  var BitmapText = Sprite.extend({
     initialize: function () {
-      BitMapText.superclass.initialize.apply(this, arguments);
+      BitmapText.superclass.initialize.apply(this, arguments);
       this.$text = "";
       this.$font = "";
       this.$textAlign = 'left';
       this.$letterSpacing = 0;
 
       this.$textRenderer = new Sprite();
-      this.$textRenderer.$renderType = 'BitMapText';
+      this.$textRenderer.$renderType = 'BitmapText';
       this.$textRenderer.cacheAsBitmap = false;
 
       this.$textRenderer.$textwrap = new Sprite();
@@ -4598,7 +4639,7 @@ var cancelAnimationFrame =
         }
       }
 
-      this.bitMap = new BitMap();
+      this.bitMap = new Bitmap();
       this.shape = new Shape();
       this.textField = new TextField();
 
@@ -4936,11 +4977,11 @@ var cancelAnimationFrame =
         case 'Sprite':
           drawImg(ctx, obj);
           break;
-        case 'BitMap':
+        case 'Bitmap':
           drawImg(ctx, obj);
           break;
-        case 'BitMapText':
-          drawBitMapText(ctx, obj);
+        case 'BitmapText':
+          drawBitmapText(ctx, obj);
           break;
         case 'TextField':
           drawText(ctx, obj);
@@ -5078,8 +5119,8 @@ var cancelAnimationFrame =
 
   EC.provide({
     TextField: TextField,
-    BitMap: BitMap,
-    BitMapText: BitMapText,
+    Bitmap: Bitmap,
+    BitmapText: BitmapText,
     Shape: Shape,
     Rectangle: Rectangle,
     TextInput: TextInput,
@@ -5113,7 +5154,7 @@ var cancelAnimationFrame =
       this.currentFrame = 0;
 
       this.setRES(resUrl, res);
-      this._clip = new EC.BitMap(this.RESUrl);
+      this._clip = new EC.Bitmap(this.RESUrl);
 
       if (Array.isArray(this.RESUrl)) {
         this.width = this.RESUrl[0].width;

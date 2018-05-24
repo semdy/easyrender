@@ -2,13 +2,17 @@
   var Bullet = EC.Sprite.extend({
     initialize: function (data, startY) {
       Bullet.superclass.initialize.call(this);
-      this.bulletText = data.text;
-      this.bulletColor = data.color;
-      this.startY = startY;
-
-      this.once("addToStage", this.onAddToStage, this);
+      if (data) {
+        this.bulletText = data.text;
+        this.bulletColor = data.color;
+      }
+      if (startY) {
+        this.startY = startY;
+      }
+      this.bulletTextField = null;
+      this.once("addToStage", this.start, this);
     },
-    onAddToStage: function () {
+    start: function () {
       this.x = VideoBullet.mainInstance.stageW;
       this.y = this.startY;
       this.triggered = false;
@@ -30,8 +34,13 @@
     },
     setText: function (text) {
       if (text === "" || text === null) return;
-      var bulletText = new EC.TextField(text, 18, 0, 0, this.bulletColor);
-      this.addChild(bulletText);
+      if (this.bulletTextField) {
+        this.bulletTextField.text = text;
+        this.width = this.bulletTextField.width;
+      } else {
+        this.bulletTextField = new EC.TextField(text, 18, 0, 0, this.bulletColor);
+        this.addChild(this.bulletTextField);
+      }
     }
   });
 
@@ -49,6 +58,7 @@
 
     this.canvas = document.getElementById('canvas-bullets');
     this.stage = new EC.Stage(this.canvas, {scaleMode: 'fixedWidth'});
+    this.pool = new EC.Pool();
 
     this.stageW = this.stage.width;
     this.stageH = this.stage.height;
@@ -77,8 +87,17 @@
     shootBullet: function (data, trajectoryIndex) {
       if (!data) return;
 
-      var bullet = new Bullet(data, this.options.initTop + trajectoryIndex * this.options.trajectoryHeight);
+      //var bullet = this.pool.getItemByClass('bullet', Bullet);
+      var bullet = new Bullet();
+      bullet.bulletText = data.text;
+      bullet.bulletColor = data.color;
+      bullet.startY = this.options.initTop + trajectoryIndex * this.options.trajectoryHeight;
       bullet.trajectoryIndex = trajectoryIndex;
+
+      /*if (bullet.triggered) {
+        bullet.start();
+      }*/
+
       this.stage.addChild(bullet);
 
       bullet.on('born', function () {
@@ -86,8 +105,12 @@
       }, this);
 
       bullet.on('dead', function () {
-        this.stage.removeChild(bullet);
+        bullet.remove();
       }, this);
+
+      /*bullet.on('remove', function () {
+        this.pool.recover('bullet', bullet);
+      }, this);*/
     },
     addData: function (data, isPush) {
       if (data === null || data === "" || data === undefined) return;
@@ -96,7 +119,7 @@
       } else {
         this.subtitles.unshift(data);
       }
-      if (this.subtitles.length == 1) {
+      if (this.subtitles.length === 1) {
         this.shootBullet(this.subtitles.shift(), random(0, this.options.trajectoryNum));
       }
     },

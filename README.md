@@ -181,6 +181,44 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 	</tr>
 </table>
 
+## EC.Pool ##
+<table>
+	<tr>
+		<td>instance method</td>
+		<td>parameter</td>
+		<td>描述</td>
+		<td>return</td>
+	</tr>
+	<tr>
+    		<td>getPoolBySign</td>
+    		<td>String: name 对象标识符</td>
+    		<td>根据对象标识符获取对应的对象池</td>
+    		<td>Object</td>
+    	</tr>
+	<tr>
+		<td>getItemByClass</td>
+		<td>String: name 对象标识符<br>
+			Constructor: className 获取的对象池为空时的返回的构造函数并实例化
+		</td>
+		<td>根据传入的对象标识符，查询对象池对象池为空创建新的类，否则从对象池中取</td>
+		<td>Object</td>
+	</tr>
+	<tr>
+		<td>recover</td>
+		<td>String: name 对象标识符<br>
+			Object: instance 实例化对象
+		</td>
+		<td>将对象回收到对象池方便后续继续使用</td>
+		<td></td>
+	</tr>
+	<tr>
+        <td>clear</td>
+        <td>String: name 对象标识符</td>
+        <td>将对象池清空</td>
+        <td></td>
+    </tr>
+</table>
+
 ## EC.Event ##
 <table>
 	<tr>
@@ -837,6 +875,12 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>pointer</td>
 		<td>鼠标滑过时显示的鼠标样式，仅PC下有效</td>
 	</tr>
+	<tr>
+    		<td>mask</td>
+    		<td>EC.Shape</td>
+    		<td>undefined</td>
+    		<td>添加遮罩</td>
+    	</tr>
 </table>
 
 ### EC.DisplayObject methods ###
@@ -867,6 +911,12 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>检测两个显示对象是否碰撞</td>
 		<td>Boolean</td>
 	</tr>
+<tr>
+        <td>getSize</td>
+        <td>-</td>
+        <td>获取当前对象的宽高</td>
+        <td>Object: {width:number, height:number}</td>
+    </tr>
 <tr>
 		<td>getBounds</td>
 		<td>--</td>
@@ -1084,11 +1134,27 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>描述</td>
 	</tr>
 	<tr>
-		<td>mask</td>
-		<td>EC.Shape</td>
-		<td>undefined</td>
-		<td>添加遮罩</td>
+        <td>cacheAsBitmap</td>
+        <td>Boolean</td>
+        <td>true</td>
+        <td>是否将Sprite缓存成图片</td>
+    </tr>
+</table>
+
+### Sprite methods ###
+<table>
+	<tr>
+		<td>methods</td>
+		<td>parameter</td>
+		<td>描述</td>
+		<td>return</td>
 	</tr>
+	<tr>
+        <td>resize</td>
+        <td>-</td>
+        <td>重新计算Sprite的宽高</td>
+        <td>Sprite instance</td>
+    </tr>
 </table>
 
 ## EC.TextField ##
@@ -1198,7 +1264,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 	</tr>
 </table>
 
-## EC.BitMap ##
+## EC.Bitmap ##
 `extends EC.DisplayObjectContainer`
 <table>
 	<tr>
@@ -1235,11 +1301,11 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>texture</td>
 		<td>Img DOMObject</td>
 		<td>undefined</td>
-		<td>BitMap的纹理</td>
+		<td>Bitmap的纹理</td>
 	</tr>
 </table>
 
-### EC.BitMap methods ###
+### EC.Bitmap methods ###
 <table>
 	<tr>
 		<td>methods</td>
@@ -1251,7 +1317,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>setTexture</td>
 		<td>Object/IMG DOMObject: dataObject -> 纹理参数</td>
 		<td>设置纹理</td>
-		<td>EC.BitMap</td>
+		<td>EC.Bitmap</td>
 	</tr>
 </table>
 
@@ -1695,7 +1761,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 	</tr>
 </table>
 
-## EC.BitMapText ##
+## EC.BitmapText ##
 `extends EC.Sprite`
 <table>
 	<tr>
@@ -2368,7 +2434,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 - [文本输入框](https://semdy.github.io/easyrender/dist/TextInput.html)
 - [文本排版](https://semdy.github.io/easyrender/dist/Text.html)
 - [ScrollView](https://semdy.github.io/easyrender/dist/scrollview.html)
-- [BitMapText](https://semdy.github.io/easyrender/dist/BitMapText.html)
+- [BitmapText](https://semdy.github.io/easyrender/dist/BitmapText.html)
 - [Button](https://semdy.github.io/easyrender/dist/Button.html)
 - [TouchEvent](https://semdy.github.io/easyrender/dist/TouchEvent.html)
 - [Drag](https://semdy.github.io/easyrender/dist/Drag.html)
