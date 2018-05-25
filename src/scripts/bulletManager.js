@@ -1,20 +1,16 @@
 (function ($, window, undefined) {
   var Bullet = EC.Sprite.extend({
-    initialize: function (data, startY) {
+    initialize: function () {
       Bullet.superclass.initialize.call(this);
-      if (data) {
-        this.bulletText = data.text;
-        this.bulletColor = data.color;
-      }
-      if (startY) {
-        this.startY = startY;
-      }
+
+      this.bulletText = '';
+      this.bulletColor = '#000';
       this.bulletTextField = null;
+
       this.once("addToStage", this.start, this);
     },
     start: function () {
       this.x = VideoBullet.mainInstance.stageW;
-      this.y = this.startY;
       this.triggered = false;
       this.setText(this.bulletText);
       this.endX = -this.width;
@@ -66,7 +62,7 @@
     this.subtitles = [];
     var strs = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-    for (var i = 0; i < 100; i++) {
+    for (var i = 0; i < 101; i++) {
       this.subtitles[this.subtitles.length] = {
         color: "#fff",
         text: "text" + strs.substr(0, random(1, 30)) + i
@@ -91,12 +87,12 @@
       var bullet = new Bullet();
       bullet.bulletText = data.text;
       bullet.bulletColor = data.color;
-      bullet.startY = this.options.initTop + trajectoryIndex * this.options.trajectoryHeight;
+      bullet.y = this.options.initTop + trajectoryIndex * this.options.trajectoryHeight;
       bullet.trajectoryIndex = trajectoryIndex;
 
-      /*if (bullet.triggered) {
+      if (bullet.triggered) {
         bullet.start();
-      }*/
+      }
 
       this.stage.addChild(bullet);
 

@@ -218,6 +218,10 @@
     return tmpCtx.measureText(text).width;
   }
 
+  function getChildren(obj) {
+    return obj.$mask ? [obj.$mask].concat(obj.children) : obj.children;
+  }
+
   //检测BOM环境
   function isBOMEnv() {
     return typeof window === 'object' && !!window.document && !!window.setInterval;
@@ -544,7 +548,7 @@
       while (target && target.$hasAddToStage) {
         if (target.$cacheRenderer) {
           target.$cacheRenderer.clear();
-          target.$cacheRenderer.renderCache(target.children);
+          target.$cacheRenderer.renderCache(target);
         }
         target = target.parent;
       }
@@ -661,25 +665,21 @@
     addMask: function (masker) {
       if (!this.$hasAddToStage) return;
 
-      var target = this.$renderType === 'Sprite'
+      var isSprite = this.$renderType === 'Sprite';
+      var target = isSprite
         ? this
         : this.parent;
 
       if (masker === null && target.$hasAddMask) {
         target.$mask = null;
         target.$hasAddMask = false;
-        target.children.shift();
         if (target.cacheAsBitmap) {
-          this.renderHooker();
+          this.renderHooker(isSprite);
         }
         return;
       }
 
       if (masker instanceof EC.Shape) {
-        if (target.$hasAddMask) {
-          target.children.shift();
-        }
-        target.children.unshift(masker);
         masker.parent = target;
         target.$mask = masker;
         target.$hasAddMask = true;
@@ -694,7 +694,7 @@
         }
 
         if (target.cacheAsBitmap) {
-          this.renderHooker();
+          this.renderHooker(isSprite);
         }
 
       } else {
@@ -719,8 +719,6 @@
 
     $triggerRemove: function (childObj) {
       var _runRemove = function (obj) {
-        delete obj.parent;
-        EC.Tween.removeTweens(obj);
         obj.dispatch("remove", obj);
         if (obj.$renderType === 'Sprite') {
           obj.each(_runRemove);
@@ -782,6 +780,8 @@
         this.getChilds().splice(index, 1);
       }
 
+      delete object.parent;
+      EC.Tween.removeTweens(object);
       this.$triggerRemove(object);
 
       return this;
@@ -795,6 +795,8 @@
 
       var object = c.splice(i, 1)[0];
       if (object) {
+        delete object.parent;
+        EC.Tween.removeTweens(object);
         this.$triggerRemove(object);
       }
 
@@ -1158,7 +1160,7 @@
         });
       }.bind(this));
     },
-    $setStyle: function (type, color, alpha) {
+    setStyle: function (type, color, alpha) {
       if (typeof alpha === 'number' && alpha < 1) {
         this[type] = EC.Util.color.toRgb(color, alpha);
       } else {
@@ -1169,13 +1171,13 @@
       var args = slice.call(arguments);
       args.unshift("fillStyle");
       this.$needFill = true;
-      this.$setStyle.apply(this, args);
+      this.setStyle.apply(this, args);
     },
     stroke: function () {
       var args = slice.call(arguments);
       args.unshift("strokeStyle");
       this.$needStroke = true;
-      this.$setStyle.apply(this, args);
+      this.setStyle.apply(this, args);
     },
     draw: function (ctx) {
       drawShapeMethods[this.drawType](ctx, this);
@@ -1428,7 +1430,6 @@
           this.$cacheAsBitmap = cacheFlag;
           if (cacheFlag) {
             this.$texture = document.createElement('canvas');
-            //document.body.appendChild(this.$texture)
             this.$cacheRenderer = new Stage(this.$texture, {
               width: Math.max(this.width, this.stage.width),
               height: Math.max(this.height, this.stage.height),
@@ -1452,6 +1453,9 @@
           this.cacheAsBitmap = this.$cacheAsBitmap;
           this.renderHooker(true);
           this.on('enterframe', function (time) {
+            if (this.$mask) {
+              this.$mask.dispatch('enterframe', time);
+            }
             this.children.forEach(function (item) {
               item.dispatch('enterframe', time);
             });
@@ -2032,13 +2036,14 @@
     render: function (time) {
       var self = this;
       var ctx = this.renderContext;
+
       var _render = function (obj) {
         if (obj.visible) {
           obj.dispatch('enterframe', time);
           if (obj.$renderType === 'Sprite' && !obj.cacheAsBitmap) {
             ctx.save();
             drawContext(ctx, obj);
-            obj.children.forEach(function (item) {
+            getChildren(obj).forEach(function (item) {
               _render(item);
             });
             ctx.restore();
@@ -2052,9 +2057,10 @@
 
       return this;
     },
-    renderCache: function (children) {
+    renderCache: function (container) {
       var self = this;
       var ctx = this.renderContext;
+
       var _render = function (obj) {
         if (obj.visible) {
           if (obj.$renderType === 'Sprite') {
@@ -2063,7 +2069,7 @@
             } else {
               ctx.save();
               drawContext(ctx, obj);
-              obj.children.forEach(function (item) {
+              getChildren(obj).forEach(function (item) {
                 _render(item);
               });
               ctx.restore();
@@ -2074,14 +2080,15 @@
         }
       };
 
-      if (children.length) {
-        var hasMasker = children[0].$isMasker;
-        hasMasker && ctx.save();
-        children.forEach(function (obj) {
-          _render(obj);
+      var renderSprite = function (obj) {
+        obj.$mask && ctx.save();
+        getChildren(obj).forEach(function (item) {
+          _render(item);
         });
-        hasMasker && ctx.restore();
-      }
+        obj.$mask && ctx.restore();
+      };
+
+      renderSprite(container);
 
       return this;
     },
