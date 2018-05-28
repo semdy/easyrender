@@ -106,6 +106,12 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>Boolean</td>
 	</tr>
 	<tr>
+        <td>isEmptyObject</td>
+        <td>Object: obj</td>
+        <td>obj是否为空的Object</td>
+        <td>Boolean</td>
+    </tr>
+	<tr>
 		<td>isArray</td>
 		<td>Object: obj</td>
 		<td>obj是否为数组</td>
@@ -622,8 +628,10 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 			Object: congfig -> Tween的配置</td>
 		<td>可配置的参数有：<br>
 			{reverse: true} 当动画结束后，又以动画的形式返回初始状态;<br>
-			{loop: true} 动画无限循环<br>
-			{loop: 2...} 指定动画执行几次<br>
+			{loop: true} 动画结束回到初始状态无限循环<br>
+			{loop: n...} 指定动画执行n次<br>
+			{yoyo: true} 动画无限循环<br>
+            {yoyo: n...} 指定动画执行n次<br>
 		</td>
 		<td>EC.Tween类</td>
 	</tr>
@@ -2434,7 +2442,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 - [文本输入框](https://semdy.github.io/easyrender/dist/TextInput.html)
 - [文本排版](https://semdy.github.io/easyrender/dist/Text.html)
 - [ScrollView](https://semdy.github.io/easyrender/dist/scrollview.html)
-- [BitmapText](https://semdy.github.io/easyrender/dist/BitmapText.html)
+- [BitmapText](https://semdy.github.io/easyrender/dist/BitMapText.html)
 - [Button](https://semdy.github.io/easyrender/dist/Button.html)
 - [TouchEvent](https://semdy.github.io/easyrender/dist/TouchEvent.html)
 - [Drag](https://semdy.github.io/easyrender/dist/Drag.html)

@@ -1,0 +1,76 @@
+<!Doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>EC Mask</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #ccc;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="ec_loading">
+    <div id="ec_load_inner">
+        <div id="ec_load"></div>
+        <span id="ec_spin"></span>
+    </div>
+</div>
+
+<canvas id="canvas-mask" width="850" height="548"></canvas>
+
+<!-- build:js -->
+<script src="scripts/Base.js"></script>
+<script src="scripts/RequestAnimationFrame.js"></script>
+<script src="scripts/Utils.js"></script>
+<script src="scripts/Event.js"></script>
+<script src="scripts/GroupManager.js"></script>
+<script src="scripts/Loader.js"></script>
+<script src="scripts/Ticker.js"></script>
+<script src="scripts/Timer.js"></script>
+<script src="scripts/Easing.js"></script>
+<script src="scripts/Tween.js"></script>
+<script src="scripts/TouchEvent.js"></script>
+<script src="scripts/TouchScroll.js"></script>
+<script src="scripts/Renderer.js"></script>
+<script src="scripts/MovieClip.js"></script>
+<script src="scripts/ScrollView.js"></script>
+<script src="scripts/Stats.js"></script>
+<!-- endbuild -->
+
+<script>
+
+  function startGame(img) {
+    var canvas = document.getElementById('canvas-mask');
+    var stage = new EC.Stage(canvas, {
+      scaleMode: EC.isTouch ? "showAll" : "noScale",
+      showFps: true
+    });
+
+    stage.showFps({
+      right: 0,
+      left: "auto",
+      top: 0
+    });
+
+    var spr = new EC.Sprite();
+    var bgImg = new EC.Bitmap(img);
+    spr.x = 10;
+    spr.y = 100;
+    spr.scaleX = 1.5;
+    spr.addChild(bgImg);
+
+    stage.addChild(spr);
+  }
+
+  RES.loadImage("images/b.png").success(function (img) {
+    startGame(img);
+  });
+</script>
+</body>
+</html>

@@ -68,14 +68,14 @@
 
   var isFunction = EC.isFunction;
   var isNumber = EC.isNumber;
+  var isEmptyObject = EC.isEmptyObject;
 
   var _registCallback = function(callback, context){
     return isFunction(callback) && context ? callback.bind(context) : callback;
   };
 
   var Tween = function (obj, cfg) {
-    var _cfg = cfg || {};
-
+    this._cfg = cfg || {};
     this._tweenObj = obj;
     this._ticker = null;
     this._startCallback = null;
@@ -98,15 +98,19 @@
     this._waitTime = 0;
     this._id = Tween.nextId();
 
-    if (_cfg.reverse === true) {
+    if (this._cfg.reverse === true) {
       this._repeatCount = 2;
     }
 
-    if (isNumber(_cfg.loop)) {
-      this._repeatCount = _cfg.loop;
+    if (isNumber(this._cfg.loop)) {
+      this._repeatCount = this._cfg.loop;
     }
 
-    if(_cfg.loop === true || _cfg.yoyo === true) {
+    if (isNumber(this._cfg.yoyo)) {
+      this._repeatCount = this._cfg.yoyo * 2;
+    }
+
+    if (this._cfg.loop === true || this._cfg.yoyo === true) {
       this._repeatCount = -1;
     }
 
@@ -277,33 +281,53 @@
           this._triggerComplete();
 
           if (this._repeatCount === -1 || ++this._repeatIndex < this._repeatCount) {
-            var lastArgs;
             this._shouldTimelineAdd = false;
-            this._isReverse = !this._isReverse;
-            this._tweenTimeline.reverse().forEach(function(tweenArgs, i, self) {
-              if(this._isReverse) {
-                lastArgs = self[i + 1];
-                if(lastArgs === undefined) return false;
-              } else {
-                if(i === 0) return false;
-                lastArgs = tweenArgs;
-              }
-              if(isNumber(lastArgs)){
-                this.wait(lastArgs);
-              } else {
-                var _speed;
-                var _easing;
-                if(isNumber(tweenArgs)) {
-                  if(i === 0) return false;
-                  _speed = self[i-1][1];
-                  _easing = self[i-1][2];
+
+            if (this._cfg.yoyo || this._cfg.reverse) {
+              var lastArgs;
+              this._isReverse = !this._isReverse;
+              this._tweenTimeline.reverse().forEach(function (tweenArgs, i, timeline) {
+                if (this._isReverse) {
+                  lastArgs = timeline[i + 1];
+                  if (lastArgs === undefined) return false;
                 } else {
-                  _speed = tweenArgs[1];
-                  _easing = tweenArgs[2];
+                  if (i === 0) return false;
+                  lastArgs = tweenArgs;
                 }
-                this.to(lastArgs[0], _speed, _easing);
-              }
-            }.bind(this));
+                if (isNumber(lastArgs)) {
+                  this.wait(lastArgs);
+                } else {
+                  var _speed;
+                  var _easing;
+                  if (isNumber(tweenArgs)) {
+                    if (i === 0) return false;
+                    _speed = timeline[i - 1][1];
+                    _easing = timeline[i - 1][2];
+                  } else {
+                    _speed = tweenArgs[1];
+                    _easing = tweenArgs[2];
+                  }
+                  this.to(lastArgs[0], _speed, _easing);
+                }
+              }.bind(this));
+            }
+            else if (this._cfg.loop) {
+              this._tweenTimeline.forEach(function (tweenArgs, i) {
+                if (i === 0) {
+                  for (var i in tweenArgs[0]) {
+                    this._tweenObj[i] = tweenArgs[0][i];
+                  }
+                }
+                else if (isNumber(tweenArgs)) {
+                  this.wait(tweenArgs);
+                } else {
+                  this.to.apply(this, tweenArgs);
+                }
+              }.bind(this));
+            }
+
+            return true;
+
           } else {
             this.stop();
           }
@@ -312,10 +336,21 @@
       }
 
     },
+    _getStartAttrs: function (attrs) {
+      if (!isEmptyObject(this._startAttrs)) {
+        return this._startAttrs;
+      }
+      var _startAttrs = {};
+      for (var attr in attrs) {
+        if (this._tweenObj[attr] === undefined) continue;
+        _startAttrs[attr] = Number(this._tweenObj[attr]);
+      }
+      return _startAttrs;
+    },
     _addTimeline: function(data){
-      if(this._shouldTimelineAdd) {
-        if(this._isFirstTimeline){
-          this._tweenTimeline.push([EC.copy(this._startAttrs), this._duration, this._easingFunction]);
+      if (this._shouldTimelineAdd) {
+        if (this._isFirstTimeline && !isNumber(data)) {
+          this._tweenTimeline.unshift([this._getStartAttrs(data[0]), data[1], data[2]]);
           this._isFirstTimeline = false;
         }
         this._tweenTimeline.push(data);

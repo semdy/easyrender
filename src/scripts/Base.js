@@ -256,6 +256,13 @@ var EC = {
     isObject: function (obj) {
       return typeof obj === 'object' && obj !== null;
     },
+    isEmptyObject: function (obj) {
+      if (!EC.isObject(obj)) return false;
+      for(var i in obj) {
+        return false;
+      }
+      return true;
+    },
     isArray: Array.isArray,
     copy: function(target, depth){
       if(depth){

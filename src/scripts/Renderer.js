@@ -237,7 +237,7 @@
 
       var dummyText = document.createTextNode('gM');
       dummy.appendChild(dummyText);
-      dummy.setAttribute('style', 'font:' + fontStyle + ';line-height:1;position:absolute;top:0;left:-9999px');
+      dummy.setAttribute('style', 'font:' + fontStyle + ';position:absolute;top:0;left:-9999px');
       body.appendChild(dummy);
       result = dummy.offsetHeight;
       heightCache[fontStyle] = result;
@@ -284,6 +284,7 @@
       result = end - start;
       heightCache[fontStyle] = result;
     }
+
     return result;
   }
 
@@ -448,10 +449,6 @@
       ctx.curve(obj.coords);
     },
 
-    clip: function (ctx) {
-      ctx.clip();
-    },
-
     quadraticCurveTo: function (ctx, obj) {
       ctx.moveTo(obj.moveX, obj.moveY);
       ctx.quadraticCurveTo.apply(ctx, obj.coords);
@@ -521,7 +518,7 @@
             else if (prop === 'height') {
               this.$hasDefineHeight = true;
             }
-            this.renderHooker();
+            this.updateRender();
           },
           enumerable: true
         });
@@ -540,12 +537,12 @@
 
     },
 
-    renderHooker: function (fromSelf) {
+    updateRender: function (fromSelf) {
       var target = fromSelf
         ? this
         : this.parent;
 
-      while (target && target.$hasAddToStage) {
+      while (target && !target.$hasAddToStage) {
         if (target.$cacheRenderer) {
           target.$cacheRenderer.clear();
           target.$cacheRenderer.renderCache(target);
@@ -674,7 +671,7 @@
         target.$mask = null;
         target.$hasAddMask = false;
         if (target.cacheAsBitmap) {
-          this.renderHooker(isSprite);
+          this.updateRender(isSprite);
         }
         return;
       }
@@ -686,15 +683,10 @@
 
         if (!(masker instanceof EC.Masker)) {
           masker.$isMasker = true;
-          var origDraw = masker.draw;
-          masker.draw = function (ctx) {
-            origDraw.call(masker, ctx);
-            ctx.clip();
-          };
         }
 
         if (target.cacheAsBitmap) {
-          this.renderHooker(isSprite);
+          this.updateRender(isSprite);
         }
 
       } else {
@@ -900,7 +892,7 @@
         set: function (newVal) {
           this.$text = String(newVal);
           determineTextSetter.call(this);
-          this.renderHooker();
+          this.updateRender();
         },
         enumerable: true
       });
@@ -913,7 +905,7 @@
           this.$size = newVal;
           if (this.$text) {
             determineTextSetter.call(this);
-            this.renderHooker();
+            this.updateRender();
           }
         },
         enumerable: true
@@ -973,7 +965,7 @@
           },
           set: function (newVal) {
             this['$' + prop] = newVal;
-            this.renderHooker();
+            this.updateRender();
           },
           enumerable: true
         });
@@ -1048,7 +1040,7 @@
           },
           set: function (newVal) {
             this['$' + prop] = newVal;
-            this.renderHooker();
+            this.updateRender();
           },
           enumerable: true
         });
@@ -1074,7 +1066,7 @@
             $height: data.height
           });
         }
-        this.renderHooker();
+        this.updateRender();
       }
       else {
         throw new TypeError(String(data) + " is a invalid texture");
@@ -1154,7 +1146,7 @@
           },
           set: function (newVal) {
             this['$' + prop] = newVal;
-            this.renderHooker();
+            this.updateRender();
           },
           enumerable: true
         });
@@ -1181,6 +1173,9 @@
     },
     draw: function (ctx) {
       drawShapeMethods[this.drawType](ctx, this);
+      if (this.$isMasker) {
+        ctx.clip();
+      }
       this.$closePath && ctx.closePath();
       this.$needFill && ctx.fill();
       this.$needStroke && ctx.stroke();
@@ -1295,10 +1290,6 @@
       this.drawType = 'curve';
       return this;
     },
-    clip: function () {
-      this.drawType = 'clip';
-      return this;
-    },
     quadraticCurveTo: function () {
       this.coords = slice.call(arguments);
       var lineSize = getQuadraticLineSize(this.coords, this.moveX, this.moveY);
@@ -1391,10 +1382,6 @@
     initialize: function () {
       Masker.superclass.initialize.apply(this, arguments);
       this.$isMasker = true;
-    },
-    draw: function (ctx) {
-      Masker.superclass.draw.call(this, ctx);
-      ctx.clip();
     }
   });
 
@@ -1418,7 +1405,7 @@
       this.defineProperty('texture', {
         set: function (texture) {
           this.$texture = texture;
-          this.renderHooker();
+          this.updateRender();
         },
         get: function () {
           return this.$texture;
@@ -1451,7 +1438,7 @@
       this.once('addToStage', function () {
         if (this.$cacheAsBitmap) {
           this.cacheAsBitmap = this.$cacheAsBitmap;
-          this.renderHooker(true);
+          this.updateRender(true);
           this.on('enterframe', function (time) {
             if (this.$mask) {
               this.$mask.dispatch('enterframe', time);
@@ -1467,7 +1454,7 @@
       Sprite.superclass.addChild.apply(this, arguments);
       this.resize();
       if (this.cacheAsBitmap) {
-        this.renderHooker(true);
+        this.updateRender(true);
       }
 
       return this;
@@ -1476,7 +1463,7 @@
       Sprite.superclass.removeChild.apply(this, arguments);
       this.resize();
       if (this.cacheAsBitmap) {
-        this.renderHooker(true);
+        this.updateRender(true);
       }
 
       return this;
@@ -1485,20 +1472,20 @@
       Sprite.superclass.removeChildAt.apply(this, arguments);
       this.resize();
       if (this.cacheAsBitmap) {
-        this.renderHooker(true);
+        this.updateRender(true);
       }
     },
     removeAllChildren: function () {
       Sprite.superclass.removeAllChildren.apply(this, arguments);
       this.resize();
       if (this.cacheAsBitmap) {
-        this.renderHooker(true);
+        this.updateRender(true);
       }
     },
     setChildIndex: function () {
       Sprite.superclass.setChildIndex.apply(this, arguments);
       if (this.cacheAsBitmap) {
-        this.renderHooker(true);
+        this.updateRender(true);
       }
     },
     resize: function () {
@@ -1694,7 +1681,7 @@
             if (prop === 'text') {
               this.$textRenderer.$textArr = newVal.split("");
             }
-            this.renderHooker(true);
+            this.updateRender(true);
           },
           get: function () {
             return this.$textRenderer['$' + prop];
@@ -1988,8 +1975,8 @@
         onResume: EC.noop
       }, options || {});
 
-      this.width = parseFloat(this.canvas.getAttribute("width")) || opts.width;
-      this.height = parseFloat(this.canvas.getAttribute("height")) || opts.height;
+      this.$width = parseFloat(this.canvas.getAttribute("width")) || opts.width;
+      this.$height = parseFloat(this.canvas.getAttribute("height")) || opts.height;
       this.scaleRatio = 1;
       this.cursor = "";
       this.$isRendering = false;
