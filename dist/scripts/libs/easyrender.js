@@ -256,6 +256,13 @@ var EC = {
     isObject: function (obj) {
       return typeof obj === 'object' && obj !== null;
     },
+    isEmptyObject: function (obj) {
+      if (!EC.isObject(obj)) return false;
+      for(var i in obj) {
+        return false;
+      }
+      return true;
+    },
     isArray: Array.isArray,
     copy: function(target, depth){
       if(depth){
@@ -1935,13 +1942,13 @@ var cancelAnimationFrame =
   QueueManager.prototype = {
     add: function (item, data) {
       var _id = item.getId();
-      if (this._queues[_id] === undefined ) {
+      if (this._queues[_id] === undefined) {
         this._queues[_id] = [];
       }
       this._queues[_id].push(data);
     },
 
-    get: function(item) {
+    get: function (item) {
       return this._queues[item.getId()] || [];
     },
 
@@ -1956,15 +1963,15 @@ var cancelAnimationFrame =
 
   var isFunction = EC.isFunction;
   var isNumber = EC.isNumber;
+  var isEmptyObject = EC.isEmptyObject;
   var queueManager = new QueueManager();
 
-  var _registCallback = function(callback, context){
+  var _registCallback = function (callback, context) {
     return isFunction(callback) && context ? callback.bind(context) : callback;
   };
 
   var Tween = function (obj, cfg) {
-    var _cfg = cfg || {};
-
+    this._cfg = cfg || {};
     this._tweenObj = obj;
     this._startCallback = null;
     this._updateCallback = null;
@@ -1986,15 +1993,19 @@ var cancelAnimationFrame =
     this._waitTime = 0;
     this._id = EC.groupManager.nextId();
 
-    if (_cfg.reverse === true) {
+    if (this._cfg.reverse === true) {
       this._repeatCount = 2;
     }
 
-    if (isNumber(_cfg.loop)) {
-      this._repeatCount = _cfg.loop;
+    if (isNumber(this._cfg.loop)) {
+      this._repeatCount = this._cfg.loop;
     }
 
-    if(_cfg.loop === true || _cfg.yoyo === true) {
+    if (isNumber(this._cfg.yoyo)) {
+      this._repeatCount = this._cfg.yoyo * 2;
+    }
+
+    if (this._cfg.loop === true || this._cfg.yoyo === true) {
       this._repeatCount = -1;
     }
 
@@ -2014,7 +2025,7 @@ var cancelAnimationFrame =
   };
 
   Tween.removeAllTweens = function (container) {
-    if(!(container instanceof EC.DisplayObjectContainer)) return this;
+    if (!(container instanceof EC.DisplayObjectContainer)) return this;
     var removeTweens = function (container) {
       container.children.forEach(function (target) {
         Tween.removeTweens(target);
@@ -2034,7 +2045,7 @@ var cancelAnimationFrame =
       return this._id;
     },
     start: function () {
-      if(this._isPlaying || this._tweenObj._tweenId !== undefined) {
+      if (this._isPlaying || this._tweenObj._tweenId !== undefined) {
         return this;
       }
 
@@ -2045,9 +2056,9 @@ var cancelAnimationFrame =
 
       return this;
     },
-    stop: function(){
+    stop: function () {
       var tweenInstance = EC.groupManager.get(this._tweenObj._tweenId);
-      if(tweenInstance) {
+      if (tweenInstance) {
         tweenInstance._stopTween();
       }
 
@@ -2087,26 +2098,37 @@ var cancelAnimationFrame =
       }
 
     },
-    _addTimeline: function(data){
-      if(this._shouldTimelineAdd) {
-        if(this._isFirstTimeline){
-          this._tweenTimeline.push([EC.copy(this._startAttrs), this._duration, this._easingFunction]);
+    _getStartAttrs: function (attrs) {
+      if (!isEmptyObject(this._startAttrs)) {
+        return this._startAttrs;
+      }
+      var _startAttrs = {};
+      for (var attr in attrs) {
+        if (this._tweenObj[attr] === undefined) continue;
+        _startAttrs[attr] = Number(this._tweenObj[attr]);
+      }
+      return _startAttrs;
+    },
+    _addTimeline: function (data) {
+      if (this._shouldTimelineAdd) {
+        if (this._isFirstTimeline && !isNumber(data)) {
+          this._tweenTimeline.unshift([this._getStartAttrs(data[0]), data[1], data[2]]);
           this._isFirstTimeline = false;
         }
         this._tweenTimeline.push(data);
       }
     },
-    _clearTimeline: function(){
+    _clearTimeline: function () {
       this._tweenTimeline = [];
     },
-    _timeout: function(delayCallback, delay){
+    _timeout: function (delayCallback, delay) {
       var self = this;
       self._startTime = Date.now();
       self._waitTime = delay;
-      if(!Object.prototype.hasOwnProperty.call(self, '_timeup')) {
+      if (!Object.prototype.hasOwnProperty.call(self, '_timeup')) {
         Object.defineProperty(self, '_timeup', {
-          set: function(reached){
-            if(reached === true){
+          set: function (reached) {
+            if (reached === true) {
               self._waitTime = 0;
               self._startTime = 0;
               delayCallback();
@@ -2176,33 +2198,50 @@ var cancelAnimationFrame =
           this._triggerComplete();
 
           if (this._repeatCount === -1 || ++this._repeatIndex < this._repeatCount) {
-            var lastArgs;
             this._shouldTimelineAdd = false;
-            this._isReverse = !this._isReverse;
-            this._tweenTimeline.reverse().forEach(function(tweenArgs, i, self) {
-              if(this._isReverse) {
-                lastArgs = self[i + 1];
-                if(lastArgs === undefined) return false;
-              } else {
-                if(i === 0) return false;
-                lastArgs = tweenArgs;
-              }
-              if(isNumber(lastArgs)){
-                this.wait(lastArgs);
-              } else {
-                var _speed;
-                var _easing;
-                if(isNumber(tweenArgs)) {
-                  if(i === 0) return false;
-                  _speed = self[i-1][1];
-                  _easing = self[i-1][2];
+
+            if (this._cfg.yoyo || this._cfg.reverse) {
+              var lastArgs;
+              this._isReverse = !this._isReverse;
+              this._tweenTimeline.reverse().forEach(function (tweenArgs, i, timeline) {
+                if (this._isReverse) {
+                  lastArgs = timeline[i + 1];
+                  if (lastArgs === undefined) return false;
                 } else {
-                  _speed = tweenArgs[1];
-                  _easing = tweenArgs[2];
+                  if (i === 0) return false;
+                  lastArgs = tweenArgs;
                 }
-                this.to(lastArgs[0], _speed, _easing);
-              }
-            }.bind(this));
+                if (isNumber(lastArgs)) {
+                  this.wait(lastArgs);
+                } else {
+                  var _speed;
+                  var _easing;
+                  if (isNumber(tweenArgs)) {
+                    if (i === 0) return false;
+                    _speed = timeline[i - 1][1];
+                    _easing = timeline[i - 1][2];
+                  } else {
+                    _speed = tweenArgs[1];
+                    _easing = tweenArgs[2];
+                  }
+                  this.to(lastArgs[0], _speed, _easing);
+                }
+              }.bind(this));
+            }
+            else if (this._cfg.loop) {
+              this._tweenTimeline.forEach(function (tweenArgs, i) {
+                if (i === 0) {
+                  for (var i in tweenArgs[0]) {
+                    this._tweenObj[i] = tweenArgs[0][i];
+                  }
+                }
+                else if (isNumber(tweenArgs)) {
+                  this.wait(tweenArgs);
+                } else {
+                  this.to.apply(this, tweenArgs);
+                }
+              }.bind(this));
+            }
 
             return true;
 
@@ -3122,7 +3161,7 @@ var cancelAnimationFrame =
 
       var dummyText = document.createTextNode('gM');
       dummy.appendChild(dummyText);
-      dummy.setAttribute('style', 'font:' + fontStyle + ';line-height:1;position:absolute;top:0;left:-9999px');
+      dummy.setAttribute('style', 'font:' + fontStyle + ';position:absolute;top:0;left:-9999px');
       body.appendChild(dummy);
       result = dummy.offsetHeight;
       heightCache[fontStyle] = result;
@@ -3169,6 +3208,7 @@ var cancelAnimationFrame =
       result = end - start;
       heightCache[fontStyle] = result;
     }
+
     return result;
   }
 
@@ -3333,10 +3373,6 @@ var cancelAnimationFrame =
       ctx.curve(obj.coords);
     },
 
-    clip: function (ctx) {
-      ctx.clip();
-    },
-
     quadraticCurveTo: function (ctx, obj) {
       ctx.moveTo(obj.moveX, obj.moveY);
       ctx.quadraticCurveTo.apply(ctx, obj.coords);
@@ -3370,6 +3406,7 @@ var cancelAnimationFrame =
       this.$scaleY = 1;
       this.$anchorX = 0;
       this.$anchorY = 0;
+      this.$mask = null;
       this.$visible = true;
       this.$touchEnabled = false;
       this.$hasDefineWidth = false;
@@ -3406,7 +3443,7 @@ var cancelAnimationFrame =
             else if (prop === 'height') {
               this.$hasDefineHeight = true;
             }
-            this.renderHooker();
+            this.updateRender();
           },
           enumerable: true
         });
@@ -3425,7 +3462,7 @@ var cancelAnimationFrame =
 
     },
 
-    renderHooker: function (fromSelf) {
+    updateRender: function (fromSelf) {
       var target = fromSelf
         ? this
         : this.parent;
@@ -3559,7 +3596,7 @@ var cancelAnimationFrame =
         target.$mask = null;
         target.$hasAddMask = false;
         if (target.cacheAsBitmap) {
-          this.renderHooker(isSprite);
+          this.updateRender(isSprite);
         }
         return;
       }
@@ -3571,15 +3608,10 @@ var cancelAnimationFrame =
 
         if (!(masker instanceof EC.Masker)) {
           masker.$isMasker = true;
-          var origDraw = masker.draw;
-          masker.draw = function (ctx) {
-            origDraw.call(masker, ctx);
-            ctx.clip();
-          };
         }
 
         if (target.cacheAsBitmap) {
-          this.renderHooker(isSprite);
+          this.updateRender(isSprite);
         }
 
       } else {
@@ -3785,7 +3817,7 @@ var cancelAnimationFrame =
         set: function (newVal) {
           this.$text = String(newVal);
           determineTextSetter.call(this);
-          this.renderHooker();
+          this.updateRender();
         },
         enumerable: true
       });
@@ -3798,7 +3830,7 @@ var cancelAnimationFrame =
           this.$size = newVal;
           if (this.$text) {
             determineTextSetter.call(this);
-            this.renderHooker();
+            this.updateRender();
           }
         },
         enumerable: true
@@ -3858,7 +3890,7 @@ var cancelAnimationFrame =
           },
           set: function (newVal) {
             this['$' + prop] = newVal;
-            this.renderHooker();
+            this.updateRender();
           },
           enumerable: true
         });
@@ -3933,7 +3965,7 @@ var cancelAnimationFrame =
           },
           set: function (newVal) {
             this['$' + prop] = newVal;
-            this.renderHooker();
+            this.updateRender();
           },
           enumerable: true
         });
@@ -3959,7 +3991,7 @@ var cancelAnimationFrame =
             $height: data.height
           });
         }
-        this.renderHooker();
+        this.updateRender();
       }
       else {
         throw new TypeError(String(data) + " is a invalid texture");
@@ -4039,7 +4071,7 @@ var cancelAnimationFrame =
           },
           set: function (newVal) {
             this['$' + prop] = newVal;
-            this.renderHooker();
+            this.updateRender();
           },
           enumerable: true
         });
@@ -4066,6 +4098,9 @@ var cancelAnimationFrame =
     },
     draw: function (ctx) {
       drawShapeMethods[this.drawType](ctx, this);
+      if (this.$isMasker) {
+        ctx.clip();
+      }
       this.$closePath && ctx.closePath();
       this.$needFill && ctx.fill();
       this.$needStroke && ctx.stroke();
@@ -4180,10 +4215,6 @@ var cancelAnimationFrame =
       this.drawType = 'curve';
       return this;
     },
-    clip: function () {
-      this.drawType = 'clip';
-      return this;
-    },
     quadraticCurveTo: function () {
       this.coords = slice.call(arguments);
       var lineSize = getQuadraticLineSize(this.coords, this.moveX, this.moveY);
@@ -4276,10 +4307,6 @@ var cancelAnimationFrame =
     initialize: function () {
       Masker.superclass.initialize.apply(this, arguments);
       this.$isMasker = true;
-    },
-    draw: function (ctx) {
-      Masker.superclass.draw.call(this, ctx);
-      ctx.clip();
     }
   });
 
@@ -4295,7 +4322,6 @@ var cancelAnimationFrame =
       this.$width = w || 0;
       this.$height = h || 0;
 
-      this.$mask = null;
       this.$texture = null;
       this.$cacheRenderer = null;
       this.$cacheAsBitmap = true;
@@ -4303,7 +4329,7 @@ var cancelAnimationFrame =
       this.defineProperty('texture', {
         set: function (texture) {
           this.$texture = texture;
-          this.renderHooker();
+          this.updateRender();
         },
         get: function () {
           return this.$texture;
@@ -4336,7 +4362,7 @@ var cancelAnimationFrame =
       this.once('addToStage', function () {
         if (this.$cacheAsBitmap) {
           this.cacheAsBitmap = this.$cacheAsBitmap;
-          this.renderHooker(true);
+          this.updateRender(true);
           this.on('enterframe', function (time) {
             if (this.$mask) {
               this.$mask.dispatch('enterframe', time);
@@ -4352,7 +4378,7 @@ var cancelAnimationFrame =
       Sprite.superclass.addChild.apply(this, arguments);
       this.resize();
       if (this.cacheAsBitmap) {
-        this.renderHooker(true);
+        this.updateRender(true);
       }
 
       return this;
@@ -4361,7 +4387,7 @@ var cancelAnimationFrame =
       Sprite.superclass.removeChild.apply(this, arguments);
       this.resize();
       if (this.cacheAsBitmap) {
-        this.renderHooker(true);
+        this.updateRender(true);
       }
 
       return this;
@@ -4370,21 +4396,27 @@ var cancelAnimationFrame =
       Sprite.superclass.removeChildAt.apply(this, arguments);
       this.resize();
       if (this.cacheAsBitmap) {
-        this.renderHooker(true);
+        this.updateRender(true);
       }
+
+      return this;
     },
     removeAllChildren: function () {
       Sprite.superclass.removeAllChildren.apply(this, arguments);
       this.resize();
       if (this.cacheAsBitmap) {
-        this.renderHooker(true);
+        this.updateRender(true);
       }
+
+      return this;
     },
     setChildIndex: function () {
       Sprite.superclass.setChildIndex.apply(this, arguments);
       if (this.cacheAsBitmap) {
-        this.renderHooker(true);
+        this.updateRender(true);
       }
+
+      return this;
     },
     resize: function () {
       var widths = [];
@@ -4489,7 +4521,7 @@ var cancelAnimationFrame =
       this.textField.size = this.fontSize;
       this.textField.fontFamily = this.fontFamily || this.textField.fontFamily;
       this.textField.x = this.borderWidth + this.padding[3];
-      this.textField.y = this.inputType === "textarea" ? this.padding[0] : (this.height - this.textField.height - this.borderWidth) / 2;
+      this.textField.y = this.inputType === "textarea" ? this.padding[0] : (this.height - this.textField.height) / 2;
 
       this.mask = new Masker();
       this.mask.drawRect(0, 0, this.width + this.borderWidth, this.height + this.borderWidth);
@@ -4579,7 +4611,7 @@ var cancelAnimationFrame =
             if (prop === 'text') {
               this.$textRenderer.$textArr = newVal.split("");
             }
-            this.renderHooker(true);
+            this.updateRender(true);
           },
           get: function () {
             return this.$textRenderer['$' + prop];
@@ -4873,8 +4905,8 @@ var cancelAnimationFrame =
         onResume: EC.noop
       }, options || {});
 
-      this.width = parseFloat(this.canvas.getAttribute("width")) || opts.width;
-      this.height = parseFloat(this.canvas.getAttribute("height")) || opts.height;
+      this.$width = parseFloat(this.canvas.getAttribute("width")) || opts.width;
+      this.$height = parseFloat(this.canvas.getAttribute("height")) || opts.height;
       this.scaleRatio = 1;
       this.cursor = "";
       this.$isRendering = false;

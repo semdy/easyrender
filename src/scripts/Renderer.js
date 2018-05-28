@@ -482,6 +482,7 @@
       this.$scaleY = 1;
       this.$anchorX = 0;
       this.$anchorY = 0;
+      this.$mask = null;
       this.$visible = true;
       this.$touchEnabled = false;
       this.$hasDefineWidth = false;
@@ -1397,7 +1398,6 @@
       this.$width = w || 0;
       this.$height = h || 0;
 
-      this.$mask = null;
       this.$texture = null;
       this.$cacheRenderer = null;
       this.$cacheAsBitmap = true;
@@ -1474,6 +1474,8 @@
       if (this.cacheAsBitmap) {
         this.updateRender(true);
       }
+
+      return this;
     },
     removeAllChildren: function () {
       Sprite.superclass.removeAllChildren.apply(this, arguments);
@@ -1481,12 +1483,16 @@
       if (this.cacheAsBitmap) {
         this.updateRender(true);
       }
+
+      return this;
     },
     setChildIndex: function () {
       Sprite.superclass.setChildIndex.apply(this, arguments);
       if (this.cacheAsBitmap) {
         this.updateRender(true);
       }
+
+      return this;
     },
     resize: function () {
       var widths = [];
@@ -1591,7 +1597,7 @@
       this.textField.size = this.fontSize;
       this.textField.fontFamily = this.fontFamily || this.textField.fontFamily;
       this.textField.x = this.borderWidth + this.padding[3];
-      this.textField.y = this.inputType === "textarea" ? this.padding[0] : (this.height - this.textField.height - this.borderWidth) / 2;
+      this.textField.y = this.inputType === "textarea" ? this.padding[0] : (this.height - this.textField.height) / 2;
 
       this.mask = new Masker();
       this.mask.drawRect(0, 0, this.width + this.borderWidth, this.height + this.borderWidth);
