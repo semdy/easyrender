@@ -542,7 +542,7 @@
         ? this
         : this.parent;
 
-      while (target && !target.$hasAddToStage) {
+      while (target && target.$hasAddToStage) {
         if (target.$cacheRenderer) {
           target.$cacheRenderer.clear();
           target.$cacheRenderer.renderCache(target);
