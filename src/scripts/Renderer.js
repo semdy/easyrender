@@ -1424,7 +1424,7 @@
       this.textField.size = this.fontSize;
       this.textField.fontFamily = this.fontFamily || this.textField.fontFamily;
       this.textField.x = this.borderWidth + this.padding[3];
-      this.textField.y = this.inputType === "textarea" ? this.padding[0] : (this.height - this.textField.height - this.borderWidth) / 2;
+      this.textField.y = this.inputType === "textarea" ? this.padding[0] : (this.height - this.textField.height) / 2;
 
       this.mask = new Masker();
       this.mask.drawRect(0, 0, this.width + this.borderWidth, this.height + this.borderWidth);
