@@ -9,8 +9,6 @@
     initialize: function (resUrl, res, resKey) {
       MovieClip.superclass.initialize.call(this);
 
-      this.cacheAsBitmap = false;
-
       this._startFrame = 0;
       this._playTimes = -1;
       this._resKey = resKey;

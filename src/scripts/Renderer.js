@@ -17,11 +17,7 @@
     if (obj.sx !== undefined) {
       ctx.drawImage(obj.texture, obj.sx, obj.sy, obj.swidth, obj.sheight, 0, 0, obj.width, obj.height);
     } else {
-      if (obj.cacheAsBitmap) {
-        ctx.drawImage(obj.texture, 0, 0, obj.texture.width, obj.texture.height);
-      } else {
-        ctx.drawImage(obj.texture, 0, 0, obj.width, obj.height);
-      }
+      ctx.drawImage(obj.texture, 0, 0, obj.width, obj.height);
     }
   }
 
@@ -38,14 +34,14 @@
     obj.$textArr.forEach(function (n) {
       item = data[n];
       bitMapText = new Bitmap().setParams({
-        $texture: texture,
-        $width: item.w,
-        $height: item.h,
-        $sx: item.x,
-        $sy: item.y,
-        $x: startX += (lastWidth + obj.$letterSpacing),
-        $swidth: item.w,
-        $sheight: item.h
+        texture: texture,
+        width: item.w,
+        height: item.h,
+        sx: item.x,
+        sy: item.y,
+        x: startX += (lastWidth + obj.letterSpacing),
+        swidth: item.w,
+        sheight: item.h
       });
 
       lastWidth = item.w;
@@ -53,11 +49,11 @@
 
     });
 
-    if (obj.$textAlign === 'center') {
-      textwrap.$x = (obj.parent.width - textwrap.width) / 2;
+    if (obj.textAlign === 'center') {
+      textwrap.x = (obj.width - textwrap.width) / 2;
     }
-    else if (obj.$textAlign === 'right') {
-      textwrap.$x = obj.parent.width - textwrap.width;
+    else if (obj.textAlign === 'right') {
+      textwrap.x = obj.width - textwrap.width;
     }
   }
 
@@ -219,7 +215,7 @@
   }
 
   function getChildren(obj) {
-    return obj.$mask ? [obj.$mask].concat(obj.children) : obj.children;
+    return obj.mask ? [obj.mask].concat(obj.children) : obj.children;
   }
 
   //检测BOM环境
@@ -371,8 +367,8 @@
     };
     NewObj.prototype = object;
     var newObj = new NewObj();
-    newObj.$x = objectOffset.x;
-    newObj.$y = objectOffset.y;
+    newObj.x = objectOffset.x;
+    newObj.y = objectOffset.y;
 
     ctx.save();
     drawContext(ctx, newObj);
@@ -468,25 +464,26 @@
     initialize: function () {
       DisplayObject.superclass.initialize.call(this);
 
-      this.$x = 0;
-      this.$y = 0;
-      this.$moveX = 0;
-      this.$moveY = 0;
-      this.$width = 0;
-      this.$height = 0;
-      this.$rotation = 0;
-      this.$skewX = 0;
-      this.$skewY = 0;
-      this.$alpha = 1;
-      this.$scaleX = 1;
-      this.$scaleY = 1;
-      this.$anchorX = 0;
-      this.$anchorY = 0;
-      this.$visible = true;
-      this.$touchEnabled = false;
+      this.x = 0;
+      this.y = 0;
+      this.moveX = 0;
+      this.moveY = 0;
+      this.width = 0;
+      this.height = 0;
+      this.rotation = 0;
+      this.skewX = 0;
+      this.skewY = 0;
+      this.alpha = 1;
+      this.scaleX = 1;
+      this.scaleY = 1;
+      this.anchorX = 0;
+      this.anchorY = 0;
+      this.visible = true;
+      this.touchEnabled = false;
+
+      this.$mask = null;
       this.$hasDefineWidth = false;
       this.$hasDefineHeight = false;
-      this.$cacheAsBitmap = false;
       this.$hasAddToStage = false;
       this.$renderType = 'DisplayObject';
 
@@ -502,27 +499,27 @@
         }
       }, this);
 
-      ['x', 'y', 'moveX', 'moveY', 'width', 'height', 'rotation',
-        'skewX', 'skewY', 'alpha', 'scaleX', 'scaleY', 'anchorX',
-        'anchorY', 'visible', 'touchEnabled'
-      ].forEach(function (prop) {
-        this.defineProperty(prop, {
-          get: function () {
-            return this['$' + prop];
-          },
-          set: function (newVal) {
-            this['$' + prop] = newVal;
-            if (prop === 'width') {
-              this.$hasDefineWidth = true;
-            }
-            else if (prop === 'height') {
-              this.$hasDefineHeight = true;
-            }
-            this.updateRender();
-          },
-          enumerable: true
-        });
-      }.bind(this));
+      this.defineProperty('width', {
+        set: function (newVal) {
+          this.$width = newVal;
+          this.$hasDefineWidth = true;
+        },
+        get: function () {
+          return this.$width;
+        },
+        enumerable: true
+      });
+
+      this.defineProperty('height', {
+        set: function (newVal) {
+          this.$height = newVal;
+          this.$hasDefineHeight = true;
+        },
+        get: function () {
+          return this.$height;
+        },
+        enumerable: true
+      });
 
       this.defineProperty('mask', {
         set: function (masker) {
@@ -534,10 +531,6 @@
         },
         enumerable: true
       });
-
-    },
-
-    updateRender: function (fromSelf) {
 
     },
 
@@ -660,9 +653,6 @@
       if (masker === null && target.$hasAddMask) {
         target.$mask = null;
         target.$hasAddMask = false;
-        if (target.cacheAsBitmap) {
-          this.updateRender(isSprite);
-        }
         return;
       }
 
@@ -673,10 +663,6 @@
 
         if (!(masker instanceof EC.Masker)) {
           masker.$isMasker = true;
-        }
-
-        if (target.cacheAsBitmap) {
-          this.updateRender(isSprite);
         }
 
       } else {
@@ -840,24 +826,25 @@
     initialize: function (text, size, x, y, color, align, family, width, height) {
       TextField.superclass.initialize.call(this);
 
-      this.$x = x || 0;
-      this.$y = y || 0;
+      this.x = x || 0;
+      this.y = y || 0;
       this.$width = width || 0;
       this.$height = height || 0;
       this.$text = text || "";
       this.$textArr = [];
       this.$size = size || 16;
-      this.$textAlign = align || "start";
-      this.$textBaseline = "top";
-      this.$textColor = color || "#000";
-      this.$fontFamily = family || "Arial";
-      this.$strokeColor = color || "#000";
-      this.$textStyle = "normal";
-      this.$textWeight = "normal";
-      this.$lineSpacing = 2;
-      this.$stroke = false;
-      this.$strokeOnly = false;
-      this.$multiline = false;
+      this.textAlign = align || "start";
+      this.textBaseline = "top";
+      this.textColor = color || "#000";
+      this.fontFamily = family || "Arial";
+      this.strokeColor = color || "#000";
+      this.textStyle = "normal";
+      this.textWeight = "normal";
+      this.lineSpacing = 2;
+      this.stroke = false;
+      this.strokeOnly = false;
+      this.multiline = false;
+
       this.$renderType = "TextField";
 
       var determineTextSetter = function () {
@@ -882,7 +869,6 @@
         set: function (newVal) {
           this.$text = String(newVal);
           determineTextSetter.call(this);
-          this.updateRender();
         },
         enumerable: true
       });
@@ -895,7 +881,6 @@
           this.$size = newVal;
           if (this.$text) {
             determineTextSetter.call(this);
-            this.updateRender();
           }
         },
         enumerable: true
@@ -936,31 +921,6 @@
         enumerable: true
       });
 
-      [
-        'textAlign',
-        'textBaseline',
-        'textColor',
-        'fontFamily',
-        'strokeColor',
-        'textStyle',
-        'textWeight',
-        'lineSpacing',
-        'stroke',
-        'strokeOnly',
-        'multiline'
-      ].forEach(function (prop) {
-        this.defineProperty(prop, {
-          get: function () {
-            return this['$' + prop];
-          },
-          set: function (newVal) {
-            this['$' + prop] = newVal;
-            this.updateRender();
-          },
-          enumerable: true
-        });
-      }.bind(this));
-
       if (this.$text) {
         this.text = this.$text;
       }
@@ -975,25 +935,26 @@
     initialize: function (key, x, y, width, height, sx, sy, swidth, sheight) {
       Bitmap.superclass.initialize.call(this);
 
-      this.$x = x || 0;
-      this.$y = y || 0;
+      this.x = x || 0;
+      this.y = y || 0;
+
       this.$renderType = "Bitmap";
       this.$texture = null;
 
       if (EC.isDefined(sx)) {
-        this.$sx = sx;
+        this.sx = sx;
       }
 
       if (EC.isDefined(sy)) {
-        this.$sy = sy;
+        this.sy = sy;
       }
 
       if (EC.isDefined(swidth)) {
-        this.$swidth = swidth || 0.1;
+        this.swidth = swidth || 0.1;
       }
 
       if (EC.isDefined(sheight)) {
-        this.$sheight = sheight || 0.1;
+        this.sheight = sheight || 0.1;
       }
 
       if (EC.isDefined(key)) {
@@ -1001,11 +962,11 @@
       }
 
       if (EC.isDefined(width)) {
-        this.$width = width;
+        this.width = width;
       }
 
       if (EC.isDefined(height)) {
-        this.$height = height;
+        this.height = height;
       }
 
       this.defineProperty('texture', {
@@ -1018,24 +979,6 @@
         enumerable: true
       });
 
-      [
-        'sx',
-        'sy',
-        'swidth',
-        'sheight'
-      ].forEach(function (prop) {
-        this.defineProperty(prop, {
-          get: function () {
-            return this['$' + prop];
-          },
-          set: function (newVal) {
-            this['$' + prop] = newVal;
-            this.updateRender();
-          },
-          enumerable: true
-        });
-      }.bind(this));
-
     },
     setTexture: function (data) {
       if (EC.isString(data)) {
@@ -1045,18 +988,17 @@
         if (data.nodeName === "IMG") {
           this.setParams({
             $texture: data,
-            $width: data.width,
-            $height: data.height
+            width: data.width,
+            height: data.height
           });
         }
         else {
           this.setParams({
             $texture: data.texture,
-            $width: data.width,
-            $height: data.height
+            width: data.width,
+            height: data.height
           });
         }
-        this.updateRender();
       }
       else {
         throw new TypeError(String(data) + " is a invalid texture");
@@ -1073,74 +1015,37 @@
     initialize: function (x, y, w, h) {
       Shape.superclass.initialize.call(this);
 
-      this.$x = x || 0;
-      this.$y = y || 0;
-      this.$width = w || 0;
-      this.$height = h || 0;
-      this.$fillStyle = null;
-      this.$strokeStyle = null;
-      this.$lineWidth = 0;
-      this.$shadowColor = null;
-      this.$shadowBlur = 0;
-      this.$shadowOffsetX = 0;
-      this.$shadowOffsetY = 0;
-      this.$radius = 0;
-      this.$dashLength = 0;
-      this.$dashGap = 0;
-      this.$lineCap = null;
-      this.$lineJoin = null;
-      this.$miterLimit = null;
-      this.$closePath = false;
-      this.$counterclockwise = false;
-      this.$startX = 0;
-      this.$startY = 0;
-      this.$endX = 0;
-      this.$endY = 0;
-      this.$startAngle = 0;
-      this.$endAngle = 0;
-      this.$coords = [];
-      this.$drawType = 'rect';
+      this.x = x || 0;
+      this.y = y || 0;
+      this.width = w || 0;
+      this.height = h || 0;
+      this.fillStyle = null;
+      this.strokeStyle = null;
+      this.lineWidth = 0;
+      this.shadowColor = null;
+      this.shadowBlur = 0;
+      this.shadowOffsetX = 0;
+      this.shadowOffsetY = 0;
+      this.radius = 0;
+      this.dashLength = 0;
+      this.dashGap = 0;
+      this.lineCap = null;
+      this.lineJoin = null;
+      this.miterLimit = null;
+      this.counterclockwise = false;
+      this.startX = 0;
+      this.startY = 0;
+      this.endX = 0;
+      this.endY = 0;
+      this.startAngle = 0;
+      this.endAngle = 0;
+      this.coords = [];
 
+      this.$drawType = 'rect';
       this.$renderType = "Shape";
+      this.$closePath = false;
       this.$needFill = false;
       this.$needStroke = false;
-
-      [
-        'fillStyle',
-        'strokeStyle',
-        'lineWidth',
-        'shadowColor',
-        'shadowBlur',
-        'shadowOffsetX',
-        'shadowOffsetY',
-        'lineCap',
-        'lineJoin',
-        'miterLimit',
-        'radius',
-        'dashLength',
-        'dashGap',
-        'closePath',
-        'startX',
-        'startY',
-        'endX',
-        'endY',
-        'startAngle',
-        'endAngle',
-        'counterclockwise',
-        'coords',
-        'drawType'
-      ].forEach(function (prop) {
-        this.defineProperty(prop, {
-          get: function () {
-            return this['$' + prop];
-          },
-          set: function (newVal) {
-            this['$' + prop] = newVal;
-            this.updateRender();
-          },
-          enumerable: true
-        });
-      }.bind(this));
     },
     setStyle: function (type, color, alpha) {
       if (typeof alpha === 'number' && alpha < 1) {
@@ -1382,101 +1287,39 @@
     initialize: function (x, y, w, h) {
       Sprite.superclass.initialize.call(this);
 
-      this.$x = x || 0;
-      this.$y = y || 0;
+      this.x = x || 0;
+      this.y = y || 0;
       this.$width = w || 0;
       this.$height = h || 0;
-
-      this.$mask = null;
-      this.$texture = null;
-      this.$cacheRenderer = null;
-      this.$cacheAsBitmap = true;
-
-      this.defineProperty('texture', {
-        set: function (texture) {
-          this.$texture = texture;
-          this.updateRender();
-        },
-        get: function () {
-          return this.$texture;
-        }
-      });
-
-      this.defineProperty('cacheAsBitmap', {
-        set: function (cacheFlag) {
-          this.$cacheAsBitmap = cacheFlag;
-          if (cacheFlag) {
-            this.$texture = document.createElement('canvas');
-            this.$cacheRenderer = new Stage(this.$texture, {
-              width: Math.max(this.width, this.stage.width),
-              height: Math.max(this.height, this.stage.height),
-              scaleMode: 'noScale',
-              autoRender: false,
-              needEvents: false
-            });
-          } else {
-            this.$texture = null;
-            this.$cacheRenderer = null;
-          }
-        },
-        get: function () {
-          return this.$cacheAsBitmap;
-        },
-        enumerable: true
-      });
-
-      this.once('addToStage', function () {
-        if (this.$cacheAsBitmap) {
-          this.cacheAsBitmap = this.$cacheAsBitmap;
-          this.updateRender(true);
-          this.on('enterframe', function (time) {
-            if (this.$mask) {
-              this.$mask.dispatch('enterframe', time);
-            }
-            this.children.forEach(function (item) {
-              item.dispatch('enterframe', time);
-            });
-          }, this);
-        }
-      }, this);
     },
     addChild: function () {
       Sprite.superclass.addChild.apply(this, arguments);
       this.resize();
-      if (this.cacheAsBitmap) {
-        this.updateRender(true);
-      }
 
       return this;
     },
     removeChild: function () {
       Sprite.superclass.removeChild.apply(this, arguments);
       this.resize();
-      if (this.cacheAsBitmap) {
-        this.updateRender(true);
-      }
 
       return this;
     },
     removeChildAt: function () {
       Sprite.superclass.removeChildAt.apply(this, arguments);
       this.resize();
-      if (this.cacheAsBitmap) {
-        this.updateRender(true);
-      }
+
+      return this;
     },
     removeAllChildren: function () {
       Sprite.superclass.removeAllChildren.apply(this, arguments);
       this.resize();
-      if (this.cacheAsBitmap) {
-        this.updateRender(true);
-      }
+
+      return this;
     },
     setChildIndex: function () {
       Sprite.superclass.setChildIndex.apply(this, arguments);
-      if (this.cacheAsBitmap) {
-        this.updateRender(true);
-      }
+
+      return this;
     },
     resize: function () {
       var widths = [];
@@ -1654,31 +1497,22 @@
       BitmapText.superclass.initialize.apply(this, arguments);
       this.$text = "";
       this.$font = "";
-      this.$textAlign = 'left';
-      this.$letterSpacing = 0;
+      this.textAlign = 'left';
+      this.letterSpacing = 0;
+      this.$renderType = 'BitmapText';
+      this.$textArr = [];
+      this.$textwrap = new Sprite();
 
-      this.$textRenderer = new Sprite();
-      this.$textRenderer.$renderType = 'BitmapText';
-      this.$textRenderer.cacheAsBitmap = false;
-
-      this.$textRenderer.$textwrap = new Sprite();
-      this.$textRenderer.$textwrap.cacheAsBitmap = false;
-
-      ['text', 'textAlign', 'letterSpacing'].forEach(function (prop) {
-        this.defineProperty(prop, {
-          set: function (newVal) {
-            this.$textRenderer['$' + prop] = newVal;
-            if (prop === 'text') {
-              this.$textRenderer.$textArr = newVal.split("");
-            }
-            this.updateRender(true);
-          },
-          get: function () {
-            return this.$textRenderer['$' + prop];
-          },
-          enumerable: true
-        });
-      }.bind(this));
+      this.defineProperty('text', {
+        set: function (newVal) {
+          this.$text = newVal;
+          this.$textArr = newVal.split("");
+        },
+        get: function () {
+          return this.$text;
+        },
+        enumerable: true
+      });
 
       this.defineProperty('font', {
         set: function (newVal) {
@@ -1691,13 +1525,12 @@
       });
 
       this.once("addToStage", function () {
-        this.$textRenderer.addChild(this.$textRenderer.$textwrap);
-        this.addChild(this.$textRenderer);
+        this.addChild(this.$textwrap);
       }, this);
     },
     $createData: function () {
-      this.$textRenderer.$fontData = (EC.isString(this.$font) ? RES.getRes(this.$font + "_fnt") : this.$font).data;
-      this.$textRenderer.$fontTexture = RES.getRes(this.$textRenderer.$fontData.file.replace(/\.(\w+)$/, "_$1")).texture;
+      this.$fontData = (EC.isString(this.$font) ? RES.getRes(this.$font + "_fnt") : this.$font).data;
+      this.$fontTexture = RES.getRes(this.$fontData.file.replace(/\.(\w+)$/, "_$1")).texture;
     }
   });
 
@@ -1965,8 +1798,8 @@
         onResume: EC.noop
       }, options || {});
 
-      this.$width = parseFloat(this.canvas.getAttribute("width")) || opts.width;
-      this.$height = parseFloat(this.canvas.getAttribute("height")) || opts.height;
+      this.width = parseFloat(this.canvas.getAttribute("width")) || opts.width;
+      this.height = parseFloat(this.canvas.getAttribute("height")) || opts.height;
       this.scaleRatio = 1;
       this.cursor = "";
       this.$isRendering = false;
@@ -2017,7 +1850,7 @@
       var _render = function (obj) {
         if (obj.visible) {
           obj.dispatch('enterframe', time);
-          if (obj.$renderType === 'Sprite' && !obj.cacheAsBitmap) {
+          if (obj.$renderType === 'Sprite') {
             ctx.save();
             drawContext(ctx, obj);
             getChildren(obj).forEach(function (item) {
@@ -2031,41 +1864,6 @@
       };
 
       _render(this);
-
-      return this;
-    },
-    renderCache: function (container) {
-      var self = this;
-      var ctx = this.renderContext;
-
-      var _render = function (obj) {
-        if (obj.visible) {
-          if (obj.$renderType === 'Sprite') {
-            if (obj.cacheAsBitmap) {
-              self.renderItem(ctx, obj);
-            } else {
-              ctx.save();
-              drawContext(ctx, obj);
-              getChildren(obj).forEach(function (item) {
-                _render(item);
-              });
-              ctx.restore();
-            }
-          } else {
-            self.renderItem(ctx, obj);
-          }
-        }
-      };
-
-      var renderSprite = function (obj) {
-        obj.$mask && ctx.save();
-        getChildren(obj).forEach(function (item) {
-          _render(item);
-        });
-        obj.$mask && ctx.restore();
-      };
-
-      renderSprite(container);
 
       return this;
     },

@@ -1141,12 +1141,6 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>默认</td>
 		<td>描述</td>
 	</tr>
-	<tr>
-        <td>cacheAsBitmap</td>
-        <td>Boolean</td>
-        <td>true</td>
-        <td>是否将Sprite缓存成图片</td>
-    </tr>
 </table>
 
 ### Sprite methods ###
