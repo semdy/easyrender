@@ -2265,6 +2265,30 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>1（只读）</td>
 		<td>画布缩放比率</td>
 	</tr>
+<tr>
+    <td>clearX</td>
+    <td>Number</td>
+    <td>0</td>
+    <td>清空画布的起始位置x</td>
+</tr>
+<tr>
+    <td>clearY</td>
+    <td>Number</td>
+    <td>0</td>
+    <td>清空画布的起始位置y</td>
+</tr>
+<tr>
+    <td>clearWidth</td>
+    <td>Number</td>
+    <td>canvas width</td>
+    <td>清空画布的宽度</td>
+</tr>
+<tr>
+    <td>clearHeight</td>
+    <td>Number</td>
+    <td>canvas height</td>
+    <td>清空画布的高度</td>
+</tr>
 </table>
 
 ### EC.Stage options ###
