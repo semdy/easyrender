@@ -5,14 +5,13 @@
 
       this.bulletText = '';
       this.bulletColor = '#000';
-      this.bulletTextField = null;
 
       this.once("addToStage", this.start, this);
     },
     start: function () {
       this.x = VideoBullet.mainInstance.stageW;
       this.triggered = false;
-      this.setText(this.bulletText);
+      this.setText(this.bulletText, this.bulletColor);
       this.endX = -this.width;
       this.shootTo();
     },
@@ -28,10 +27,11 @@
         this.dispatch("dead");
       }, this);
     },
-    setText: function (text) {
+    setText: function (text, color) {
       if (text === "" || text === null) return;
       if (this.bulletTextField) {
         this.bulletTextField.text = text;
+        this.bulletTextField.textColor = color;
         this.width = this.bulletTextField.width;
       } else {
         this.bulletTextField = new EC.TextField(text, 18, 0, 0, this.bulletColor);
@@ -83,30 +83,29 @@
     shootBullet: function (data, trajectoryIndex) {
       if (!data) return;
 
-      //var bullet = this.pool.getItemByClass('bullet', Bullet);
-      var bullet = new Bullet();
+      var bullet = this.pool.getItemByClass('bullet', Bullet);
       bullet.bulletText = data.text;
       bullet.bulletColor = data.color;
       bullet.y = this.options.initTop + trajectoryIndex * this.options.trajectoryHeight;
       bullet.trajectoryIndex = trajectoryIndex;
 
-      /*if (bullet.triggered) {
+      if (bullet.triggered) {
         bullet.start();
-      }*/
+      }
 
       this.stage.addChild(bullet);
 
-      bullet.on('born', function () {
+      bullet.once('born', function () {
         this.shootBullet(this.subtitles.shift(), trajectoryIndex);
       }, this);
 
-      bullet.on('dead', function () {
+      bullet.once('dead', function () {
         bullet.remove();
       }, this);
 
-      /*bullet.on('remove', function () {
+      bullet.once('remove', function () {
         this.pool.recover('bullet', bullet);
-      }, this);*/
+      }, this);
     },
     addData: function (data, isPush) {
       if (data === null || data === "" || data === undefined) return;
