@@ -544,7 +544,7 @@
         : this.parent;
 
       while (target && target.$hasAddToStage) {
-        if (target.$cacheRenderer) {
+        if (target.$cacheRenderer && target.size() > 0) {
           target.$cacheRenderer.clear();
           target.$cacheRenderer.renderCache(target);
         }
@@ -1381,6 +1381,8 @@
       this.$texture = null;
       this.$cacheRenderer = null;
       this.$cacheAsBitmap = true;
+      this.$isUpdating = false;
+      this.$throttle = null;
 
       this.defineProperty('texture', {
         set: function (texture) {
@@ -1420,9 +1422,7 @@
           this.cacheAsBitmap = this.$cacheAsBitmap;
           this.updateRender(true);
           this.on('enterframe', function (time) {
-            if (this.$mask) {
-              this.$mask.dispatch('enterframe', time);
-            }
+            this.$mask && this.$mask.dispatch('enterframe', time);
             this.children.forEach(function (item) {
               item.dispatch('enterframe', time);
             });
@@ -1548,6 +1548,7 @@
       this.input.stroke(this.borderColor, this.borderAlpha);
 
       var bgPattern = this.backgroundImage;
+
       if (EC.isObject(bgPattern)) {
         var fillStyle = this.renderContext.createPattern(bgPattern.nodeName === "IMG" ? bgPattern : bgPattern.texture, this.backgroundRepeat);
         this.input.fill(fillStyle);
