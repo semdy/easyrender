@@ -1064,12 +1064,10 @@
     },
     draw: function (ctx) {
       drawShapeMethods[this.drawType](ctx, this);
-      if (this.$isMasker) {
-        ctx.clip();
-      }
       this.$closePath && ctx.closePath();
       this.$needFill && ctx.fill();
       this.$needStroke && ctx.stroke();
+      this.$isMasker && ctx.clip();
     },
     close: function () {
       this.$closePath = true;
