@@ -256,6 +256,13 @@ var EC = {
     isObject: function (obj) {
       return typeof obj === 'object' && obj !== null;
     },
+    isEmptyObject: function (obj) {
+      if (!EC.isObject(obj)) return false;
+      for(var i in obj) {
+        return false;
+      }
+      return true;
+    },
     isArray: Array.isArray,
     copy: function(target, depth){
       if(depth){
@@ -1935,13 +1942,13 @@ var cancelAnimationFrame =
   QueueManager.prototype = {
     add: function (item, data) {
       var _id = item.getId();
-      if (this._queues[_id] === undefined ) {
+      if (this._queues[_id] === undefined) {
         this._queues[_id] = [];
       }
       this._queues[_id].push(data);
     },
 
-    get: function(item) {
+    get: function (item) {
       return this._queues[item.getId()] || [];
     },
 
@@ -1956,15 +1963,15 @@ var cancelAnimationFrame =
 
   var isFunction = EC.isFunction;
   var isNumber = EC.isNumber;
+  var isEmptyObject = EC.isEmptyObject;
   var queueManager = new QueueManager();
 
-  var _registCallback = function(callback, context){
+  var _registCallback = function (callback, context) {
     return isFunction(callback) && context ? callback.bind(context) : callback;
   };
 
   var Tween = function (obj, cfg) {
-    var _cfg = cfg || {};
-
+    this._cfg = cfg || {};
     this._tweenObj = obj;
     this._startCallback = null;
     this._updateCallback = null;
@@ -1986,15 +1993,19 @@ var cancelAnimationFrame =
     this._waitTime = 0;
     this._id = EC.groupManager.nextId();
 
-    if (_cfg.reverse === true) {
+    if (this._cfg.reverse === true) {
       this._repeatCount = 2;
     }
 
-    if (isNumber(_cfg.loop)) {
-      this._repeatCount = _cfg.loop;
+    if (isNumber(this._cfg.loop)) {
+      this._repeatCount = this._cfg.loop;
     }
 
-    if(_cfg.loop === true || _cfg.yoyo === true) {
+    if (isNumber(this._cfg.yoyo)) {
+      this._repeatCount = this._cfg.yoyo * 2;
+    }
+
+    if (this._cfg.loop === true || this._cfg.yoyo === true) {
       this._repeatCount = -1;
     }
 
@@ -2014,7 +2025,7 @@ var cancelAnimationFrame =
   };
 
   Tween.removeAllTweens = function (container) {
-    if(!(container instanceof EC.DisplayObjectContainer)) return this;
+    if (!(container instanceof EC.DisplayObjectContainer)) return this;
     var removeTweens = function (container) {
       container.children.forEach(function (target) {
         Tween.removeTweens(target);
@@ -2034,7 +2045,7 @@ var cancelAnimationFrame =
       return this._id;
     },
     start: function () {
-      if(this._isPlaying || this._tweenObj._tweenId !== undefined) {
+      if (this._isPlaying || this._tweenObj._tweenId !== undefined) {
         return this;
       }
 
@@ -2045,9 +2056,9 @@ var cancelAnimationFrame =
 
       return this;
     },
-    stop: function(){
+    stop: function () {
       var tweenInstance = EC.groupManager.get(this._tweenObj._tweenId);
-      if(tweenInstance) {
+      if (tweenInstance) {
         tweenInstance._stopTween();
       }
 
@@ -2087,26 +2098,37 @@ var cancelAnimationFrame =
       }
 
     },
-    _addTimeline: function(data){
-      if(this._shouldTimelineAdd) {
-        if(this._isFirstTimeline){
-          this._tweenTimeline.push([EC.copy(this._startAttrs), this._duration, this._easingFunction]);
+    _getStartAttrs: function (attrs) {
+      if (!isEmptyObject(this._startAttrs)) {
+        return this._startAttrs;
+      }
+      var _startAttrs = {};
+      for (var attr in attrs) {
+        if (this._tweenObj[attr] === undefined) continue;
+        _startAttrs[attr] = Number(this._tweenObj[attr]);
+      }
+      return _startAttrs;
+    },
+    _addTimeline: function (data) {
+      if (this._shouldTimelineAdd) {
+        if (this._isFirstTimeline && !isNumber(data)) {
+          this._tweenTimeline.unshift([this._getStartAttrs(data[0]), data[1], data[2]]);
           this._isFirstTimeline = false;
         }
         this._tweenTimeline.push(data);
       }
     },
-    _clearTimeline: function(){
+    _clearTimeline: function () {
       this._tweenTimeline = [];
     },
-    _timeout: function(delayCallback, delay){
+    _timeout: function (delayCallback, delay) {
       var self = this;
       self._startTime = Date.now();
       self._waitTime = delay;
-      if(!Object.prototype.hasOwnProperty.call(self, '_timeup')) {
+      if (!Object.prototype.hasOwnProperty.call(self, '_timeup')) {
         Object.defineProperty(self, '_timeup', {
-          set: function(reached){
-            if(reached === true){
+          set: function (reached) {
+            if (reached === true) {
               self._waitTime = 0;
               self._startTime = 0;
               delayCallback();
@@ -2176,33 +2198,50 @@ var cancelAnimationFrame =
           this._triggerComplete();
 
           if (this._repeatCount === -1 || ++this._repeatIndex < this._repeatCount) {
-            var lastArgs;
             this._shouldTimelineAdd = false;
-            this._isReverse = !this._isReverse;
-            this._tweenTimeline.reverse().forEach(function(tweenArgs, i, self) {
-              if(this._isReverse) {
-                lastArgs = self[i + 1];
-                if(lastArgs === undefined) return false;
-              } else {
-                if(i === 0) return false;
-                lastArgs = tweenArgs;
-              }
-              if(isNumber(lastArgs)){
-                this.wait(lastArgs);
-              } else {
-                var _speed;
-                var _easing;
-                if(isNumber(tweenArgs)) {
-                  if(i === 0) return false;
-                  _speed = self[i-1][1];
-                  _easing = self[i-1][2];
+
+            if (this._cfg.yoyo || this._cfg.reverse) {
+              var lastArgs;
+              this._isReverse = !this._isReverse;
+              this._tweenTimeline.reverse().forEach(function (tweenArgs, i, timeline) {
+                if (this._isReverse) {
+                  lastArgs = timeline[i + 1];
+                  if (lastArgs === undefined) return false;
                 } else {
-                  _speed = tweenArgs[1];
-                  _easing = tweenArgs[2];
+                  if (i === 0) return false;
+                  lastArgs = tweenArgs;
                 }
-                this.to(lastArgs[0], _speed, _easing);
-              }
-            }.bind(this));
+                if (isNumber(lastArgs)) {
+                  this.wait(lastArgs);
+                } else {
+                  var _speed;
+                  var _easing;
+                  if (isNumber(tweenArgs)) {
+                    if (i === 0) return false;
+                    _speed = timeline[i - 1][1];
+                    _easing = timeline[i - 1][2];
+                  } else {
+                    _speed = tweenArgs[1];
+                    _easing = tweenArgs[2];
+                  }
+                  this.to(lastArgs[0], _speed, _easing);
+                }
+              }.bind(this));
+            }
+            else if (this._cfg.loop) {
+              this._tweenTimeline.forEach(function (tweenArgs, i) {
+                if (i === 0) {
+                  for (var i in tweenArgs[0]) {
+                    this._tweenObj[i] = tweenArgs[0][i];
+                  }
+                }
+                else if (isNumber(tweenArgs)) {
+                  this.wait(tweenArgs);
+                } else {
+                  this.to.apply(this, tweenArgs);
+                }
+              }.bind(this));
+            }
 
             return true;
 
@@ -2902,11 +2941,7 @@ var cancelAnimationFrame =
     if (obj.sx !== undefined) {
       ctx.drawImage(obj.texture, obj.sx, obj.sy, obj.swidth, obj.sheight, 0, 0, obj.width, obj.height);
     } else {
-      if (obj.cacheAsBitmap) {
-        ctx.drawImage(obj.texture, 0, 0, obj.texture.width, obj.texture.height);
-      } else {
-        ctx.drawImage(obj.texture, 0, 0, obj.width, obj.height);
-      }
+      ctx.drawImage(obj.texture, 0, 0, obj.width, obj.height);
     }
   }
 
@@ -2923,14 +2958,14 @@ var cancelAnimationFrame =
     obj.$textArr.forEach(function (n) {
       item = data[n];
       bitMapText = new Bitmap().setParams({
-        $texture: texture,
-        $width: item.w,
-        $height: item.h,
-        $sx: item.x,
-        $sy: item.y,
-        $x: startX += (lastWidth + obj.$letterSpacing),
-        $swidth: item.w,
-        $sheight: item.h
+        texture: texture,
+        width: item.w,
+        height: item.h,
+        sx: item.x,
+        sy: item.y,
+        x: startX += (lastWidth + obj.letterSpacing),
+        swidth: item.w,
+        sheight: item.h
       });
 
       lastWidth = item.w;
@@ -2938,11 +2973,11 @@ var cancelAnimationFrame =
 
     });
 
-    if (obj.$textAlign === 'center') {
-      textwrap.$x = (obj.parent.width - textwrap.width) / 2;
+    if (obj.textAlign === 'center') {
+      textwrap.x = (obj.width - textwrap.width) / 2;
     }
-    else if (obj.$textAlign === 'right') {
-      textwrap.$x = obj.parent.width - textwrap.width;
+    else if (obj.textAlign === 'right') {
+      textwrap.x = obj.width - textwrap.width;
     }
   }
 
@@ -3104,7 +3139,7 @@ var cancelAnimationFrame =
   }
 
   function getChildren(obj) {
-    return obj.$mask ? [obj.$mask].concat(obj.children) : obj.children;
+    return obj.mask ? [obj.mask].concat(obj.children) : obj.children;
   }
 
   //检测BOM环境
@@ -3122,7 +3157,7 @@ var cancelAnimationFrame =
 
       var dummyText = document.createTextNode('gM');
       dummy.appendChild(dummyText);
-      dummy.setAttribute('style', 'font:' + fontStyle + ';line-height:1;position:absolute;top:0;left:-9999px');
+      dummy.setAttribute('style', 'font:' + fontStyle + ';position:absolute;top:0;left:-9999px');
       body.appendChild(dummy);
       result = dummy.offsetHeight;
       heightCache[fontStyle] = result;
@@ -3169,6 +3204,7 @@ var cancelAnimationFrame =
       result = end - start;
       heightCache[fontStyle] = result;
     }
+
     return result;
   }
 
@@ -3255,8 +3291,8 @@ var cancelAnimationFrame =
     };
     NewObj.prototype = object;
     var newObj = new NewObj();
-    newObj.$x = objectOffset.x;
-    newObj.$y = objectOffset.y;
+    newObj.x = objectOffset.x;
+    newObj.y = objectOffset.y;
 
     ctx.save();
     drawContext(ctx, newObj);
@@ -3333,10 +3369,6 @@ var cancelAnimationFrame =
       ctx.curve(obj.coords);
     },
 
-    clip: function (ctx) {
-      ctx.clip();
-    },
-
     quadraticCurveTo: function (ctx, obj) {
       ctx.moveTo(obj.moveX, obj.moveY);
       ctx.quadraticCurveTo.apply(ctx, obj.coords);
@@ -3356,25 +3388,26 @@ var cancelAnimationFrame =
     initialize: function () {
       DisplayObject.superclass.initialize.call(this);
 
-      this.$x = 0;
-      this.$y = 0;
-      this.$moveX = 0;
-      this.$moveY = 0;
-      this.$width = 0;
-      this.$height = 0;
-      this.$rotation = 0;
-      this.$skewX = 0;
-      this.$skewY = 0;
-      this.$alpha = 1;
-      this.$scaleX = 1;
-      this.$scaleY = 1;
-      this.$anchorX = 0;
-      this.$anchorY = 0;
-      this.$visible = true;
-      this.$touchEnabled = false;
+      this.x = 0;
+      this.y = 0;
+      this.moveX = 0;
+      this.moveY = 0;
+      this.width = 0;
+      this.height = 0;
+      this.rotation = 0;
+      this.skewX = 0;
+      this.skewY = 0;
+      this.alpha = 1;
+      this.scaleX = 1;
+      this.scaleY = 1;
+      this.anchorX = 0;
+      this.anchorY = 0;
+      this.visible = true;
+      this.touchEnabled = false;
+
+      this.$mask = null;
       this.$hasDefineWidth = false;
       this.$hasDefineHeight = false;
-      this.$cacheAsBitmap = false;
       this.$hasAddToStage = false;
       this.$renderType = 'DisplayObject';
 
@@ -3390,27 +3423,27 @@ var cancelAnimationFrame =
         }
       }, this);
 
-      ['x', 'y', 'moveX', 'moveY', 'width', 'height', 'rotation',
-        'skewX', 'skewY', 'alpha', 'scaleX', 'scaleY', 'anchorX',
-        'anchorY', 'visible', 'touchEnabled'
-      ].forEach(function (prop) {
-        this.defineProperty(prop, {
-          get: function () {
-            return this['$' + prop];
-          },
-          set: function (newVal) {
-            this['$' + prop] = newVal;
-            if (prop === 'width') {
-              this.$hasDefineWidth = true;
-            }
-            else if (prop === 'height') {
-              this.$hasDefineHeight = true;
-            }
-            this.renderHooker();
-          },
-          enumerable: true
-        });
-      }.bind(this));
+      this.defineProperty('width', {
+        set: function (newVal) {
+          this.$width = newVal;
+          this.$hasDefineWidth = true;
+        },
+        get: function () {
+          return this.$width;
+        },
+        enumerable: true
+      });
+
+      this.defineProperty('height', {
+        set: function (newVal) {
+          this.$height = newVal;
+          this.$hasDefineHeight = true;
+        },
+        get: function () {
+          return this.$height;
+        },
+        enumerable: true
+      });
 
       this.defineProperty('mask', {
         set: function (masker) {
@@ -3423,20 +3456,6 @@ var cancelAnimationFrame =
         enumerable: true
       });
 
-    },
-
-    renderHooker: function (fromSelf) {
-      var target = fromSelf
-        ? this
-        : this.parent;
-
-      while (target && target.$hasAddToStage) {
-        if (target.$cacheRenderer) {
-          target.$cacheRenderer.clear();
-          target.$cacheRenderer.renderCache(target);
-        }
-        target = target.parent;
-      }
     },
 
     remove: function () {
@@ -3558,9 +3577,6 @@ var cancelAnimationFrame =
       if (masker === null && target.$hasAddMask) {
         target.$mask = null;
         target.$hasAddMask = false;
-        if (target.cacheAsBitmap) {
-          this.renderHooker(isSprite);
-        }
         return;
       }
 
@@ -3571,15 +3587,6 @@ var cancelAnimationFrame =
 
         if (!(masker instanceof EC.Masker)) {
           masker.$isMasker = true;
-          var origDraw = masker.draw;
-          masker.draw = function (ctx) {
-            origDraw.call(masker, ctx);
-            ctx.clip();
-          };
-        }
-
-        if (target.cacheAsBitmap) {
-          this.renderHooker(isSprite);
         }
 
       } else {
@@ -3743,24 +3750,25 @@ var cancelAnimationFrame =
     initialize: function (text, size, x, y, color, align, family, width, height) {
       TextField.superclass.initialize.call(this);
 
-      this.$x = x || 0;
-      this.$y = y || 0;
+      this.x = x || 0;
+      this.y = y || 0;
       this.$width = width || 0;
       this.$height = height || 0;
       this.$text = text || "";
       this.$textArr = [];
       this.$size = size || 16;
-      this.$textAlign = align || "start";
-      this.$textBaseline = "top";
-      this.$textColor = color || "#000";
-      this.$fontFamily = family || "Arial";
-      this.$strokeColor = color || "#000";
-      this.$textStyle = "normal";
-      this.$textWeight = "normal";
-      this.$lineSpacing = 2;
-      this.$stroke = false;
-      this.$strokeOnly = false;
-      this.$multiline = false;
+      this.textAlign = align || "start";
+      this.textBaseline = "top";
+      this.textColor = color || "#000";
+      this.fontFamily = family || "Arial";
+      this.strokeColor = color || "#000";
+      this.textStyle = "normal";
+      this.textWeight = "normal";
+      this.lineSpacing = 2;
+      this.stroke = false;
+      this.strokeOnly = false;
+      this.multiline = false;
+
       this.$renderType = "TextField";
 
       var determineTextSetter = function () {
@@ -3785,7 +3793,6 @@ var cancelAnimationFrame =
         set: function (newVal) {
           this.$text = String(newVal);
           determineTextSetter.call(this);
-          this.renderHooker();
         },
         enumerable: true
       });
@@ -3798,7 +3805,6 @@ var cancelAnimationFrame =
           this.$size = newVal;
           if (this.$text) {
             determineTextSetter.call(this);
-            this.renderHooker();
           }
         },
         enumerable: true
@@ -3839,31 +3845,6 @@ var cancelAnimationFrame =
         enumerable: true
       });
 
-      [
-        'textAlign',
-        'textBaseline',
-        'textColor',
-        'fontFamily',
-        'strokeColor',
-        'textStyle',
-        'textWeight',
-        'lineSpacing',
-        'stroke',
-        'strokeOnly',
-        'multiline'
-      ].forEach(function (prop) {
-        this.defineProperty(prop, {
-          get: function () {
-            return this['$' + prop];
-          },
-          set: function (newVal) {
-            this['$' + prop] = newVal;
-            this.renderHooker();
-          },
-          enumerable: true
-        });
-      }.bind(this));
-
       if (this.$text) {
         this.text = this.$text;
       }
@@ -3878,25 +3859,26 @@ var cancelAnimationFrame =
     initialize: function (key, x, y, width, height, sx, sy, swidth, sheight) {
       Bitmap.superclass.initialize.call(this);
 
-      this.$x = x || 0;
-      this.$y = y || 0;
+      this.x = x || 0;
+      this.y = y || 0;
+
       this.$renderType = "Bitmap";
       this.$texture = null;
 
       if (EC.isDefined(sx)) {
-        this.$sx = sx;
+        this.sx = sx;
       }
 
       if (EC.isDefined(sy)) {
-        this.$sy = sy;
+        this.sy = sy;
       }
 
       if (EC.isDefined(swidth)) {
-        this.$swidth = swidth || 0.1;
+        this.swidth = swidth || 0.1;
       }
 
       if (EC.isDefined(sheight)) {
-        this.$sheight = sheight || 0.1;
+        this.sheight = sheight || 0.1;
       }
 
       if (EC.isDefined(key)) {
@@ -3904,11 +3886,11 @@ var cancelAnimationFrame =
       }
 
       if (EC.isDefined(width)) {
-        this.$width = width;
+        this.width = width;
       }
 
       if (EC.isDefined(height)) {
-        this.$height = height;
+        this.height = height;
       }
 
       this.defineProperty('texture', {
@@ -3921,24 +3903,6 @@ var cancelAnimationFrame =
         enumerable: true
       });
 
-      [
-        'sx',
-        'sy',
-        'swidth',
-        'sheight'
-      ].forEach(function (prop) {
-        this.defineProperty(prop, {
-          get: function () {
-            return this['$' + prop];
-          },
-          set: function (newVal) {
-            this['$' + prop] = newVal;
-            this.renderHooker();
-          },
-          enumerable: true
-        });
-      }.bind(this));
-
     },
     setTexture: function (data) {
       if (EC.isString(data)) {
@@ -3948,18 +3912,17 @@ var cancelAnimationFrame =
         if (data.nodeName === "IMG") {
           this.setParams({
             $texture: data,
-            $width: data.width,
-            $height: data.height
+            width: data.width,
+            height: data.height
           });
         }
         else {
           this.setParams({
             $texture: data.texture,
-            $width: data.width,
-            $height: data.height
+            width: data.width,
+            height: data.height
           });
         }
-        this.renderHooker();
       }
       else {
         throw new TypeError(String(data) + " is a invalid texture");
@@ -3976,74 +3939,37 @@ var cancelAnimationFrame =
     initialize: function (x, y, w, h) {
       Shape.superclass.initialize.call(this);
 
-      this.$x = x || 0;
-      this.$y = y || 0;
-      this.$width = w || 0;
-      this.$height = h || 0;
-      this.$fillStyle = null;
-      this.$strokeStyle = null;
-      this.$lineWidth = 0;
-      this.$shadowColor = null;
-      this.$shadowBlur = 0;
-      this.$shadowOffsetX = 0;
-      this.$shadowOffsetY = 0;
-      this.$radius = 0;
-      this.$dashLength = 0;
-      this.$dashGap = 0;
-      this.$lineCap = null;
-      this.$lineJoin = null;
-      this.$miterLimit = null;
-      this.$closePath = false;
-      this.$counterclockwise = false;
-      this.$startX = 0;
-      this.$startY = 0;
-      this.$endX = 0;
-      this.$endY = 0;
-      this.$startAngle = 0;
-      this.$endAngle = 0;
-      this.$coords = [];
-      this.$drawType = 'rect';
+      this.x = x || 0;
+      this.y = y || 0;
+      this.width = w || 0;
+      this.height = h || 0;
+      this.fillStyle = null;
+      this.strokeStyle = null;
+      this.lineWidth = 0;
+      this.shadowColor = null;
+      this.shadowBlur = 0;
+      this.shadowOffsetX = 0;
+      this.shadowOffsetY = 0;
+      this.radius = 0;
+      this.dashLength = 0;
+      this.dashGap = 0;
+      this.lineCap = null;
+      this.lineJoin = null;
+      this.miterLimit = null;
+      this.counterclockwise = false;
+      this.startX = 0;
+      this.startY = 0;
+      this.endX = 0;
+      this.endY = 0;
+      this.startAngle = 0;
+      this.endAngle = 0;
+      this.coords = [];
 
+      this.$drawType = 'rect';
       this.$renderType = "Shape";
+      this.$closePath = false;
       this.$needFill = false;
       this.$needStroke = false;
-
-      [
-        'fillStyle',
-        'strokeStyle',
-        'lineWidth',
-        'shadowColor',
-        'shadowBlur',
-        'shadowOffsetX',
-        'shadowOffsetY',
-        'lineCap',
-        'lineJoin',
-        'miterLimit',
-        'radius',
-        'dashLength',
-        'dashGap',
-        'closePath',
-        'startX',
-        'startY',
-        'endX',
-        'endY',
-        'startAngle',
-        'endAngle',
-        'counterclockwise',
-        'coords',
-        'drawType'
-      ].forEach(function (prop) {
-        this.defineProperty(prop, {
-          get: function () {
-            return this['$' + prop];
-          },
-          set: function (newVal) {
-            this['$' + prop] = newVal;
-            this.renderHooker();
-          },
-          enumerable: true
-        });
-      }.bind(this));
     },
     setStyle: function (type, color, alpha) {
       if (typeof alpha === 'number' && alpha < 1) {
@@ -4066,6 +3992,9 @@ var cancelAnimationFrame =
     },
     draw: function (ctx) {
       drawShapeMethods[this.drawType](ctx, this);
+      if (this.$isMasker) {
+        ctx.clip();
+      }
       this.$closePath && ctx.closePath();
       this.$needFill && ctx.fill();
       this.$needStroke && ctx.stroke();
@@ -4180,10 +4109,6 @@ var cancelAnimationFrame =
       this.drawType = 'curve';
       return this;
     },
-    clip: function () {
-      this.drawType = 'clip';
-      return this;
-    },
     quadraticCurveTo: function () {
       this.coords = slice.call(arguments);
       var lineSize = getQuadraticLineSize(this.coords, this.moveX, this.moveY);
@@ -4276,10 +4201,6 @@ var cancelAnimationFrame =
     initialize: function () {
       Masker.superclass.initialize.apply(this, arguments);
       this.$isMasker = true;
-    },
-    draw: function (ctx) {
-      Masker.superclass.draw.call(this, ctx);
-      ctx.clip();
     }
   });
 
@@ -4290,101 +4211,39 @@ var cancelAnimationFrame =
     initialize: function (x, y, w, h) {
       Sprite.superclass.initialize.call(this);
 
-      this.$x = x || 0;
-      this.$y = y || 0;
+      this.x = x || 0;
+      this.y = y || 0;
       this.$width = w || 0;
       this.$height = h || 0;
-
-      this.$mask = null;
-      this.$texture = null;
-      this.$cacheRenderer = null;
-      this.$cacheAsBitmap = true;
-
-      this.defineProperty('texture', {
-        set: function (texture) {
-          this.$texture = texture;
-          this.renderHooker();
-        },
-        get: function () {
-          return this.$texture;
-        }
-      });
-
-      this.defineProperty('cacheAsBitmap', {
-        set: function (cacheFlag) {
-          this.$cacheAsBitmap = cacheFlag;
-          if (cacheFlag) {
-            this.$texture = document.createElement('canvas');
-            this.$cacheRenderer = new Stage(this.$texture, {
-              width: Math.max(this.width, this.stage.width),
-              height: Math.max(this.height, this.stage.height),
-              scaleMode: 'noScale',
-              autoRender: false,
-              needEvents: false
-            });
-          } else {
-            this.$texture = null;
-            this.$cacheRenderer = null;
-          }
-        },
-        get: function () {
-          return this.$cacheAsBitmap;
-        },
-        enumerable: true
-      });
-
-      this.once('addToStage', function () {
-        if (this.$cacheAsBitmap) {
-          this.cacheAsBitmap = this.$cacheAsBitmap;
-          this.renderHooker(true);
-          this.on('enterframe', function (time) {
-            if (this.$mask) {
-              this.$mask.dispatch('enterframe', time);
-            }
-            this.children.forEach(function (item) {
-              item.dispatch('enterframe', time);
-            });
-          }, this);
-        }
-      }, this);
     },
     addChild: function () {
       Sprite.superclass.addChild.apply(this, arguments);
       this.resize();
-      if (this.cacheAsBitmap) {
-        this.renderHooker(true);
-      }
 
       return this;
     },
     removeChild: function () {
       Sprite.superclass.removeChild.apply(this, arguments);
       this.resize();
-      if (this.cacheAsBitmap) {
-        this.renderHooker(true);
-      }
 
       return this;
     },
     removeChildAt: function () {
       Sprite.superclass.removeChildAt.apply(this, arguments);
       this.resize();
-      if (this.cacheAsBitmap) {
-        this.renderHooker(true);
-      }
+
+      return this;
     },
     removeAllChildren: function () {
       Sprite.superclass.removeAllChildren.apply(this, arguments);
       this.resize();
-      if (this.cacheAsBitmap) {
-        this.renderHooker(true);
-      }
+
+      return this;
     },
     setChildIndex: function () {
       Sprite.superclass.setChildIndex.apply(this, arguments);
-      if (this.cacheAsBitmap) {
-        this.renderHooker(true);
-      }
+
+      return this;
     },
     resize: function () {
       var widths = [];
@@ -4489,7 +4348,7 @@ var cancelAnimationFrame =
       this.textField.size = this.fontSize;
       this.textField.fontFamily = this.fontFamily || this.textField.fontFamily;
       this.textField.x = this.borderWidth + this.padding[3];
-      this.textField.y = this.inputType === "textarea" ? this.padding[0] : (this.height - this.textField.height - this.borderWidth) / 2;
+      this.textField.y = this.inputType === "textarea" ? this.padding[0] : (this.height - this.textField.height) / 2;
 
       this.mask = new Masker();
       this.mask.drawRect(0, 0, this.width + this.borderWidth, this.height + this.borderWidth);
@@ -4562,31 +4421,22 @@ var cancelAnimationFrame =
       BitmapText.superclass.initialize.apply(this, arguments);
       this.$text = "";
       this.$font = "";
-      this.$textAlign = 'left';
-      this.$letterSpacing = 0;
+      this.textAlign = 'left';
+      this.letterSpacing = 0;
+      this.$renderType = 'BitmapText';
+      this.$textArr = [];
+      this.$textwrap = new Sprite();
 
-      this.$textRenderer = new Sprite();
-      this.$textRenderer.$renderType = 'BitmapText';
-      this.$textRenderer.cacheAsBitmap = false;
-
-      this.$textRenderer.$textwrap = new Sprite();
-      this.$textRenderer.$textwrap.cacheAsBitmap = false;
-
-      ['text', 'textAlign', 'letterSpacing'].forEach(function (prop) {
-        this.defineProperty(prop, {
-          set: function (newVal) {
-            this.$textRenderer['$' + prop] = newVal;
-            if (prop === 'text') {
-              this.$textRenderer.$textArr = newVal.split("");
-            }
-            this.renderHooker(true);
-          },
-          get: function () {
-            return this.$textRenderer['$' + prop];
-          },
-          enumerable: true
-        });
-      }.bind(this));
+      this.defineProperty('text', {
+        set: function (newVal) {
+          this.$text = newVal;
+          this.$textArr = newVal.split("");
+        },
+        get: function () {
+          return this.$text;
+        },
+        enumerable: true
+      });
 
       this.defineProperty('font', {
         set: function (newVal) {
@@ -4599,13 +4449,12 @@ var cancelAnimationFrame =
       });
 
       this.once("addToStage", function () {
-        this.$textRenderer.addChild(this.$textRenderer.$textwrap);
-        this.addChild(this.$textRenderer);
+        this.addChild(this.$textwrap);
       }, this);
     },
     $createData: function () {
-      this.$textRenderer.$fontData = (EC.isString(this.$font) ? RES.getRes(this.$font + "_fnt") : this.$font).data;
-      this.$textRenderer.$fontTexture = RES.getRes(this.$textRenderer.$fontData.file.replace(/\.(\w+)$/, "_$1")).texture;
+      this.$fontData = (EC.isString(this.$font) ? RES.getRes(this.$font + "_fnt") : this.$font).data;
+      this.$fontTexture = RES.getRes(this.$fontData.file.replace(/\.(\w+)$/, "_$1")).texture;
     }
   });
 
@@ -4925,7 +4774,7 @@ var cancelAnimationFrame =
       var _render = function (obj) {
         if (obj.visible) {
           obj.dispatch('enterframe', time);
-          if (obj.$renderType === 'Sprite' && !obj.cacheAsBitmap) {
+          if (obj.$renderType === 'Sprite') {
             ctx.save();
             drawContext(ctx, obj);
             getChildren(obj).forEach(function (item) {
@@ -4939,41 +4788,6 @@ var cancelAnimationFrame =
       };
 
       _render(this);
-
-      return this;
-    },
-    renderCache: function (container) {
-      var self = this;
-      var ctx = this.renderContext;
-
-      var _render = function (obj) {
-        if (obj.visible) {
-          if (obj.$renderType === 'Sprite') {
-            if (obj.cacheAsBitmap) {
-              self.renderItem(ctx, obj);
-            } else {
-              ctx.save();
-              drawContext(ctx, obj);
-              getChildren(obj).forEach(function (item) {
-                _render(item);
-              });
-              ctx.restore();
-            }
-          } else {
-            self.renderItem(ctx, obj);
-          }
-        }
-      };
-
-      var renderSprite = function (obj) {
-        obj.$mask && ctx.save();
-        getChildren(obj).forEach(function (item) {
-          _render(item);
-        });
-        obj.$mask && ctx.restore();
-      };
-
-      renderSprite(container);
 
       return this;
     },
@@ -5152,8 +4966,6 @@ var cancelAnimationFrame =
   var MovieClip = EC.Sprite.extend({
     initialize: function (resUrl, res, resKey) {
       MovieClip.superclass.initialize.call(this);
-
-      this.cacheAsBitmap = false;
 
       this._startFrame = 0;
       this._playTimes = -1;

@@ -90,9 +90,9 @@
       bullet.y = this.options.initTop + trajectoryIndex * this.options.trajectoryHeight;
       bullet.trajectoryIndex = trajectoryIndex;
 
-      if (bullet.triggered) {
+      /*if (bullet.triggered) {
         bullet.start();
-      }
+      }*/
 
       this.stage.addChild(bullet);
 
