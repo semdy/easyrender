@@ -1782,6 +1782,10 @@
 
       this.width = parseFloat(this.canvas.getAttribute("width")) || opts.width;
       this.height = parseFloat(this.canvas.getAttribute("height")) || opts.height;
+      this.clearX = 0;
+      this.clearY = 0;
+      this.clearWidth = this.width;
+      this.clearHeight = this.height;
       this.scaleRatio = 1;
       this.cursor = "";
       this.$isRendering = false;
@@ -1872,7 +1876,7 @@
       obj.$isMasker || ctx.restore();
     },
     clear: function () {
-      this.renderContext.clearRect(0, 0, this.width, this.height);
+      this.renderContext.clearRect(this.clearX, this.clearY, this.clearWidth, this.clearHeight);
       return this;
     },
     startRender: function () {

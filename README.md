@@ -2241,24 +2241,48 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>source-over</td>
 		<td>新图像的绘制方式</td>
 	</tr>
-<tr>
+    <tr>
 		<td>width</td>
 		<td>Number</td>
 		<td>options.width（只读）</td>
 		<td>画布宽度</td>
 	</tr>
-<tr>
+    <tr>
 		<td>height</td>
 		<td>Number</td>
 		<td>options.height（只读）</td>
 		<td>画布高度</td>
 	</tr>
-<tr>
+    <tr>
 		<td>scaleRatio</td>
 		<td>Number</td>
 		<td>1（只读）</td>
 		<td>画布缩放比率</td>
 	</tr>
+	<tr>
+        <td>clearX</td>
+        <td>Number</td>
+        <td>0</td>
+        <td>清空画布的起始位置x</td>
+    </tr>
+    <tr>
+        <td>clearY</td>
+        <td>Number</td>
+        <td>0</td>
+        <td>清空画布的起始位置y</td>
+    </tr>
+    <tr>
+        <td>clearWidth</td>
+        <td>Number</td>
+        <td>canvas width</td>
+        <td>清空画布的宽度</td>
+    </tr>
+    <tr>
+        <td>clearHeight</td>
+        <td>Number</td>
+        <td>canvas height</td>
+        <td>清空画布的高度</td>
+    </tr>
 </table>
 
 ### EC.Stage options ###
