@@ -3583,14 +3583,10 @@ var cancelAnimationFrame =
       if (masker instanceof EC.Shape) {
         masker.parent = target;
         target.$mask = masker;
+        masker.$isMasker = true;
         target.$hasAddMask = true;
-
-        if (!(masker instanceof EC.Masker)) {
-          masker.$isMasker = true;
-        }
-
       } else {
-        throw new TypeError("mask must be a instance of EC.Shape or EC.Masker");
+        throw new TypeError("mask must be a instance of EC.Shape");
       }
     },
 
@@ -4194,17 +4190,6 @@ var cancelAnimationFrame =
   });
 
   /**
-   * Masker
-   * */
-
-  var Masker = Shape.extend({
-    initialize: function () {
-      Masker.superclass.initialize.apply(this, arguments);
-      this.$isMasker = true;
-    }
-  });
-
-  /**
    * Sprite 雪碧图类
    * **/
   var Sprite = DisplayObjectContainer.extend({
@@ -4350,8 +4335,7 @@ var cancelAnimationFrame =
       this.textField.x = this.borderWidth + this.padding[3];
       this.textField.y = this.inputType === "textarea" ? this.padding[0] : (this.height - this.textField.height) / 2;
 
-      this.mask = new Masker();
-      this.mask.drawRect(0, 0, this.width + this.borderWidth, this.height + this.borderWidth);
+      this.mask = new EC.Rectangle(0, 0, this.width + this.borderWidth, this.height + this.borderWidth);
 
       this.addChild(this.input);
       this.addChild(this.textField);
@@ -4945,7 +4929,6 @@ var cancelAnimationFrame =
     Shape: Shape,
     Rectangle: Rectangle,
     TextInput: TextInput,
-    Masker: Masker,
     DisplayObject: DisplayObject,
     DisplayObjectContainer: DisplayObjectContainer,
     Sprite: Sprite,
@@ -5278,8 +5261,7 @@ var cancelAnimationFrame =
       this.touchScroll = null;
 
       this.once("addToStage", function() {
-        this.mask = new EC.Masker();
-        this.mask.drawRect(0, 0, this.width, this.height);
+        this.mask = new EC.Rectangle(0, 0, this.width, this.height);
         if (this.layout) {
           this.addChild(this.layout);
           this._createScroll();

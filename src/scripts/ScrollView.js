@@ -14,8 +14,7 @@
       this.touchScroll = null;
 
       this.once("addToStage", function() {
-        this.mask = new EC.Masker();
-        this.mask.drawRect(0, 0, this.width, this.height);
+        this.mask = new EC.Rectangle(0, 0, this.width, this.height);
         if (this.layout) {
           this.addChild(this.layout);
           this._createScroll();

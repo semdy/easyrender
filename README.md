@@ -1582,9 +1582,6 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 	</tr>
 </table>
 
-## EC.Masker ##
-`extends EC.Shape`
-
 ## EC.Rectangle(x, y, width, height) ##
 `extends EC.Shape`
 <table>
