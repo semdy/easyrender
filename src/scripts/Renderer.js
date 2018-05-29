@@ -680,18 +680,11 @@
       if (masker instanceof EC.Shape) {
         masker.parent = target;
         target.$mask = masker;
+        masker.$isMasker = true;
         target.$hasAddMask = true;
-
-        if (!(masker instanceof EC.Masker)) {
-          masker.$isMasker = true;
-        }
-
-        if (target.cacheAsBitmap) {
-          this.updateRender(isSprite);
-        }
-
+        target.cacheAsBitmap && this.updateRender(isSprite);
       } else {
-        throw new TypeError("mask must be a instance of EC.Shape or EC.Masker");
+        throw new TypeError("mask must be a instance of EC.Shape");
       }
     },
 
@@ -1376,17 +1369,6 @@
   });
 
   /**
-   * Masker
-   * */
-
-  var Masker = Shape.extend({
-    initialize: function () {
-      Masker.superclass.initialize.apply(this, arguments);
-      this.$isMasker = true;
-    }
-  });
-
-  /**
    * Sprite 雪碧图类
    * **/
   var Sprite = DisplayObjectContainer.extend({
@@ -1599,8 +1581,7 @@
       this.textField.x = this.borderWidth + this.padding[3];
       this.textField.y = this.inputType === "textarea" ? this.padding[0] : (this.height - this.textField.height) / 2;
 
-      this.mask = new Masker();
-      this.mask.drawRect(0, 0, this.width + this.borderWidth, this.height + this.borderWidth);
+      this.mask = new Rectangle(0, 0, this.width + this.borderWidth, this.height + this.borderWidth);
 
       this.addChild(this.input);
       this.addChild(this.textField);
@@ -2239,7 +2220,6 @@
     Shape: Shape,
     Rectangle: Rectangle,
     TextInput: TextInput,
-    Masker: Masker,
     DisplayObject: DisplayObject,
     DisplayObjectContainer: DisplayObjectContainer,
     Sprite: Sprite,
