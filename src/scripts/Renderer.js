@@ -1787,8 +1787,8 @@
       var _config = EC.isString(status) ? this.statusCfg[status] : status;
       _config = EC.extend({}, this.statusCfg.normal, _config);
 
-      _config.offsetX = _config.offsetX || 0;
-      _config.offsetY = _config.offsetY || 0;
+      var offsetX = _config.offsetX || 0;
+      var offsetY = _config.offsetY || 0;
 
       EC.extend(this, {width: _config.width, height: _config.height});
 
@@ -1809,9 +1809,9 @@
       if (_config.fillStyle || _config.strokeStyle) {
         EC.extend(this.shape, _config);
         if (_config.radius && _config.radius > 0) {
-          this.shape.drawRoundRect(_config.offsetX, _config.offsetY, _config.width, _config.height, _config.radius);
+          this.shape.drawRoundRect(offsetX, offsetY, _config.width, _config.height, _config.radius);
         } else {
-          this.shape.drawRect(_config.offsetX, _config.offsetY, _config.width, _config.height);
+          this.shape.drawRect(offsetX, offsetY, _config.width, _config.height);
         }
 
         if (_config.fillStyle) {
@@ -1831,8 +1831,8 @@
         this.textField.text = _config.text;
         var injectCfg = {
           textAlign: "center",
-          x: _config.offsetX,
-          y: _config.y + _config.offsetY + (this.height - this.textField.height) / 2,
+          x: offsetX,
+          y: _config.y + offsetY + (this.height - this.textField.height) / 2,
           height: this.textField.height
         };
         EC.extend(this.textField, EC.extend({}, _config, injectCfg));
