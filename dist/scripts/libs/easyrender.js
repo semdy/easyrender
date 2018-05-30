@@ -2951,13 +2951,13 @@ var cancelAnimationFrame =
     var textwrap = obj.$textwrap;
     var startX = 0;
     var lastWidth = 0;
-    var bitMapText;
+    var bitmapText;
     var item;
 
     textwrap.children.length = 0;
     obj.$textArr.forEach(function (n) {
       item = data[n];
-      bitMapText = new Bitmap().setParams({
+      bitmapText = new Bitmap().setParams({
         texture: texture,
         width: item.w,
         height: item.h,
@@ -2969,7 +2969,7 @@ var cancelAnimationFrame =
       });
 
       lastWidth = item.w;
-      textwrap.addChild(bitMapText);
+      textwrap.addChild(bitmapText);
 
     });
 
@@ -4474,7 +4474,7 @@ var cancelAnimationFrame =
         }
       }
 
-      this.bitMap = new Bitmap();
+      this.bitmap = new Bitmap();
       this.shape = new Shape();
       this.textField = new TextField();
 
@@ -4485,7 +4485,7 @@ var cancelAnimationFrame =
     },
     $create: function () {
       this.setButton("normal");
-      this.addChild(this.bitMap);
+      this.addChild(this.bitmap);
       this.addChild(this.shape);
       this.addChild(this.textField);
     },
@@ -4504,7 +4504,7 @@ var cancelAnimationFrame =
       EC.extend(this, {width: _config.width, height: _config.height});
 
       if (_config.texture) {
-        EC.extend(this.bitMap, {
+        EC.extend(this.bitmap, {
           x: _config.x,
           y: _config.y,
           alpha: _config.alpha,
@@ -4512,9 +4512,9 @@ var cancelAnimationFrame =
           width: _config.width,
           height: _config.height
         });
-        this.bitMap.visible = true;
+        this.bitmap.visible = true;
       } else {
-        this.bitMap.visible = false;
+        this.bitmap.visible = false;
       }
 
       if (_config.fillStyle || _config.strokeStyle) {
