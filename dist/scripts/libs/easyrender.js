@@ -3002,13 +3002,13 @@ var cancelAnimationFrame =
 
   function drawContext(ctx, obj) {
     var parent = obj.parent || {};
-    var moveX = obj.moveX * (obj.anchorX > 0 ? 1 : 0);
-    var moveY = obj.moveY * (obj.anchorY > 0 ? 1 : 0);
+    var offsetX = obj.offsetX * (obj.anchorX > 0 ? 1 : 0);
+    var offsetY = obj.offsetY * (obj.anchorY > 0 ? 1 : 0);
     var anchorW = obj.anchorX * obj.width;
     var anchorH = obj.anchorY * obj.height;
 
-    var x = obj.x + moveX + anchorW - ( obj.$isMasker ? 0 : (parent.mask ? parent.mask.x : 0 ));
-    var y = obj.y + moveY + anchorH - ( obj.$isMasker ? 0 : (parent.mask ? parent.mask.y : 0 ));
+    var x = obj.x + offsetX + anchorW - ( obj.$isMasker ? 0 : (parent.mask ? parent.mask.x : 0 ));
+    var y = obj.y + offsetY + anchorH - ( obj.$isMasker ? 0 : (parent.mask ? parent.mask.y : 0 ));
 
     if (obj.alpha < 1) {
       ctx.globalAlpha = obj.alpha;
@@ -3026,7 +3026,7 @@ var cancelAnimationFrame =
       ctx.rotate(obj.rotation * CONST_ANGLE);
     }
     if (obj.anchorX > 0 || obj.anchorY > 0) {
-      ctx.translate(-moveX - anchorW, -moveY - anchorH);
+      ctx.translate(-offsetX - anchorW, -offsetY - anchorH);
     }
   }
 
@@ -3222,9 +3222,9 @@ var cancelAnimationFrame =
     return vals.length === 0 ? 0 : Math.max.apply(Math, vals);
   }
 
-  function getLineSize(coords, moveX, moveY) {
-    var widths = [moveX];
-    var heights = [moveY];
+  function getLineSize(coords, offsetX, offsetY) {
+    var widths = [offsetX];
+    var heights = [offsetY];
     coords.forEach(function (coord) {
       widths.push(coord[0]);
       heights.push(coord[1]);
@@ -3236,9 +3236,9 @@ var cancelAnimationFrame =
     }
   }
 
-  function getQuadraticLineSize(coords, moveX, moveY) {
-    var widths = [moveX || 0];
-    var heights = [moveY || 0];
+  function getQuadraticLineSize(coords, offsetX, offsetY) {
+    var widths = [offsetX || 0];
+    var heights = [offsetY || 0];
     coords.forEach(function (coord, i) {
       if (i % 2 === 0) {
         widths.push(coord);
@@ -3268,8 +3268,8 @@ var cancelAnimationFrame =
   }
 
   function getTotalOffset(object, includeMoveOffset) {
-    var x = object.x + ( includeMoveOffset ? object.moveX : 0 );
-    var y = object.y + ( includeMoveOffset ? object.moveY : 0 );
+    var x = object.x + ( includeMoveOffset ? object.offsetX : 0 );
+    var y = object.y + ( includeMoveOffset ? object.offsetY : 0 );
     var parent = object.parent;
     while (parent) {
       x += parent.x;
@@ -3324,45 +3324,45 @@ var cancelAnimationFrame =
 
   var drawShapeMethods = {
     rect: function (ctx, obj) {
-      ctx.rect(obj.moveX, obj.moveY, obj.width, obj.height);
+      ctx.rect(obj.offsetX, obj.offsetY, obj.width, obj.height);
     },
 
     arc: function (ctx, obj) {
-      ctx.arc(obj.radius + obj.moveX, obj.radius + obj.moveY, obj.radius, obj.startAngle * PI, obj.endAngle * PI, obj.counterclockwise);
+      ctx.arc(obj.radius + obj.offsetX, obj.radius + obj.offsetY, obj.radius, obj.startAngle * PI, obj.endAngle * PI, obj.counterclockwise);
     },
 
     sector: function (ctx, obj) {
-      ctx.moveTo(obj.radius + obj.moveX, obj.radius + obj.moveY);
+      ctx.moveTo(obj.radius + obj.offsetX, obj.radius + obj.offsetY);
       this.arc.apply(this, arguments);
     },
 
     arcTo: function (ctx, obj) {
-      ctx.moveTo(obj.moveX, obj.moveY);
+      ctx.moveTo(obj.offsetX, obj.offsetY);
       ctx.arcTo(obj.startX, obj.startY, obj.endX, obj.endY, obj.radius);
     },
 
     roundRect: function (ctx, obj) {
-      ctx.roundRect(obj.moveX, obj.moveY, obj.width, obj.height, obj.radius);
+      ctx.roundRect(obj.offsetX, obj.offsetY, obj.width, obj.height, obj.radius);
     },
 
     lineTo: function (ctx, obj) {
-      ctx.moveTo(obj.moveX, obj.moveY);
+      ctx.moveTo(obj.offsetX, obj.offsetY);
       obj.coords.forEach(function (coord) {
         ctx.lineTo.apply(ctx, coord);
       });
     },
 
     line: function (ctx, obj) {
-      ctx.moveTo(obj.moveX, obj.moveY);
+      ctx.moveTo(obj.offsetX, obj.offsetY);
       ctx.lineTo(obj.endX, obj.endY);
     },
 
     dashedLine: function (ctx, obj) {
-      ctx.dashedLine(obj.moveX, obj.moveY, obj.endX, obj.endY, obj.dashLength);
+      ctx.dashedLine(obj.offsetX, obj.offsetY, obj.endX, obj.endY, obj.dashLength);
     },
 
     ellipse: function (ctx, obj) {
-      ctx.ellipse(obj.width / 2 + obj.moveX, obj.height / 2 + obj.moveY, obj.width, obj.height);
+      ctx.ellipse(obj.width / 2 + obj.offsetX, obj.height / 2 + obj.offsetY, obj.width, obj.height);
     },
 
     curve: function (ctx, obj) {
@@ -3370,12 +3370,12 @@ var cancelAnimationFrame =
     },
 
     quadraticCurveTo: function (ctx, obj) {
-      ctx.moveTo(obj.moveX, obj.moveY);
+      ctx.moveTo(obj.offsetX, obj.offsetY);
       ctx.quadraticCurveTo.apply(ctx, obj.coords);
     },
 
     bezierCurveTo: function (ctx, obj) {
-      ctx.moveTo(obj.moveX, obj.moveY);
+      ctx.moveTo(obj.offsetX, obj.offsetY);
       ctx.bezierCurveTo.apply(ctx, obj.coords);
     }
   };
@@ -3390,8 +3390,8 @@ var cancelAnimationFrame =
 
       this.x = 0;
       this.y = 0;
-      this.moveX = 0;
-      this.moveY = 0;
+      this.offsetX = 0;
+      this.offsetY = 0;
       this.width = 0;
       this.height = 0;
       this.rotation = 0;
@@ -3508,8 +3508,8 @@ var cancelAnimationFrame =
     },
 
     getSize: function () {
-      var x = this.x + this.moveX;
-      var y = this.y + this.moveY;
+      var x = this.x + this.offsetX;
+      var y = this.y + this.offsetY;
       var lineWidth = this.lineWidth || 0;
       var width = x + this.width + lineWidth;
       var height = y + this.height + lineWidth;
@@ -4000,16 +4000,16 @@ var cancelAnimationFrame =
 
   EC.extend(Shape.prototype, {
     drawRect: function (x, y, width, height) {
-      this.moveX = x;
-      this.moveY = y;
+      this.offsetX = x;
+      this.offsetY = y;
       this.width = width;
       this.height = height;
       this.drawType = 'rect';
       return this;
     },
     drawArc: function (x, y, radius, startAngle, endAngle, counterclockwise) {
-      this.moveX = x;
-      this.moveY = y;
+      this.offsetX = x;
+      this.offsetY = y;
       this.radius = radius;
       this.startAngle = startAngle;
       this.endAngle = endAngle;
@@ -4040,8 +4040,8 @@ var cancelAnimationFrame =
       return this;
     },
     drawRoundRect: function (x, y, width, height, radius) {
-      this.moveX = x;
-      this.moveY = y;
+      this.offsetX = x;
+      this.offsetY = y;
       this.width = width;
       this.height = height;
       this.radius = radius;
@@ -4049,8 +4049,8 @@ var cancelAnimationFrame =
       return this;
     },
     moveTo: function (x, y) {
-      this.moveX = x;
-      this.moveY = y;
+      this.offsetX = x;
+      this.offsetY = y;
       return this;
     },
     lineTo: function (x, y) {
@@ -4059,15 +4059,15 @@ var cancelAnimationFrame =
       } else {
         this.coords.push([x, y]);
       }
-      var lineSize = getLineSize(this.coords, this.moveX, this.moveY);
+      var lineSize = getLineSize(this.coords, this.offsetX, this.offsetY);
       this.width = lineSize.width;
       this.height = lineSize.height;
       this.drawType = 'lineTo';
       return this;
     },
     drawLine: function (x, y, endX, endY) {
-      this.moveX = x;
-      this.moveY = y;
+      this.offsetX = x;
+      this.offsetY = y;
       this.endX = endX;
       this.endY = endY;
       this.width = endX - x;
@@ -4076,8 +4076,8 @@ var cancelAnimationFrame =
       return this;
     },
     drawDashedLine: function (x, y, endX, endY, dashLength, dashGap) {
-      this.moveX = x;
-      this.moveY = y;
+      this.offsetX = x;
+      this.offsetY = y;
       this.endX = endX;
       this.endY = endY;
       this.dashLength = dashLength;
@@ -4088,8 +4088,8 @@ var cancelAnimationFrame =
       return this;
     },
     drawEllipse: function (x, y, width, height) {
-      this.moveX = x;
-      this.moveY = y;
+      this.offsetX = x;
+      this.offsetY = y;
       this.width = width;
       this.height = height;
       this.drawType = 'ellipse';
@@ -4105,7 +4105,7 @@ var cancelAnimationFrame =
     },
     quadraticCurveTo: function () {
       this.coords = slice.call(arguments);
-      var lineSize = getQuadraticLineSize(this.coords, this.moveX, this.moveY);
+      var lineSize = getQuadraticLineSize(this.coords, this.offsetX, this.offsetY);
       this.width = lineSize.width;
       this.height = lineSize.height;
       this.drawType = 'quadraticCurveTo';
@@ -4113,7 +4113,7 @@ var cancelAnimationFrame =
     },
     bezierCurveTo: function () {
       this.coords = slice.call(arguments);
-      var lineSize = getQuadraticLineSize(this.coords, this.moveX, this.moveY);
+      var lineSize = getQuadraticLineSize(this.coords, this.offsetX, this.offsetY);
       this.width = lineSize.width;
       this.height = lineSize.height;
       this.drawType = 'bezierCurveTo';
@@ -4498,6 +4498,9 @@ var cancelAnimationFrame =
       var _config = EC.isString(status) ? this.statusCfg[status] : status;
       _config = EC.extend({}, this.statusCfg.normal, _config);
 
+      var offsetX = _config.offsetX || 0;
+      var offsetY = _config.offsetY || 0;
+
       EC.extend(this, {width: _config.width, height: _config.height});
 
       if (_config.texture) {
@@ -4517,9 +4520,9 @@ var cancelAnimationFrame =
       if (_config.fillStyle || _config.strokeStyle) {
         EC.extend(this.shape, _config);
         if (_config.radius && _config.radius > 0) {
-          this.shape.drawRoundRect(0, 0, _config.width, _config.height, _config.radius);
+          this.shape.drawRoundRect(offsetX, offsetY, _config.width, _config.height, _config.radius);
         } else {
-          this.shape.drawRect(0, 0, _config.width, _config.height);
+          this.shape.drawRect(offsetX, offsetY, _config.width, _config.height);
         }
 
         if (_config.fillStyle) {
@@ -4539,7 +4542,8 @@ var cancelAnimationFrame =
         this.textField.text = _config.text;
         var injectCfg = {
           textAlign: "center",
-          y: _config.y + (this.height - this.textField.height) / 2,
+          x: offsetX,
+          y: _config.y + offsetY + (this.height - this.textField.height) / 2,
           height: this.textField.height
         };
         EC.extend(this.textField, EC.extend({}, _config, injectCfg));

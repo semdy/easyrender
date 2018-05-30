@@ -1,21 +1,23 @@
 <!Doctype html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-    <title>EC Button</title>
-    <style>
-        body{
-            margin:0;
-        }
-        .movieclip{
-            position: absolute;
-            left:0;
-            top:0;
-            right:0;
-            bottom: 0;
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>EC Button</title>
+  <style>
+    body {
+      margin: 0;
+    }
+
+    .movieclip {
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+    }
+  </style>
 </head>
 
 <body>
@@ -43,103 +45,105 @@
 <!-- endbuild -->
 
 <script>
-    RES.loadJson("images/button_res.json").then(function(resData){
+  RES.loadJson("images/button_res.json").then(function (resData) {
 
-        var loader = RES.loadGroup("preload", resData);
-        var stage;
+    var loader = RES.loadGroup("preload", resData);
+    var stage;
 
-        loader.on("complete", function () {
-            startGame();
-        });
-
-        function startGame(){
-            var canvas = document.getElementById('canvas-button');
-            stage = new EC.Stage(canvas);
-            setButton1();
-            setButton2();
-        }
-
-        function setButton1(){
-            var button = new EC.Button({
-                normal: {
-                    texture: 'button_normal_png'
-                },
-                hover: {
-                    texture: 'button_hover_png'
-                },
-                active: {
-                    texture: 'button_active_png'
-                }
-            });
-            button.x = 100;
-            button.y = 100;
-            stage.addChild(button);
-
-            //仅在PC环境下有效
-            button.on("touchenter", function (e) {
-                //button.cursor = "move";
-                console.log(e.type);
-            });
-
-            //仅在PC环境下有效
-            button.on("touchout", function (e) {
-                console.log(e.type);
-            });
-
-        }
-
-        function setButton2(){
-            var button = new EC.Button({
-                normal: {
-                    fillStyle: '#428bca',
-                    radius: 4,
-                    text: "normal",
-                    textColor: "#fff",
-                    width:138,
-                    height:48,
-                    shadowBlur: 20,
-                    shadowColor: "rgba(0,0,0,.4)",
-                    shadowOffsetX: 5,
-                    shadowOffsetY: 5
-                },
-                hover: {
-                    fillStyle: 'green',
-                    text: "hovered",
-                    textColor: "#fff"
-                },
-                active: {
-                    fillStyle: '#ff0000',
-                    text: "actived",
-                    textColor: "#fff"
-                },
-                disabled:{
-                    fillStyle: "#ccc",
-                    textColor: "#777",
-                    text: 'disabled'
-                }
-            });
-            button.x = 100;
-            button.y = 200;
-            stage.addChild(button);
-
-            //仅在PC环境下有效
-            button.on("touchenter", function (e) {
-                //button.cursor = "move";
-                console.log(e.type + "_2");
-            });
-
-            //仅在PC环境下有效
-            button.on("touchout", function (e) {
-                console.log(e.type + "_2");
-            });
-
-            setTimeout(function () {
-                button.setButton('disabled');
-            }, 5000);
-
-        }
-
+    loader.on("complete", function () {
+      startGame();
     });
+
+    function startGame() {
+      var canvas = document.getElementById('canvas-button');
+      stage = new EC.Stage(canvas);
+      setButton1();
+      setButton2();
+    }
+
+    function setButton1() {
+      var button = new EC.Button({
+        normal: {
+          texture: 'button_normal_png'
+        },
+        hover: {
+          texture: 'button_hover_png'
+        },
+        active: {
+          texture: 'button_active_png'
+        }
+      });
+      button.x = 110;
+      button.y = 110;
+      stage.addChild(button);
+
+      //仅在PC环境下有效
+      button.on("touchenter", function (e) {
+        //button.cursor = "move";
+        console.log(e.type);
+      });
+
+      //仅在PC环境下有效
+      button.on("touchout", function (e) {
+        console.log(e.type);
+      });
+
+    }
+
+    function setButton2() {
+      var button = new EC.Button({
+        normal: {
+          fillStyle: '#428bca',
+          radius: 4,
+          text: "normal",
+          textColor: "#fff",
+          width: 138,
+          height: 48,
+          shadowBlur: 20,
+          shadowColor: "rgba(0,0,0,.4)",
+          shadowOffsetX: 5,
+          shadowOffsetY: 5,
+          offsetX: 10,
+          offsetY: 10
+        },
+        hover: {
+          fillStyle: 'green',
+          text: "hovered",
+          textColor: "#fff"
+        },
+        active: {
+          fillStyle: '#ff0000',
+          text: "actived",
+          textColor: "#fff"
+        },
+        disabled: {
+          fillStyle: "#ccc",
+          textColor: "#777",
+          text: 'disabled'
+        }
+      });
+      button.x = 100;
+      button.y = 200;
+      stage.addChild(button);
+
+      //仅在PC环境下有效
+      button.on("touchenter", function (e) {
+        //button.cursor = "move";
+        console.log(e.type + "_2");
+      });
+
+      //仅在PC环境下有效
+      button.on("touchout", function (e) {
+        console.log(e.type + "_2");
+      });
+
+      setTimeout(function () {
+        button.setButton('disabled');
+      }, 5000);
+
+    }
+
+  });
 </script>
 </body>
 </html>
