@@ -484,7 +484,6 @@
       this.$touchEnabled = false;
       this.$hasDefineWidth = false;
       this.$hasDefineHeight = false;
-      this.$cacheAsBitmap = false;
       this.$hasAddToStage = false;
       this.$renderType = 'DisplayObject';
 
@@ -1385,8 +1384,7 @@
 
       this.$texture = null;
       this.$cacheRenderer = null;
-      this.$cacheAsBitmap = true;
-      this.$isUpdating = false;
+      this.$cacheAsBitmap = false;
       this.$throttle = null;
 
       this.defineProperty('texture', {
@@ -1402,7 +1400,7 @@
       this.defineProperty('cacheAsBitmap', {
         set: function (cacheFlag) {
           this.$cacheAsBitmap = cacheFlag;
-          if (cacheFlag) {
+          if (cacheFlag && this.$hasAddToStage) {
             this.$texture = document.createElement('canvas');
             this.$cacheRenderer = new Stage(this.$texture, {
               width: Math.max(this.width, this.stage.width),
@@ -1424,13 +1422,19 @@
 
       this.once('addToStage', function () {
         if (this.$cacheAsBitmap) {
+          var enterFrame = function (obj, time) {
+            obj.$mask && obj.$mask.dispatch('enterframe', time);
+            obj.children.forEach(function (item) {
+              item.dispatch('enterframe', time);
+              if (!item.$cacheAsBitmap) {
+                enterFrame(item, time);
+              }
+            });
+          };
           this.cacheAsBitmap = this.$cacheAsBitmap;
           this.updateRender(true);
-          this.on('enterframe', function (time) {
-            this.$mask && this.$mask.dispatch('enterframe', time);
-            this.children.forEach(function (item) {
-              item.dispatch('enterframe', time);
-            });
+          this.on('enterframe', function(time) {
+            enterFrame(this, time);
           }, this);
         }
       }, this);
@@ -1526,6 +1530,7 @@
       this.fontFamily = "";
       this.lineSpacing = 2;
       this.inputType = "text";
+      this.$cacheAsBitmap = true;
 
       this.once("addToStage", function () {
         this.$create();
@@ -1657,13 +1662,12 @@
       this.$font = "";
       this.$textAlign = 'left';
       this.$letterSpacing = 0;
+      this.$cacheAsBitmap = true;
 
       this.$textRenderer = new Sprite();
       this.$textRenderer.$renderType = 'BitmapText';
-      this.$textRenderer.cacheAsBitmap = false;
 
       this.$textRenderer.$textwrap = new Sprite();
-      this.$textRenderer.$textwrap.cacheAsBitmap = false;
 
       ['text', 'textAlign', 'letterSpacing'].forEach(function (prop) {
         this.defineProperty(prop, {
@@ -1709,6 +1713,7 @@
   var Button = Sprite.extend({
     initialize: function (statusArgs) {
       Button.superclass.initialize.call(this);
+      this.$cacheAsBitmap = true;
 
       var _DEFAULTS = {
         x: 0,

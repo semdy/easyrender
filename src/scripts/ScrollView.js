@@ -11,6 +11,7 @@
       this.initialValue = 0;
       this.disabled = false;
       this.$layout = null;
+      this.$cacheAsBitmap = true;
       this.touchScroll = null;
 
       this.once("addToStage", function() {
@@ -24,6 +25,7 @@
       Object.defineProperty(this, 'layout', {
         set: function(target) {
           this.$layout = target;
+          this.$layout.$cacheAsBitmap = true;
           if (this.$hasAddToStage) {
             this.clearContent();
             this.addChild(target);

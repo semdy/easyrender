@@ -1144,8 +1144,8 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 	<tr>
         <td>cacheAsBitmap</td>
         <td>Boolean</td>
-        <td>true</td>
-        <td>是否将Sprite缓存成图片</td>
+        <td>false</td>
+        <td>是否将Sprite做缓存处理，以提升一部分性能</td>
     </tr>
 </table>
 
