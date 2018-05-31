@@ -15,13 +15,13 @@
   function drawImg(ctx, obj) {
     if (!obj.texture) return;
     if (obj.sx !== undefined) {
-      ctx.drawImage(obj.texture, obj.sx, obj.sy, obj.swidth, obj.sheight, 0, 0, obj.width, obj.height);
-    } else {
-      if (obj.cacheAsBitmap) {
-        ctx.drawImage(obj.texture, 0, 0, obj.texture.width, obj.texture.height);
-      } else {
-        ctx.drawImage(obj.texture, 0, 0, obj.width, obj.height);
-      }
+      ctx.drawImage(obj.texture, obj.sx, obj.sy, obj.swidth, obj.sheight, obj.offsetX, obj.offsetY, obj.width, obj.height);
+    }
+    else if (obj.cacheAsBitmap) {
+      ctx.drawImage(obj.texture, obj.offsetX, obj.offsetY, obj.texture.width, obj.texture.height);
+    }
+    else {
+      ctx.drawImage(obj.texture, obj.offsetX, obj.offsetY, obj.width, obj.height);
     }
   }
 
@@ -43,7 +43,7 @@
         $height: item.h,
         $sx: item.x,
         $sy: item.y,
-        $x: startX += (lastWidth + obj.$letterSpacing),
+        $offsetX: startX += (lastWidth + obj.$letterSpacing),
         $swidth: item.w,
         $sheight: item.h
       });
@@ -66,10 +66,7 @@
     ctx.save();
     ctx.translate(obj.$textwrap.x, obj.$textwrap.y);
     obj.$textwrap.each(function (childObj) {
-      ctx.save();
-      ctx.translate(childObj.x, childObj.y);
       drawImg(ctx, childObj);
-      ctx.restore();
     });
     ctx.restore();
   }
@@ -538,55 +535,26 @@
 
     },
 
-    updateRender2: function (fromSelf) {
-      var target = fromSelf
-        ? this
-        : this.parent;
-
-      while (
-        target &&
-        target.$hasAddToStage &&
-        target.size() > 0
-      )
-      {
-        if (target.$cacheRenderer) {
-          target.$cacheRenderer.clear();
-          target.$cacheRenderer.renderCache(target);
-        }
-        target = target.parent;
-      }
-    },
-
     updateRender: function (fromSelf) {
       var target = fromSelf
         ? this
         : this.parent;
 
-      if (target && target.$isUpdating !== undefined) {
+      if (!target || !target.$hasAddToStage) return;
 
-        if (!target.$hasAddToStage || target.$isUpdating) return;
+      if (target.$throttle) clearTimeout(target.$throttle);
 
-        if (!fromSelf) {
-          target.$isUpdating = true;
-        }
+      target.$throttle = setTimeout(function () {
 
-        var dTarget = target;
-        while (dTarget && dTarget.size() > 0) {
-          if (dTarget.$cacheRenderer) {
-            dTarget.$cacheRenderer.clear();
-            dTarget.$cacheRenderer.renderCache(dTarget);
+        while (target && target.size() > 0) {
+          if (target.$cacheRenderer) {
+            target.$cacheRenderer.clear();
+            target.$cacheRenderer.renderCache(target);
           }
-          dTarget = dTarget.parent;
+          target = target.parent;
         }
 
-        if (!fromSelf) {
-          if (target.$throttle) clearTimeout(target.$throttle);
-          target.$throttle = setTimeout(function () {
-            target.$isUpdating = false;
-          });
-        }
-
-      }
+      });
     },
 
     remove: function () {
@@ -2081,17 +2049,13 @@
 
       var _render = function (obj) {
         if (obj.visible) {
-          if (obj.$renderType === 'Sprite') {
-            if (obj.cacheAsBitmap) {
-              self.renderItem(ctx, obj);
-            } else {
-              ctx.save();
-              drawContext(ctx, obj);
-              getChildren(obj).forEach(function (item) {
-                _render(item);
-              });
-              ctx.restore();
-            }
+          if (obj.$renderType === 'Sprite' && !obj.cacheAsBitmap) {
+            ctx.save();
+            drawContext(ctx, obj);
+            getChildren(obj).forEach(function (item) {
+              _render(item);
+            });
+            ctx.restore();
           } else {
             self.renderItem(ctx, obj);
           }
