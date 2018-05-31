@@ -15,9 +15,10 @@
   function drawImg(ctx, obj) {
     if (!obj.texture) return;
     if (obj.sx !== undefined) {
-      ctx.drawImage(obj.texture, obj.sx, obj.sy, obj.swidth, obj.sheight, 0, 0, obj.width, obj.height);
-    } else {
-      ctx.drawImage(obj.texture, 0, 0, obj.width, obj.height);
+      ctx.drawImage(obj.texture, obj.sx, obj.sy, obj.swidth, obj.sheight, obj.offsetX, obj.offsetY, obj.width, obj.height);
+    }
+    else {
+      ctx.drawImage(obj.texture, obj.offsetX, obj.offsetY, obj.width, obj.height);
     }
   }
 
@@ -39,7 +40,7 @@
         height: item.h,
         sx: item.x,
         sy: item.y,
-        x: startX += (lastWidth + obj.letterSpacing),
+        offsetX: startX += (lastWidth + obj.letterSpacing),
         swidth: item.w,
         sheight: item.h
       });
@@ -62,10 +63,7 @@
     ctx.save();
     ctx.translate(obj.$textwrap.x, obj.$textwrap.y);
     obj.$textwrap.each(function (childObj) {
-      ctx.save();
-      ctx.translate(childObj.x, childObj.y);
       drawImg(ctx, childObj);
-      ctx.restore();
     });
     ctx.restore();
   }
