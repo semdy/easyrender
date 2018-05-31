@@ -1423,7 +1423,9 @@
       this.once('addToStage', function () {
         if (this.$cacheAsBitmap) {
           var enterFrame = function (obj, time) {
-            obj.$mask && obj.$mask.dispatch('enterframe', time);
+            if (obj.$mask && obj.$renderType === 'Sprite') {
+              obj.$mask.dispatch('enterframe', time);
+            }
             obj.children.forEach(function (item) {
               item.dispatch('enterframe', time);
               if (!item.$cacheAsBitmap) {

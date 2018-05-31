@@ -3,6 +3,7 @@
     initialize: function () {
       Bullet.superclass.initialize.call(this);
 
+      this.cacheAsBitmap = true;
       this.bulletText = '';
       this.bulletColor = '#000';
 
