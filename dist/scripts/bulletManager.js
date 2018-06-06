@@ -96,15 +96,15 @@
 
       this.stage.addChild(bullet);
 
-      bullet.once('born', function () {
+      bullet.on('born', function () {
         this.shootBullet(this.subtitles.shift(), trajectoryIndex);
       }, this);
 
-      bullet.once('dead', function () {
+      bullet.on('dead', function () {
         bullet.remove();
       }, this);
 
-      bullet.once('remove', function () {
+      bullet.on('remove', function () {
         this.pool.recover('bullet', bullet);
       }, this);
     },
