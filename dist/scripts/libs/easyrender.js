@@ -592,7 +592,7 @@ var cancelAnimationFrame =
 
     dispatch: function (name) {
       var args = slice.call(arguments, 1);
-      var evts = (this.$e[name] || []).slice();
+      var evts = this.$e[name] || [];
 
       if (evts.length) {
         evts.forEach(function (evt) {
@@ -619,7 +619,7 @@ var cancelAnimationFrame =
       return this.on('progress', cb);
     },
 
-    clear: function () {
+    clearEvent: function () {
       this.$e = {};
       return this;
     }
@@ -3667,6 +3667,7 @@ var cancelAnimationFrame =
       }
 
       delete object.parent;
+      object.clearEvent();
       EC.Tween.removeTweens(object);
       this.$triggerRemove(object);
 
@@ -3682,6 +3683,7 @@ var cancelAnimationFrame =
       var object = c.splice(i, 1)[0];
       if (object) {
         delete object.parent;
+        object.clearEvent();
         EC.Tween.removeTweens(object);
         this.$triggerRemove(object);
       }

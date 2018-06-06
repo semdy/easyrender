@@ -743,6 +743,7 @@
       }
 
       delete object.parent;
+      object.clearEvent();
       EC.Tween.removeTweens(object);
       this.$triggerRemove(object);
 
@@ -758,6 +759,7 @@
       var object = c.splice(i, 1)[0];
       if (object) {
         delete object.parent;
+        object.clearEvent();
         EC.Tween.removeTweens(object);
         this.$triggerRemove(object);
       }

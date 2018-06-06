@@ -78,7 +78,7 @@
 
     dispatch: function (name) {
       var args = slice.call(arguments, 1);
-      var evts = (this.$e[name] || []).slice();
+      var evts = this.$e[name] || [];
 
       if (evts.length) {
         evts.forEach(function (evt) {
@@ -105,7 +105,7 @@
       return this.on('progress', cb);
     },
 
-    clear: function () {
+    clearEvent: function () {
       this.$e = {};
       return this;
     }
