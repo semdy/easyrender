@@ -266,7 +266,7 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 		<td>触发一个事件</td>
 	</tr>
 	<tr>
-		<td>clear</td>
+		<td>clearEvent</td>
 		<td>--</td>
 		<td>清空事件池</td>
 	</tr>
