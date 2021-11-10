@@ -2454,7 +2454,6 @@ a lite frameworks for canvas, simply, faster and liter. for more information see
 </table>
 
 ## live demo ##
-- [弹幕](https://semdy.github.io/easyrender/dist/index.html "弹幕")
 - [奔跑的兔子](https://semdy.github.io/easyrender/dist/MovieClip.html "奔跑的兔子")
 - [系列图动画+tween测试](https://semdy.github.io/easyrender/dist/MovieClip2.html)
 - [序列帧动画+事件测试](https://semdy.github.io/easyrender/dist/MovieClip3.html)
